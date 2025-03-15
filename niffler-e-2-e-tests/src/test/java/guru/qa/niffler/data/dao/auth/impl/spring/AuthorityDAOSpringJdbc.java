@@ -1,25 +1,31 @@
-package guru.qa.niffler.data.dao.auth.impl;
+package guru.qa.niffler.data.dao.auth.impl.spring;
 
+import guru.qa.niffler.config.Config;
 import guru.qa.niffler.data.dao.auth.AuthorityDAO;
+import guru.qa.niffler.data.dao.auth.mapper.AuthorityEntityRowMapper;
+import guru.qa.niffler.data.entity.auth.AuthUserEntity;
 import guru.qa.niffler.data.entity.auth.AuthorityEntity;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.List;
+
+import static guru.qa.niffler.data.template.DataSources.dataSource;
 
 public class AuthorityDAOSpringJdbc implements AuthorityDAO {
 
-    private final DataSource dataSource;
+    private static final Config CFG = Config.getInstance();
 
-    public AuthorityDAOSpringJdbc(DataSource dataSource) {
-        this.dataSource = dataSource;
+    private final JdbcTemplate jdbcTemplate;
+
+    public AuthorityDAOSpringJdbc() {
+        jdbcTemplate = new JdbcTemplate(dataSource(CFG.authJdbcUrl()));
     }
 
     @Override
-    public void create(AuthorityEntity... authority) {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+    public void create(AuthorityEntity ... authority) {
         jdbcTemplate.batchUpdate(
                 "INSERT INTO authority (user_id, authority) VALUES (? , ?)",
                 new BatchPreparedStatementSetter() {
@@ -38,7 +44,14 @@ public class AuthorityDAOSpringJdbc implements AuthorityDAO {
     }
 
     @Override
-    public void delete(AuthorityEntity... authority) {
+    public List<AuthorityEntity> findByAuthUserId(AuthUserEntity authUser) {
+        String query = "SELECT * FROM authority WHERE \"user_id\" = ?";
+        return jdbcTemplate.query(query, AuthorityEntityRowMapper.instance, authUser.getId());
+    }
 
+    @Override
+    public void delete(AuthUserEntity authUser) {
+        String query = "DELETE FROM authority WHERE \"user_id\" = ?";
+        jdbcTemplate.update(query, authUser.getId());
     }
 }
