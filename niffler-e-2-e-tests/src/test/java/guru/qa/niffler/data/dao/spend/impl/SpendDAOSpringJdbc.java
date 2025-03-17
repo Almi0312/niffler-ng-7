@@ -94,10 +94,6 @@ public class SpendDAOSpringJdbc implements SpendDAO {
     public void delete(SpendEntity spend) {
         String query = "DELETE FROM spend WHERE id = ?";
         JdbcTemplate template = new JdbcTemplate(dataSource);
-        template.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(query);
-            ps.setObject(1, spend.getId());
-            return ps;
-        });
+        template.update(query, spend.getId());
     }
 }
