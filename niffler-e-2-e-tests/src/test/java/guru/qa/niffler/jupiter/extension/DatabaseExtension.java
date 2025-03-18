@@ -1,10 +1,10 @@
 package guru.qa.niffler.jupiter.extension;
 
-import guru.qa.niffler.data.DataBases;
+import guru.qa.niffler.data.template.Connections;
 
 public class DatabaseExtension implements SuiteExtension {
     @Override
     public void afterSuite() {
-        DataBases.closeAllConnections();
+        Connections.closeAllConnections();
     }
 }

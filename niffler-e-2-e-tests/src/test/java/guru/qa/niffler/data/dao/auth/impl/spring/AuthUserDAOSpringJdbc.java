@@ -1,32 +1,34 @@
-package guru.qa.niffler.data.dao.auth.impl;
+package guru.qa.niffler.data.dao.auth.impl.spring;
 
+import guru.qa.niffler.config.Config;
 import guru.qa.niffler.data.dao.auth.AuthUserDAO;
 import guru.qa.niffler.data.dao.auth.mapper.AuthUserEntityRowMapper;
 import guru.qa.niffler.data.entity.auth.AuthUserEntity;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
-import javax.sql.DataSource;
 import java.sql.*;
 import java.util.Optional;
 import java.util.UUID;
 
+import static guru.qa.niffler.data.template.DataSources.dataSource;
+
 public class AuthUserDAOSpringJdbc implements AuthUserDAO {
 
-    private final DataSource dataSource;
+    private static final Config CFG = Config.getInstance();
 
-    public AuthUserDAOSpringJdbc(DataSource dataSource) {
-        this.dataSource = dataSource;
+    private final JdbcTemplate jdbcTemplate;
+
+    public AuthUserDAOSpringJdbc() {
+        jdbcTemplate = new JdbcTemplate(dataSource(CFG.authJdbcUrl()));
     }
 
     @Override
     public AuthUserEntity create(AuthUserEntity user) {
         String query = "INSERT INTO \"user\" (username, password, enabled, account_non_expired, account_non_locked, credentials_non_expired) " +
                 "VALUES (?,?,?,?,?,?)";
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         KeyHolder kh = new GeneratedKeyHolder();
         jdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(
@@ -49,21 +51,28 @@ public class AuthUserDAOSpringJdbc implements AuthUserDAO {
     @Override
     public Optional<AuthUserEntity> findById(UUID id) {
         String query = "SELECT * FROM \"user\" WHERE id = ?";
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-        return Optional.ofNullable(
-                jdbcTemplate.queryForObject(
-                        query, AuthUserEntityRowMapper.instance, id
-                )
-        );
+        try {
+            return Optional.ofNullable(jdbcTemplate.queryForObject(
+                    query, AuthUserEntityRowMapper.instance, id));
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
     }
 
     @Override
     public Optional<AuthUserEntity> findByUsername(String userEntity) {
-        return Optional.empty();
+        String query = "SELECT * FROM \"user\" WHERE username = ?";
+        try {
+            return Optional.ofNullable(jdbcTemplate.queryForObject(
+                    query, AuthUserEntityRowMapper.instance, userEntity));
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
     }
 
     @Override
-    public void delete(AuthUserEntity authUserEntity) {
-
+    public void deleteByUsername(AuthUserEntity authUserEntity) {
+        String query = "DELETE FROM \"user\" WHERE username = ?";
+        jdbcTemplate.update(query, authUserEntity.getUsername());
     }
 }

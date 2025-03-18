@@ -1,32 +1,34 @@
 package guru.qa.niffler.data.dao.userdata.impl;
 
+import guru.qa.niffler.config.Config;
 import guru.qa.niffler.data.dao.userdata.UserdataUserDAO;
 import guru.qa.niffler.data.dao.userdata.mapper.UdUserEntityRowMapper;
 import guru.qa.niffler.data.entity.userdata.UserdataUserEntity;
-import guru.qa.niffler.model.CurrencyValues;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
-import javax.sql.DataSource;
 import java.sql.*;
 import java.util.Optional;
 import java.util.UUID;
 
+import static guru.qa.niffler.data.template.DataSources.dataSource;
+
 public class UserdataUserDAOSpringJdbc implements UserdataUserDAO {
 
+    private static final Config CFG = Config.getInstance();
 
-    private final DataSource dataSource;
+    private final JdbcTemplate jdbcTemplate;
 
-    public UserdataUserDAOSpringJdbc(DataSource dataSource) {
-        this.dataSource = dataSource;
+    public UserdataUserDAOSpringJdbc() {
+        jdbcTemplate = new JdbcTemplate(dataSource(CFG.userdataJdbcUrl()));
     }
 
     @Override
     public UserdataUserEntity create(UserdataUserEntity user) {
         String query = "INSERT INTO \"user\" (username, currency, firstname, surname, photo, photo_small, full_name) " +
                 "VALUES (?,?,?,?,?,?,?)";
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         KeyHolder kh = new GeneratedKeyHolder();
         jdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(
@@ -50,25 +52,28 @@ public class UserdataUserDAOSpringJdbc implements UserdataUserDAO {
     @Override
     public Optional<UserdataUserEntity> findById(UUID id) {
         String query = "SELECT * FROM \"user\" WHERE id = ?";
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-        return Optional.ofNullable(
-                jdbcTemplate.queryForObject(
-                        query,
-                        UdUserEntityRowMapper.instance,
-                        id
-                )
-        );
+        try {
+            return Optional.ofNullable(jdbcTemplate.queryForObject(
+                    query, UdUserEntityRowMapper.instance, id));
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
     }
-
 
     @Override
     public Optional<UserdataUserEntity> findByUsername(String username) {
         String query = "SELECT * FROM \"user\" WHERE username = ?";
-        return null;
+        try {
+            return Optional.ofNullable(jdbcTemplate.queryForObject(
+                    query, UdUserEntityRowMapper.instance, username));
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
     }
 
     @Override
     public void delete(UserdataUserEntity userdataUserEntity) {
         String query = "DELETE FROM \"user\" WHERE id = ?";
+        jdbcTemplate.update(query, userdataUserEntity.getId());
     }
 }

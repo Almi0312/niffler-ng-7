@@ -1,7 +1,7 @@
 package guru.qa.niffler.data.dao.userdata.impl;
 
+import guru.qa.niffler.config.Config;
 import guru.qa.niffler.data.dao.userdata.UserdataUserDAO;
-import guru.qa.niffler.data.entity.auth.AuthUserEntity;
 import guru.qa.niffler.data.entity.userdata.UserdataUserEntity;
 import guru.qa.niffler.model.CurrencyValues;
 
@@ -9,20 +9,19 @@ import java.sql.*;
 import java.util.Optional;
 import java.util.UUID;
 
+import static guru.qa.niffler.data.template.Connections.holder;
+
 public class UserdataUserDAOJdbc implements UserdataUserDAO {
 
-    private Connection connection;
-
-    public UserdataUserDAOJdbc(Connection connection) {
-        this.connection = connection;
-    }
+    private static final Config CFG = Config.getInstance();
 
     @Override
     public UserdataUserEntity create(UserdataUserEntity userdataUserEntity) {
         String query = "INSERT INTO \"user\" (username, currency) VALUES (?, ?)";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(
-                query, Statement.RETURN_GENERATED_KEYS
-        )) {
+        try (PreparedStatement preparedStatement = holder(CFG.userdataJdbcUrl()).connection()
+                .prepareStatement(
+                        query, Statement.RETURN_GENERATED_KEYS
+                )) {
             preparedStatement.setString(1, userdataUserEntity.getUsername());
             preparedStatement.setString(2, userdataUserEntity.getCurrency().name());
 
@@ -45,7 +44,9 @@ public class UserdataUserDAOJdbc implements UserdataUserDAO {
     @Override
     public Optional<UserdataUserEntity> findById(UUID id) {
         String query = "SELECT * FROM \"user\" WHERE id = ?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try (PreparedStatement preparedStatement = holder(CFG.userdataJdbcUrl()).connection()
+                .prepareStatement(
+                        query)) {
             preparedStatement.setObject(1, id);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
@@ -63,7 +64,9 @@ public class UserdataUserDAOJdbc implements UserdataUserDAO {
     @Override
     public Optional<UserdataUserEntity> findByUsername(String username) {
         String query = "SELECT * FROM \"user\" WHERE username = ?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try (PreparedStatement preparedStatement = holder(CFG.userdataJdbcUrl()).connection()
+                .prepareStatement(
+                        query)) {
             preparedStatement.setObject(1, username);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
@@ -79,7 +82,9 @@ public class UserdataUserDAOJdbc implements UserdataUserDAO {
     @Override
     public void delete(UserdataUserEntity userdataUserEntity) {
         String query = "DELETE FROM \"user\" WHERE id = ?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try (PreparedStatement preparedStatement = holder(CFG.userdataJdbcUrl()).connection()
+                .prepareStatement(
+                        query)) {
             preparedStatement.setObject(1, userdataUserEntity.getId());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
