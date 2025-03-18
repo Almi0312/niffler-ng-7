@@ -24,39 +24,38 @@ public class SpendingExtension implements BeforeEachCallback, AfterEachCallback,
     public void beforeEach(ExtensionContext context) throws Exception {
         AnnotationSupport.findAnnotation(context.getRequiredTestMethod(), User.class)
                 .ifPresent(userAnno -> {
-                        for (Spending annoSpend : userAnno.spendings()) {
-                            CategoryJson categoryJson = categoryDBClient
-                                    .findCategoryByUsernameAndCategoryName(userAnno.username(), annoSpend.category());
-                            SpendJson spend = new SpendJson(
-                                    null,
-                                    new Date(),
-                                    categoryJson != null ? categoryJson :
-                                    new CategoryJson(
-                                            null,
-                                            annoSpend.category(),
-                                            userAnno.username(),
-                                            false
-                                    ),
-                                    CurrencyValues.RUB,
-                                    annoSpend.amount(),
-                                    annoSpend.description(),
-                                    userAnno.username()
-                                    );
-                            SpendJson spendJson = spendDBClient.createSpend(spend);
-                            context.getStore(NAMESPACE).put(
-                                    context.getUniqueId(),
-                                    spendJson
-                            );
-                            break; // забирает только 1 значение. Убрать если нужно каждое
-                        }
+                    for (Spending annoSpend : userAnno.spendings()) {
+                        SpendJson spend = new SpendJson(
+                                null,
+                                new Date(),
+                                categoryDBClient.findCategoryByUsernameAndCategoryName(
+                                                userAnno.username(), annoSpend.category())
+                                        .orElse(
+                                                new CategoryJson(
+                                                        null,
+                                                        annoSpend.category(),
+                                                        userAnno.username(),
+                                                        false)),
+                                CurrencyValues.RUB,
+                                annoSpend.amount(),
+                                annoSpend.description(),
+                                userAnno.username()
+                        );
+                        SpendJson spendJson = spendDBClient.create(spend);
+                        context.getStore(NAMESPACE).put(
+                                context.getUniqueId(),
+                                spendJson
+                        );
+                        break; // забирает только 1 значение. Убрать если нужно каждое
+                    }
                 });
     }
 
     @Override
     public void afterEach(ExtensionContext context) throws Exception {
         SpendJson spendJson = context.getStore(NAMESPACE).get(context.getUniqueId(), SpendJson.class);
-        if(spendJson != null) {
-            spendDBClient.deleteSpend(spendJson);
+        if (spendJson != null) {
+            spendDBClient.delete(spendJson);
         }
     }
 

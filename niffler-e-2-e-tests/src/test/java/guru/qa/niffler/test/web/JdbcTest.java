@@ -6,7 +6,6 @@ import guru.qa.niffler.service.default_jdbc.AuthUserDBClient;
 import guru.qa.niffler.service.default_jdbc.UserdataDBClient;
 import guru.qa.niffler.service.spend.CategoryDBSpringClient;
 import guru.qa.niffler.service.spend.SpendDBClient;
-import guru.qa.niffler.service.spend.SpendDBSpringClient;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -25,11 +24,11 @@ class JdbcTest {
         String categoryName = "top cource";
         String spendDescription = "cool cource";
         SpendDBClient dbSpend = new SpendDBClient();
-        SpendJson spendJson = dbSpend.findByUsernameAndDescription(MAIN_USERNAME, spendDescription);
-        if (spendJson != null) {
-            dbSpend.delete(spendJson);
-            log.info("SPEND DELETED");
-        }
+        dbSpend.findByUsernameAndDescription(MAIN_USERNAME, spendDescription)
+                .ifPresent(entity -> {
+                    dbSpend.delete(entity);
+                    log.info("SPEND DELETED");
+                });
         SpendJson newSpendJson = dbSpend.create(new SpendJson(
                 null,
                 new Date(),
@@ -45,8 +44,8 @@ class JdbcTest {
         log.info("SPEND CREATED");
         log.info("CATEGORY CREATED");
         Assertions.assertNotNull(newSpendJson, "Объект Spend не создан");
-        Assertions.assertNotNull(newSpendJson.category(),"Объект Category не создан");
-        SpendJson resultSpend = dbSpend.findByUsernameAndDescription(MAIN_USERNAME, spendDescription);
+        Assertions.assertNotNull(newSpendJson.category(), "Объект Category не создан");
+        SpendJson resultSpend = dbSpend.findByUsernameAndDescription(MAIN_USERNAME, spendDescription).get();
         Assertions.assertTrue(newSpendJson.username().equals(resultSpend.username())
                         && newSpendJson.id().equals(resultSpend.id())
                         && newSpendJson.category().id().equals(resultSpend.category().id()),
@@ -59,11 +58,11 @@ class JdbcTest {
     void checkCRUDCategoryTest() {
         String categoryName = "Top category";
         CategoryDBSpringClient dbSpringClient = new CategoryDBSpringClient();
-        CategoryJson categoryJson = dbSpringClient.findByUsernameAndName(MAIN_USERNAME, categoryName);
-        if(categoryJson != null) {
-            dbSpringClient.delete(categoryJson);
-            log.info("CATEGORY DELETED");
-        }
+        dbSpringClient.findByUsernameAndName(MAIN_USERNAME, categoryName)
+                .ifPresent(category -> {
+                    dbSpringClient.delete(category);
+                    log.info("CATEGORY DELETED");
+                });
         CategoryJson newCategoryJson = dbSpringClient.create(
                 new CategoryJson(
                         null,
@@ -73,8 +72,8 @@ class JdbcTest {
                 ));
         log.info("CATEGORY CREATED");
         Assertions.assertNotNull(newCategoryJson);
-        Assertions.assertEquals(newCategoryJson.id(), dbSpringClient.findById(newCategoryJson.id()).id());
-        Assertions.assertEquals(newCategoryJson.name(), dbSpringClient.findByUsernameAndName(MAIN_USERNAME, categoryName).name());
+        Assertions.assertEquals(newCategoryJson.id(), dbSpringClient.findById(newCategoryJson.id()).get().id());
+        Assertions.assertEquals(newCategoryJson.name(), dbSpringClient.findByUsernameAndName(MAIN_USERNAME, categoryName).get().name());
     }
 
     @Test
@@ -111,7 +110,7 @@ class JdbcTest {
         log.info("CHECK AUTH_USER");
         AuthUserEntity authUserEntity = authUserDBClient.findUserByUsername(userJson.username());
         Assertions.assertNotNull(authUserEntity, "Юзер авторизации %s не был создан".formatted(authUserEntity));
-        Assertions.assertFalse(authUserDBClient.findAuthorityByUserId(authUserEntity).isEmpty(), "Authority не был создан");
+        Assertions.assertEquals(2, authUserDBClient.findAuthorityByUserId(authUserEntity).size(), "Authority не был создан");
         log.info("DELETE USER");
         userdataDBClient.delete(userdataUserJson);
         userJson = userdataDBClient.findById(userdataUserJson.id());

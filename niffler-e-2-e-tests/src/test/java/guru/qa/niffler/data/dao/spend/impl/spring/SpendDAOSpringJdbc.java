@@ -1,34 +1,34 @@
-package guru.qa.niffler.data.dao.spend.impl;
+package guru.qa.niffler.data.dao.spend.impl.spring;
 
+import guru.qa.niffler.config.Config;
 import guru.qa.niffler.data.dao.spend.SpendDAO;
 import guru.qa.niffler.data.dao.spend.mapper.SpendEntityRowMapper;
-import guru.qa.niffler.data.entity.spend.CategoryEntity;
 import guru.qa.niffler.data.entity.spend.SpendEntity;
-import guru.qa.niffler.model.CurrencyValues;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
-import javax.sql.DataSource;
 import java.sql.*;
 import java.util.*;
 
+import static guru.qa.niffler.data.template.DataSources.dataSource;
+
 public class SpendDAOSpringJdbc implements SpendDAO {
+    private static final Config CFG = Config.getInstance();
 
-    private final DataSource dataSource;
+    private final JdbcTemplate jdbcTemplate;
 
-    public SpendDAOSpringJdbc(DataSource dataSource) {
-        this.dataSource = dataSource;
+    public SpendDAOSpringJdbc() {
+        jdbcTemplate = new JdbcTemplate(dataSource(CFG.spendJdbcUrl()));
     }
 
     @Override
     public SpendEntity create(SpendEntity spend) {
         String query = "INSERT INTO spend (username, spend_date, currency, amount, description, category_id) " +
                 "VALUES (?, ?, ?, ?, ?, ?)";
-        JdbcTemplate template = new JdbcTemplate(dataSource);
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        template.update(connection -> {
+        jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, spend.getUsername());
             ps.setDate(2, spend.getSpendDate());
@@ -46,9 +46,8 @@ public class SpendDAOSpringJdbc implements SpendDAO {
     @Override
     public Optional<SpendEntity> findById(UUID id) {
         String query = "SELECT * FROM spend WHERE id = ?";
-        JdbcTemplate template = new JdbcTemplate(dataSource);
         try {
-            return Optional.ofNullable(template.queryForObject(
+            return Optional.ofNullable(jdbcTemplate.queryForObject(
                     query, SpendEntityRowMapper.instance, id));
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
@@ -58,9 +57,8 @@ public class SpendDAOSpringJdbc implements SpendDAO {
     @Override
     public List<SpendEntity> findAllByUsername(String username) {
         String query = "SELECT * FROM spend WHERE username = ?";
-        JdbcTemplate template = new JdbcTemplate(dataSource);
         try {
-            return template.query(
+            return jdbcTemplate.query(
                     query, SpendEntityRowMapper.instance, username);
         } catch (EmptyResultDataAccessException e) {
             return Collections.emptyList();
@@ -68,11 +66,10 @@ public class SpendDAOSpringJdbc implements SpendDAO {
     }
 
     @Override
-    public Optional<SpendEntity> findAllByUsernameAndDescription(String username, String description) {
+    public Optional<SpendEntity> findByUsernameAndDescription(String username, String description) {
         String query = "SELECT * FROM spend WHERE username = ? and description = ?";
-        JdbcTemplate template = new JdbcTemplate(dataSource);
         try {
-            return Optional.ofNullable(template.queryForObject(
+            return Optional.ofNullable(jdbcTemplate.queryForObject(
                     query, SpendEntityRowMapper.instance, username, description));
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
@@ -82,9 +79,8 @@ public class SpendDAOSpringJdbc implements SpendDAO {
     @Override
     public List<SpendEntity> findAll() {
         String query = "SELECT * FROM spend";
-        JdbcTemplate template = new JdbcTemplate(dataSource);
         try {
-            return template.query(query, SpendEntityRowMapper.instance);
+            return jdbcTemplate.query(query, SpendEntityRowMapper.instance);
         } catch (EmptyResultDataAccessException e) {
             return Collections.emptyList();
         }
@@ -93,7 +89,6 @@ public class SpendDAOSpringJdbc implements SpendDAO {
     @Override
     public void delete(SpendEntity spend) {
         String query = "DELETE FROM spend WHERE id = ?";
-        JdbcTemplate template = new JdbcTemplate(dataSource);
-        template.update(query, spend.getId());
+        jdbcTemplate.update(query, spend.getId());
     }
 }

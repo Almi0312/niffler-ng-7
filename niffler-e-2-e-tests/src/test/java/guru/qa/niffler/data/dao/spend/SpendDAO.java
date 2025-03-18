@@ -11,7 +11,7 @@ public interface SpendDAO {
 
     Optional<SpendEntity> findById(UUID id);
 
-    Optional<SpendEntity> findAllByUsernameAndDescription(String username, String name);
+    Optional<SpendEntity> findByUsernameAndDescription(String username, String name);
 
     List<SpendEntity> findAll();
 

@@ -1,5 +1,6 @@
-package guru.qa.niffler.data.dao.spend.impl;
+package guru.qa.niffler.data.dao.spend.impl.spring;
 
+import guru.qa.niffler.config.Config;
 import guru.qa.niffler.data.dao.spend.CategoryDAO;
 import guru.qa.niffler.data.dao.spend.mapper.CategoryEntityRowMapper;
 import guru.qa.niffler.data.entity.spend.CategoryEntity;
@@ -8,22 +9,23 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
-import javax.sql.DataSource;
 import java.sql.*;
 import java.util.*;
 
+import static guru.qa.niffler.data.template.DataSources.dataSource;
+
 public class CategoryDAOSpringJdbc implements CategoryDAO {
+    private static final Config CFG = Config.getInstance();
 
-    private final DataSource dataSource;
+    private final JdbcTemplate jdbcTemplate;
 
-    public CategoryDAOSpringJdbc(DataSource dataSource) {
-        this.dataSource = dataSource;
+    public CategoryDAOSpringJdbc() {
+        jdbcTemplate = new JdbcTemplate(dataSource(CFG.spendJdbcUrl()));
     }
 
     @Override
     public CategoryEntity create(CategoryEntity category) {
         String query = "INSERT INTO category (username, name, archived) VALUES (?, ?, ?)";
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
@@ -40,7 +42,6 @@ public class CategoryDAOSpringJdbc implements CategoryDAO {
     @Override
     public Optional<CategoryEntity> findById(UUID id) {
         String query = "SELECT * FROM category WHERE id = ?";
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         try {
             return Optional.ofNullable(jdbcTemplate.queryForObject(
                     query, CategoryEntityRowMapper.instance, id));
@@ -52,9 +53,8 @@ public class CategoryDAOSpringJdbc implements CategoryDAO {
     @Override
     public Optional<CategoryEntity> findByUsernameAndName(String username, String categoryName) {
         String query = "SELECT * FROM category WHERE username = ? and name = ?";
-        JdbcTemplate template = new JdbcTemplate(dataSource);
         try {
-            return Optional.ofNullable(template.queryForObject(
+            return Optional.ofNullable(jdbcTemplate.queryForObject(
                     query, CategoryEntityRowMapper.instance, username, categoryName));
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
@@ -64,9 +64,8 @@ public class CategoryDAOSpringJdbc implements CategoryDAO {
     @Override
     public List<CategoryEntity> findAllByUsername(String username) {
         String query = "SELECT * FROM category WHERE username = ?";
-        JdbcTemplate template = new JdbcTemplate(dataSource);
         try {
-            return template.query(query, CategoryEntityRowMapper.instance, username);
+            return jdbcTemplate.query(query, CategoryEntityRowMapper.instance, username);
         } catch (EmptyResultDataAccessException e) {
             return Collections.emptyList();
         }
@@ -75,9 +74,8 @@ public class CategoryDAOSpringJdbc implements CategoryDAO {
     @Override
     public List<CategoryEntity> findAll() {
         String query = "SELECT * FROM category";
-        JdbcTemplate template = new JdbcTemplate(dataSource);
         try {
-            return template.query(query, CategoryEntityRowMapper.instance);
+            return jdbcTemplate.query(query, CategoryEntityRowMapper.instance);
         } catch (EmptyResultDataAccessException e) {
             return Collections.emptyList();
         }
@@ -86,8 +84,7 @@ public class CategoryDAOSpringJdbc implements CategoryDAO {
     @Override
     public CategoryEntity update(CategoryEntity category) {
         String query = "UPDATE category SET username = ?, name = ?, archived = ? WHERE id = ?";
-        JdbcTemplate template = new JdbcTemplate(dataSource);
-        int updateRows = template.update(query,
+        int updateRows = jdbcTemplate.update(query,
                 category.getUsername(),
                 category.getName(),
                 category.isArchived(),
@@ -101,8 +98,7 @@ public class CategoryDAOSpringJdbc implements CategoryDAO {
     @Override
     public void delete(CategoryEntity category) {
         String query = "DELETE FROM category WHERE id = ?";
-        JdbcTemplate template = new JdbcTemplate(dataSource);
-        template.update(connection -> {
+        jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(query);
             ps.setObject(1, category.getId());
             return ps;

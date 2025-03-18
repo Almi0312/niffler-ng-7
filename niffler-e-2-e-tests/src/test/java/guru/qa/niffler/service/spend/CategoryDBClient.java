@@ -1,69 +1,61 @@
 package guru.qa.niffler.service.spend;
 
 import guru.qa.niffler.config.Config;
-import guru.qa.niffler.data.dao.spend.impl.CategoryDAOJdbc;
+import guru.qa.niffler.data.dao.spend.impl.default_jdbc.CategoryDAOJdbc;
 import guru.qa.niffler.data.entity.spend.CategoryEntity;
+import guru.qa.niffler.data.template.JdbcTransactionTemplate;
 import guru.qa.niffler.model.CategoryJson;
 
-import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
-import static guru.qa.niffler.data.DataBases.transaction;
 
 public class CategoryDBClient {
 
     private static final Config CFG = Config.getInstance();
 
+    private final CategoryDAOJdbc categoryDAOJdbc;
+    private final JdbcTransactionTemplate txTemplate;
 
-    public CategoryJson createCategory(CategoryJson categoryJson) {
-        return transaction(Connection.TRANSACTION_READ_UNCOMMITTED,
-                (Function<Connection, CategoryJson>)  connection ->
-                        CategoryJson.fromEntity(new CategoryDAOJdbc(connection)
-                                .create(CategoryEntity.fromJson(categoryJson))),
-                        CFG.spendJdbcUrl());
+    public CategoryDBClient() {
+        this.categoryDAOJdbc = new CategoryDAOJdbc();
+        this.txTemplate = new JdbcTransactionTemplate(CFG.spendJdbcUrl());
     }
 
-    public @Nullable CategoryJson findById(UUID id) {
-        return transaction(Connection.TRANSACTION_READ_COMMITTED,
-                (Function<Connection, CategoryJson>) connection ->
-                        new CategoryDAOJdbc(connection).findById(id)
-                                .map(CategoryJson::fromEntity).orElse(null),
-                CFG.spendJdbcUrl());
+    public CategoryJson createCategory(CategoryJson categoryJson) {
+        return txTemplate.execute(Connection.TRANSACTION_READ_UNCOMMITTED,
+                () -> CategoryJson.fromEntity(categoryDAOJdbc
+                        .create(CategoryEntity.fromJson(categoryJson))));
+    }
+
+    public Optional<CategoryJson> findById(UUID id) {
+        return txTemplate.execute(Connection.TRANSACTION_READ_COMMITTED,
+                () -> categoryDAOJdbc.findById(id)
+                        .map(CategoryJson::fromEntity));
     }
 
     public List<CategoryJson> findAllByUsername(String username) {
-        return transaction(Connection.TRANSACTION_READ_COMMITTED,
-                (Function<Connection, ? extends List<CategoryJson>>) connection ->
-                        new CategoryDAOJdbc(connection).findAllByUsername(username).stream()
-                                .map(CategoryJson::fromEntity).toList(),
-                CFG.spendJdbcUrl());
+        return txTemplate.execute(Connection.TRANSACTION_READ_COMMITTED,
+                () -> categoryDAOJdbc.findAllByUsername(username).stream()
+                        .map(CategoryJson::fromEntity).toList());
     }
 
-    public @Nullable CategoryJson findCategoryByUsernameAndCategoryName(String username, String categoryName) {
-        return transaction(Connection.TRANSACTION_READ_COMMITTED,
-                (Function<Connection, CategoryJson>) connection ->
-                        new CategoryDAOJdbc(connection).findByUsernameAndName(username, categoryName)
-                                .map(CategoryJson::fromEntity).orElse(null),
-                CFG.spendJdbcUrl());
+    public Optional<CategoryJson> findCategoryByUsernameAndCategoryName(String username, String categoryName) {
+        return txTemplate.execute(Connection.TRANSACTION_READ_COMMITTED,
+                () -> categoryDAOJdbc.findByUsernameAndName(username, categoryName)
+                        .map(CategoryJson::fromEntity));
     }
 
     public CategoryJson updateCategory(CategoryJson categoryJson) {
-        return transaction(Connection.TRANSACTION_SERIALIZABLE,
-                (Function<Connection, CategoryJson>) connection ->
-                        CategoryJson.fromEntity(new CategoryDAOJdbc(connection)
-                                .update(CategoryEntity.fromJson(categoryJson))),
-                CFG.spendJdbcUrl());
+        return txTemplate.execute(Connection.TRANSACTION_SERIALIZABLE,
+                () -> CategoryJson.fromEntity(categoryDAOJdbc
+                        .update(CategoryEntity.fromJson(categoryJson))));
     }
 
     public void delete(CategoryJson categoryJson) {
-        transaction(Connection.TRANSACTION_SERIALIZABLE,
-                (Consumer<Connection>) connection ->
-                        new CategoryDAOJdbc(connection)
-                                .delete(CategoryEntity.fromJson(categoryJson)),
-                CFG.spendJdbcUrl());
+        txTemplate.execute(Connection.TRANSACTION_SERIALIZABLE,
+                con -> categoryDAOJdbc
+                        .delete(CategoryEntity.fromJson(categoryJson)));
     }
 }
