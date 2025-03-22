@@ -4,7 +4,9 @@ import guru.qa.niffler.data.entity.auth.AuthUserEntity;
 import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.model.SpendJson;
 import guru.qa.niffler.model.UserdataUserJson;
+import guru.qa.niffler.service.spend.CategoryDBClient;
 import guru.qa.niffler.service.spend.CategoryDBSpringClient;
+import guru.qa.niffler.service.spend.SpendDBClient;
 import guru.qa.niffler.service.spend.SpendDBSpringClient;
 import guru.qa.niffler.service.auth.AuthUserDBSpringClient;
 import guru.qa.niffler.service.userdata.UserdataDBSpringClient;
@@ -27,11 +29,11 @@ class JdbcSpringTest {
         String categoryName = "top cource";
         String spendDescription = "cool cource";
         SpendDBSpringClient dbSpendSpring = new SpendDBSpringClient();
-        SpendJson spendJson = dbSpendSpring.findByUsernameAndDescription(MAIN_USERNAME, spendDescription);
-        if (spendJson != null) {
-            dbSpendSpring.delete(spendJson);
-            log.info("SPEND DELETED");
-        }
+        dbSpendSpring.findByUsernameAndDescription(MAIN_USERNAME, spendDescription)
+                .ifPresent(spendJson -> {
+                    dbSpendSpring.delete(spendJson);
+                    log.info("SPEND DELETED");
+                });
         SpendJson newSpendJson = dbSpendSpring.create(new SpendJson(
                 null,
                 new Date(),
@@ -48,7 +50,7 @@ class JdbcSpringTest {
         log.info("CATEGORY CREATED");
         Assertions.assertNotNull(newSpendJson, "Объект Spend не создан");
         Assertions.assertNotNull(newSpendJson.category(),"Объект Category не создан");
-        SpendJson resultSpend = dbSpendSpring.findByUsernameAndDescription(MAIN_USERNAME, spendDescription);
+        SpendJson resultSpend = dbSpendSpring.findByUsernameAndDescription(MAIN_USERNAME, spendDescription).get();
         Assertions.assertTrue(newSpendJson.username().equals(resultSpend.username())
                         && newSpendJson.id().equals(resultSpend.id())
                         && newSpendJson.category().id().equals(resultSpend.category().id()),
@@ -84,11 +86,11 @@ class JdbcSpringTest {
         UserdataDBSpringClient userdataDBClient = new UserdataDBSpringClient();
         AuthUserDBSpringClient authUserDBClient = new AuthUserDBSpringClient();
         String username = "twixSpring";
-        UserdataUserJson userJson = userdataDBClient.findByUsername(username);
-        if (userJson != null) {
-            userdataDBClient.delete(userJson);
-            log.info("DELETED USER");
-        }
+        userdataDBClient.findByUsername(username)
+                .ifPresent(userJson -> {
+                    userdataDBClient.delete(userJson);
+                    log.info("DELETED USER");
+                });
         log.info("CREATE USER");
         UserdataUserJson userdataUserJson = userdataDBClient.create(
                 new UserdataUserJson(
@@ -102,24 +104,60 @@ class JdbcSpringTest {
                         null,
                         null));
         log.info("CHECK USER");
-        userJson = userdataDBClient.findById(userdataUserJson.id());
+        UserdataUserJson userJson = userdataDBClient.findById(userdataUserJson.id()).get();
         Assertions.assertNotNull(userdataUserJson, "Юзер %s не создан".formatted(userdataUserJson.toString()));
         Assertions.assertTrue(userdataUserJson.id().equals(userJson.id())
                 && userdataUserJson.username().equals(userJson.username()), "Юзер %s не создан, а создан %s"
                 .formatted(userJson.toString(), userdataUserJson.toString()));
-        userJson = userdataDBClient.findByUsername(username);
+        userJson = userdataDBClient.findByUsername(username).get();
         Assertions.assertEquals(userdataUserJson.id(), userJson.id(), "Юзер %s не создан, а создан %s"
                 .formatted(userJson.toString(), userdataUserJson.toString()));
         log.info("CHECK AUTH_USER");
-        AuthUserEntity authUserEntity = authUserDBClient.findUserByUsername(userJson.username());
+        AuthUserEntity authUserEntity = authUserDBClient.findUserByUsername(userJson.username()).get();
         Assertions.assertNotNull(authUserEntity, "Юзер авторизации %s не был создан".formatted(authUserEntity));
         Assertions.assertFalse(authUserDBClient.findAuthorityByUserId(authUserEntity).isEmpty(), "Authority не был создан");
         log.info("DELETE USER");
         userdataDBClient.delete(userdataUserJson);
-        userJson = userdataDBClient.findById(userdataUserJson.id());
+        userJson = userdataDBClient.findById(userdataUserJson.id()).orElse(null);
         Assertions.assertNull(userJson, "Юзер %s не удален".formatted(userJson));
-        authUserEntity = authUserDBClient.findUserByUsername(userdataUserJson.username());
+        authUserEntity = authUserDBClient.findUserByUsername(userdataUserJson.username()).orElse(null);
         Assertions.assertNull(authUserEntity, "Юзер авторизации %s был создан".formatted(authUserEntity));
+    }
+
+    @Test
+    void checkTransactionSpendTest() {
+        String categoryName = "top cource transac";
+        String spendDescription = "cool cource transac";
+        SpendDBSpringClient dbSpend = new SpendDBSpringClient();
+        CategoryDBSpringClient categoryDbClient = new CategoryDBSpringClient();
+        dbSpend.findByUsernameAndDescription(MAIN_USERNAME, spendDescription)
+                .ifPresent(entity -> {
+                    dbSpend.delete(entity);
+                    log.info("SPEND DELETED");
+                });
+        Assertions.assertThrows(RuntimeException.class,
+                () -> dbSpend.create(new SpendJson(
+                        null,
+                        new Date(),
+                        new CategoryJson(null,
+                                categoryName,
+                                MAIN_USERNAME,
+                                true),
+                        null, // падение транзакции
+                        100.0,
+                        spendDescription,
+                        MAIN_USERNAME
+                )));
+        log.info("CHECK NOT SPEND CREATED");
+        SpendJson resultSpend = dbSpend
+                .findByUsernameAndDescription(MAIN_USERNAME, spendDescription).orElse(null);
+        Assertions.assertNull(resultSpend,
+                "объект %s был создан(".formatted(resultSpend));
+        log.info("CHECK NOT CATEGORY CREATED");
+        CategoryJson categoryJson = categoryDbClient
+                .findByUsernameAndName(MAIN_USERNAME, categoryName).orElse(null);
+        Assertions.assertNull(categoryJson,
+                "объект %s был создан(".formatted(categoryJson));
     }
 
     @Test
@@ -127,11 +165,11 @@ class JdbcSpringTest {
         UserdataDBSpringClient userdataDBClient = new UserdataDBSpringClient();
         AuthUserDBSpringClient authUserDBClient = new AuthUserDBSpringClient();
         String username = "transac";
-        UserdataUserJson userJson = userdataDBClient.findByUsername(username);
-        if (userJson != null) {
-            userdataDBClient.delete(userJson);
-            log.info("DELETED USER");
-        }
+        userdataDBClient.findByUsername(username)
+                .ifPresent(userJson -> {
+                    userdataDBClient.delete(userJson);
+                    log.info("DELETED USER");
+                });
         Assertions.assertThrows(RuntimeException.class, () ->
                 userdataDBClient.create(
                         new UserdataUserJson(
@@ -146,10 +184,10 @@ class JdbcSpringTest {
                                 null
                         )));
         log.info("EXPECT NOT CREATED USER");
-        UserdataUserJson udUser = userdataDBClient.findByUsername(username);
+        UserdataUserJson udUser = userdataDBClient.findByUsername(username).orElse(null);
         Assertions.assertNull(udUser, "Юзер %s был создан".formatted(udUser));
         log.info("EXPECT NOT CREATED AUTH_USER");
-        AuthUserEntity authUserEntity = authUserDBClient.findUserByUsername(username);
+        AuthUserEntity authUserEntity = authUserDBClient.findUserByUsername(username).orElse(null);
         Assertions.assertNull(authUserEntity, "Юзер авторизации %s был создан".formatted(authUserEntity));
     }
 }
