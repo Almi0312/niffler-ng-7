@@ -8,9 +8,11 @@ import guru.qa.niffler.data.dao.auth.impl.default_jdbc.AuthorityDAOJdbc;
 import guru.qa.niffler.data.dao.userdata.UserdataUserDAO;
 import guru.qa.niffler.data.dao.userdata.impl.UserdataUserDAOJdbc;
 import guru.qa.niffler.data.entity.auth.AuthUserEntity;
+import guru.qa.niffler.data.entity.auth.Authority;
 import guru.qa.niffler.data.entity.auth.AuthorityEntity;
 import guru.qa.niffler.data.entity.userdata.UserdataUserEntity;
-import guru.qa.niffler.data.entity.auth.Authority;
+import guru.qa.niffler.data.repository.auth.AuthUserRepository;
+import guru.qa.niffler.data.repository.auth.impl.AuthUserRepositoryJdbc;
 import guru.qa.niffler.data.template.JdbcTransactionTemplate;
 import guru.qa.niffler.data.template.XaTransactionTemplate;
 import guru.qa.niffler.model.UserdataUserJson;
@@ -27,22 +29,21 @@ public class UserdataDBClient {
     private static final PasswordEncoder pe = PasswordEncoderFactories.createDelegatingPasswordEncoder();
 
     private final UserdataUserDAO udUserDAO;
-    private final AuthUserDAO authUserDAO;
+    private final AuthUserRepository authUserRepository;
     private final AuthorityDAO authorityDAO;
     private final JdbcTransactionTemplate txTemplate;
     private final XaTransactionTemplate xaTxTemplate;
 
     public UserdataDBClient() {
         udUserDAO = new UserdataUserDAOJdbc();
-        authUserDAO = new AuthUserDAOJdbc();
+        authUserRepository = new AuthUserRepositoryJdbc();
         authorityDAO = new AuthorityDAOJdbc();
         txTemplate = new JdbcTransactionTemplate(CFG.userdataJdbcUrl());
         xaTxTemplate = new XaTransactionTemplate(CFG.userdataJdbcUrl(), CFG.authJdbcUrl());
     }
 
     public UserdataUserJson create(UserdataUserJson user) {
-        return UserdataUserJson.fromEntity(
-                xaTxTemplate.execute(Connection.TRANSACTION_READ_UNCOMMITTED,
+        return xaTxTemplate.execute(Connection.TRANSACTION_READ_UNCOMMITTED,
                         () -> {
                             AuthUserEntity authUser = new AuthUserEntity();
                             authUser.setUsername(user.username());
@@ -51,26 +52,20 @@ public class UserdataDBClient {
                             authUser.setAccountNonExpired(true);
                             authUser.setAccountNonLocked(true);
                             authUser.setCredentialsNonExpired(true);
-                            authUserDAO.create(authUser);
-                            authorityDAO.create(
+                            authUser.setAuthorities(
                                     Arrays.stream(Authority.values())
                                             .map(a -> {
                                                         AuthorityEntity ae = new AuthorityEntity();
-                                                        ae.setUserId(authUser.getId());
+                                                        ae.setUser(authUser);
                                                         ae.setAuthority(a);
                                                         return ae;
                                                     }
-                                            ).toArray(AuthorityEntity[]::new));
-                            return null;
-                        },
-                        () -> {
-                            UserdataUserEntity ue = new UserdataUserEntity();
-                            ue.setUsername(user.username());
-                            ue.setFullname(user.fullname());
-                            ue.setCurrency(user.currency());
-                            udUserDAO.create(ue);
-                            return ue;
-                        }), null);
+                                            ).toList());
+                            authUserRepository.create(authUser);
+                            return UserdataUserJson.fromEntity(
+                                    udUserDAO.create(UserdataUserEntity.fromJson(user)), null
+                            );
+                        });
     }
 
     public Optional<UserdataUserJson> findById(UUID id) {
@@ -91,10 +86,10 @@ public class UserdataDBClient {
         xaTxTemplate.execute(Connection.TRANSACTION_SERIALIZABLE,
                 () -> udUserDAO.delete(
                         UserdataUserEntity.fromJson(userdataUserJson)),
-                () -> authUserDAO.findByUsername(userdataUserJson.username())
+                () -> authUserRepository.findByUsername(userdataUserJson.username())
                         .ifPresent(authUser -> {
                             authorityDAO.delete(authUser);
-                            authUserDAO.deleteByUsername(authUser);
+                            authUserRepository.deleteByUsername(authUser);
                         }));
     }
 }
