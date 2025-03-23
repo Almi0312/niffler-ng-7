@@ -7,6 +7,7 @@ import guru.qa.niffler.data.entity.spend.SpendEntity;
 import guru.qa.niffler.model.CurrencyValues;
 
 import java.sql.*;
+import java.sql.Date;
 import java.util.*;
 
 import static guru.qa.niffler.data.template.Connections.holder;
@@ -28,7 +29,7 @@ public class SpendDAOJdbc implements SpendDAO {
                         query, Statement.RETURN_GENERATED_KEYS
                 )) {
             preparedStatement.setString(1, spend.getUsername());
-            preparedStatement.setDate(2, spend.getSpendDate());
+            preparedStatement.setDate(2, new Date(spend.getSpendDate().getTime()));
             preparedStatement.setString(3, spend.getCurrency().name());
             preparedStatement.setDouble(4, spend.getAmount());
             preparedStatement.setString(5, spend.getDescription());

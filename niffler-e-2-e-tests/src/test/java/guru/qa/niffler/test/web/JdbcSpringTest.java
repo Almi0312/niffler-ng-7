@@ -1,6 +1,5 @@
 package guru.qa.niffler.test.web;
 
-import guru.qa.niffler.data.entity.auth.AuthUserEntity;
 import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.model.SpendJson;
 import guru.qa.niffler.model.UserdataUserJson;

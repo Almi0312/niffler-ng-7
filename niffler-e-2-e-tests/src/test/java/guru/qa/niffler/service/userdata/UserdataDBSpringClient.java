@@ -55,7 +55,7 @@ public class UserdataDBSpringClient {
                             Arrays.stream(Authority.values())
                                     .map(a -> {
                                                 AuthorityEntity ae = new AuthorityEntity();
-                                                ae.setUserId(authUser.getId());
+                                                ae.getUser().setId(authUser.getId());
                                                 ae.setAuthority(a);
                                                 return ae;
                                             }

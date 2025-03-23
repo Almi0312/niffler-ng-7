@@ -26,9 +26,9 @@ public class AuthorityDAOJdbc implements AuthorityDAO {
         String query = "INSERT INTO \"authority\" (user_id, authority) VALUES (?, ?)";
         try (PreparedStatement ps = holder(CFG.authJdbcUrl()).connection()
                 .prepareStatement(
-                query, PreparedStatement.RETURN_GENERATED_KEYS)) {
+                query)) {
             for (AuthorityEntity a : authority) {
-                ps.setObject(1, a.getUserId());
+                ps.setObject(1, a.getUser().getId());
                 ps.setString(2, a.getAuthority().name());
                 ps.addBatch();
                 ps.clearParameters();
@@ -52,7 +52,7 @@ public class AuthorityDAOJdbc implements AuthorityDAO {
                 while (resultSet.next()) {
                     AuthorityEntity authority = new AuthorityEntity();
                     authority.setId(resultSet.getObject("id", UUID.class));
-                    authority.setUserId(resultSet.getObject("user_id", UUID.class));
+                    authority.getUser().setId(resultSet.getObject("user_id", UUID.class));
                     authority.setAuthority(Authority.valueOf(resultSet.getString("authority")));
                     authorityEntities.add(authority);
                 }
