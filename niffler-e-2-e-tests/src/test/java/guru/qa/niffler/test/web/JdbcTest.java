@@ -1,5 +1,6 @@
 package guru.qa.niffler.test.web;
 
+import guru.qa.niffler.data.entity.auth.AuthUserEntity;
 import guru.qa.niffler.model.*;
 import guru.qa.niffler.service.auth.AuthUserDBClient;
 import guru.qa.niffler.service.spend.CategoryDBClient;
