@@ -10,6 +10,8 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
 import java.sql.*;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -69,6 +71,38 @@ public class UserdataUserDAOSpringJdbc implements UserdataUserDAO {
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
+    }
+
+    @Override
+    public List<UserdataUserEntity> findAll() {
+        String query = "SELECT * FROM \"user\" WHERE username = ?";
+        try {
+            return jdbcTemplate.query(
+                    query, UdUserEntityRowMapper.instance);
+        } catch (EmptyResultDataAccessException e) {
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
+    public UserdataUserEntity update(UserdataUserEntity user) {
+        String queryUpdateUser = "UPDATE \"user\" SET username = ?, currency = ?, firstname = ?, surname = ?, photo = ?, " +
+                "photo_small = ?, full_name = ? WHERE id = ?";
+        jdbcTemplate.update(con -> {
+                PreparedStatement ps = con.prepareStatement(
+                        queryUpdateUser
+                );
+        ps.setString(1, user.getUsername());
+        ps.setString(2, user.getCurrency().name());
+        ps.setString(3, user.getFirstname());
+        ps.setString(4, user.getSurname());
+        ps.setBytes(5, user.getPhoto());
+        ps.setBytes(6, user.getPhotoSmall());
+        ps.setString(7, user.getFullname());
+        ps.setObject(8, user.getId());
+        return ps;
+    });
+        return user;
     }
 
     @Override

@@ -6,6 +6,7 @@ import guru.qa.niffler.data.entity.userdata.UserdataUserEntity;
 import guru.qa.niffler.model.CurrencyValues;
 
 import java.sql.*;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -36,6 +37,25 @@ public class UserdataUserDAOJdbc implements UserdataUserDAO {
                 userdataUserEntity.setId(generatedKey);
                 return userdataUserEntity;
             }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public UserdataUserEntity update(UserdataUserEntity user) {
+        String queryUpdateUser = "UPDATE \"user\" SET username = ?, currency = ?, firstname = ?, surname = ?, photo = ?, " +
+                "photo_small = ?, full_name = ? WHERE id = ?";
+        try (PreparedStatement updateUserPs = holder(CFG.userdataJdbcUrl()).connection().prepareStatement(queryUpdateUser)) {
+            updateUserPs.setString(1, user.getUsername());
+            updateUserPs.setString(2, user.getCurrency().name());
+            updateUserPs.setString(3, user.getFirstname());
+            updateUserPs.setString(4, user.getSurname());
+            updateUserPs.setBytes(5, user.getPhoto());
+            updateUserPs.setBytes(6, user.getPhotoSmall());
+            updateUserPs.setString(7, user.getFullname());
+            updateUserPs.setObject(8, user.getId());
+            updateUserPs.executeUpdate();
+            return user;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -77,6 +97,12 @@ public class UserdataUserDAOJdbc implements UserdataUserDAO {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public List<UserdataUserEntity> findAll() {
+        String query = "";
+        return List.of();
     }
 
     @Override

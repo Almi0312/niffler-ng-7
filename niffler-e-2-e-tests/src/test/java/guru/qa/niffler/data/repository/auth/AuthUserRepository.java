@@ -9,5 +9,5 @@ public interface AuthUserRepository {
     AuthUserEntity create(AuthUserEntity authUserEntity);
     Optional<AuthUserEntity> findById(UUID id);
     Optional<AuthUserEntity> findByUsername(String userEntity);
-    void deleteByUsername(AuthUserEntity authUserEntity);
+    void deleteById(AuthUserEntity authUserEntity);
 }

@@ -96,7 +96,9 @@ public class AuthUserRepositoryJdbc implements AuthUserRepository {
 
     @Override
     public Optional<AuthUserEntity> findByUsername(String username) {
-        String query = "SELECT * FROM \"user\" u JOIN authority a ON (u.id = a.user_id) WHERE u.username = ?";
+        String query = "SELECT u.id, u.username, u.password, u.enabled, u.account_non_expired," +
+                " u.account_non_locked, u.credentials_non_expired, a.id AS authority_id, a.user_id, a.authority" +
+                " FROM \"user\" AS u JOIN authority AS a ON(u.id = a.user_id) WHERE u.username = ?";
         try (PreparedStatement preparedStatement = holder(CFG.authJdbcUrl()).connection()
                 .prepareStatement(query)) {
             preparedStatement.setString(1, username);
@@ -108,7 +110,7 @@ public class AuthUserRepositoryJdbc implements AuthUserRepository {
                         user = AuthUserEntityRowMapper.instance.mapRow(resultSet, 1);
                     }
                     AuthorityEntity authorityEntity = new AuthorityEntity();
-                    authorityEntity.setId(resultSet.getObject("a.id", UUID.class));
+                    authorityEntity.setId(resultSet.getObject("authority_id", UUID.class));
                     authorityEntity.setUser(user);
                     authorityEntity.setAuthority(Authority.valueOf(resultSet.getString("authority")));
                     authorityEntities.add(authorityEntity);
@@ -126,7 +128,7 @@ public class AuthUserRepositoryJdbc implements AuthUserRepository {
     }
 
     @Override
-    public void deleteByUsername(AuthUserEntity authUserEntity) {
+    public void deleteById(AuthUserEntity authUserEntity) {
         String deleteUserQuery = "DELETE FROM \"user\" WHERE username = ?";
         String deleteAuthorityQuery = "DELETE FROM authority WHERE user_id = ?";
         try (PreparedStatement userPs = holder(CFG.authJdbcUrl()).connection()
