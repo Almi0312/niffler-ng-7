@@ -75,7 +75,12 @@ public class UserdataDBSpringRepositoryClient {
 
     public void createFriends(UserdataUserEntity requester, UserdataUserEntity... addressees) {
         txTemplate.execute(Connection.TRANSACTION_READ_COMMITTED,
-                con -> udUserRepository.createFriends(FriendshipStatus.ACCEPTED, requester, addressees));
+                con -> {
+                    udUserRepository.createRequester(FriendshipStatus.ACCEPTED, requester, addressees);
+                    Arrays.stream(addressees).forEach(addressee ->
+                            udUserRepository.createRequester(
+                                    FriendshipStatus.ACCEPTED, addressee, requester));
+                });
     }
 
     public Optional<UserdataUserJson> findById(UUID id) {

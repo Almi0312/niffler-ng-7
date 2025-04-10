@@ -110,7 +110,7 @@ public class AuthUserRepositoryJdbc implements AuthUserRepository {
                         user = AuthUserEntityRowMapper.instance.mapRow(resultSet, 1);
                     }
                     AuthorityEntity authorityEntity = new AuthorityEntity();
-                    authorityEntity.setId(resultSet.getObject("authID", UUID.class));
+                    authorityEntity.setId(resultSet.getObject("authority_id", UUID.class));
                     authorityEntity.setUser(user);
                     authorityEntity.setAuthority(Authority.valueOf(resultSet.getString("authority")));
                     authorityEntities.add(authorityEntity);

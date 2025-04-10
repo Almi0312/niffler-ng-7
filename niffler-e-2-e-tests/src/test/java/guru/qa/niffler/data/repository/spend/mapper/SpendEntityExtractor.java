@@ -35,13 +35,14 @@ public class SpendEntityExtractor implements ResultSetExtractor<SpendEntity> {
                     spendEntity.setCurrency(CurrencyValues.valueOf(rs.getString("currency")));
                     spendEntity.setAmount(rs.getDouble("amount"));
                     spendEntity.setDescription(rs.getString("description"));
-                    spendEntity.setCategory(new CategoryEntity());
-                    spendEntity.getCategory().setId(rs.getObject("category_id", UUID.class));
-                    if (spendEntity.getCategory().getId() != null) {
-                        spendEntity.getCategory().setUsername(rs.getString("username"));
-                        spendEntity.getCategory().setName(rs.getString("name"));
-                        spendEntity.getCategory().setArchived(rs.getBoolean("archived"));
+                    CategoryEntity entity = new CategoryEntity();
+                    entity.setId(rs.getObject("category_id", UUID.class));
+                    if (entity.getId() != null) {
+                        entity.setUsername(rs.getString("username"));
+                        entity.setName(rs.getString("name"));
+                        entity.setArchived(rs.getBoolean("archived"));
                     }
+                    spendEntity.setCategory(entity);
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }

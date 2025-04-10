@@ -31,8 +31,8 @@ public class SpendEntityRowMapper implements RowMapper<SpendEntity> {
             category.setUsername(rs.getString("username"));
             category.setName(rs.getString("name"));
             category.setArchived(rs.getBoolean("archived"));
-            spendEntity.setCategory(category);
         }
+        spendEntity.setCategory(category);
         return spendEntity;
     }
 }

@@ -82,13 +82,6 @@ public class UserdataUserRepositoryJdbc implements UserdataUserRepository {
     }
 
     @Override
-    public UserdataUserEntity updateWithInsertFriendship(UserdataUserEntity user) {
-        UserdataUserEntity userUpdate = userdataUserDAO.update(user);
-        friendshipDAO.create(userUpdate.getFriendshipRequests());
-        return userUpdate;
-    }
-
-    @Override
     public void delete(UserdataUserEntity userdataUserEntity) {
         friendshipDAO.delete(userdataUserEntity);
         userdataUserDAO.delete(userdataUserEntity);
@@ -102,21 +95,12 @@ public class UserdataUserRepositoryJdbc implements UserdataUserRepository {
     @Override
     public void createRequester(FriendshipStatus status, UserdataUserEntity requester, UserdataUserEntity... addressees) {
         requester.addFriends(status, addressees);
-        updateWithInsertFriendship(requester);
+        friendshipDAO.create(requester.getFriendshipRequests());
     }
 
     @Override
-    public void createAddressee(UserdataUserEntity addressee, UserdataUserEntity... requesters) {
-        addressee.addInvitations(requesters);
-        updateWithInsertFriendship(addressee);
-    }
-
-    @Override
-    public void createFriends(FriendshipStatus status, UserdataUserEntity requester, UserdataUserEntity... addressees) {
-        createRequester(status, requester, addressees);
-        for (UserdataUserEntity addressee : addressees) {
-            addressee.addFriends(status, requester);
-            updateWithInsertFriendship(addressee);
-        }
+    public void createAddressee(UserdataUserEntity requester, UserdataUserEntity... requesters) {
+        requester.addInvitations(requesters);
+        friendshipDAO.create(requester.getFriendshipAddressees());
     }
 }

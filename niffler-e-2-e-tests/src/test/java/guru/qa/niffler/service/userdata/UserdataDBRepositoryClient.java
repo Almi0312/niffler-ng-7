@@ -36,27 +36,28 @@ public class UserdataDBRepositoryClient {
     }
 
     public UserdataUserJson create(UserdataUserJson user) {
-        return UserdataUserJson.fromEntity(xaTxTemplate.execute(Connection.TRANSACTION_READ_UNCOMMITTED,
-                () -> {
-                    AuthUserEntity authUser = new AuthUserEntity();
-                    authUser.setUsername(user.username());
-                    authUser.setPassword(pe.encode("12345"));
-                    authUser.setEnabled(true);
-                    authUser.setAccountNonExpired(true);
-                    authUser.setAccountNonLocked(true);
-                    authUser.setCredentialsNonExpired(true);
-                    authUser.setAuthorities(
-                            Arrays.stream(Authority.values())
-                                    .map(a -> {
-                                                AuthorityEntity ae = new AuthorityEntity();
-                                                ae.setUser(authUser);
-                                                ae.setAuthority(a);
-                                                return ae;
-                                            }
-                                    ).toList());
-                    authUserRepository.create(authUser);
-                    return udUserRepository.create(UserdataUserEntity.fromJson(user));
-                }), user.friendState());
+        return UserdataUserJson.fromEntity(
+                xaTxTemplate.execute(Connection.TRANSACTION_READ_UNCOMMITTED,
+                        () -> {
+                            AuthUserEntity authUser = new AuthUserEntity();
+                            authUser.setUsername(user.username());
+                            authUser.setPassword(pe.encode("12345"));
+                            authUser.setEnabled(true);
+                            authUser.setAccountNonExpired(true);
+                            authUser.setAccountNonLocked(true);
+                            authUser.setCredentialsNonExpired(true);
+                            authUser.setAuthorities(
+                                    Arrays.stream(Authority.values())
+                                            .map(a -> {
+                                                        AuthorityEntity ae = new AuthorityEntity();
+                                                        ae.setUser(authUser);
+                                                        ae.setAuthority(a);
+                                                        return ae;
+                                                    }
+                                            ).toList());
+                            authUserRepository.create(authUser);
+                            return udUserRepository.create(UserdataUserEntity.fromJson(user));
+                        }), user.friendState());
     }
 
     public void createRequester(UserdataUserEntity requester, UserdataUserEntity... addressees) {
@@ -71,7 +72,12 @@ public class UserdataDBRepositoryClient {
 
     public void createFriends(UserdataUserEntity requester, UserdataUserEntity... addressees) {
         txTemplate.execute(Connection.TRANSACTION_READ_COMMITTED,
-                con -> udUserRepository.createFriends(FriendshipStatus.ACCEPTED, requester, addressees));
+                con -> {
+                    udUserRepository.createRequester(FriendshipStatus.ACCEPTED, requester, addressees);
+                    Arrays.stream(addressees).forEach(addressee ->
+                            udUserRepository.createRequester(
+                                    FriendshipStatus.ACCEPTED, addressee, requester));
+                });
     }
 
     public Optional<UserdataUserJson> findById(UUID id) {

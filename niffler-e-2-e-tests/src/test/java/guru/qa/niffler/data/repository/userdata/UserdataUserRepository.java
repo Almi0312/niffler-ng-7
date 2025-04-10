@@ -23,13 +23,10 @@ public interface UserdataUserRepository {
 
     UserdataUserEntity update(UserdataUserEntity user);
 
-    UserdataUserEntity updateWithInsertFriendship(UserdataUserEntity user);
-
     void delete(UserdataUserEntity userdataUserEntity);
 
     void createRequester(FriendshipStatus status, UserdataUserEntity requester, UserdataUserEntity... addressees);
 
     void createAddressee(UserdataUserEntity addressee, UserdataUserEntity... requesters);
 
-    void createFriends(FriendshipStatus status, UserdataUserEntity requester, UserdataUserEntity... addressees);
 }
