@@ -4,7 +4,6 @@ import guru.qa.niffler.config.Config;
 import guru.qa.niffler.data.dao.userdata.FriendshipDAO;
 import guru.qa.niffler.data.dao.userdata.mapper.FriendshipEntityRowMapper;
 import guru.qa.niffler.data.entity.userdata.FriendshipEntity;
-import guru.qa.niffler.data.entity.userdata.FriendshipStatus;
 import guru.qa.niffler.data.entity.userdata.UserdataUserEntity;
 
 import java.sql.Date;
@@ -12,7 +11,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,8 +28,8 @@ public class FriendshipDAOJdbc implements FriendshipDAO {
         try (PreparedStatement createFriendshipPs = holder(udJdbcUrl).connection()
                 .prepareStatement(createFriendshipQuery)) {
             for (FriendshipEntity friend : friends) {
-                createFriendshipPs.setObject(1, friend.getAddressee().getId());
                 createFriendshipPs.setObject(2, friend.getRequester().getId());
+                createFriendshipPs.setObject(1, friend.getAddressee().getId());
                 createFriendshipPs.setString(3, friend.getStatus().name());
                 createFriendshipPs.setDate(4, new Date(friend.getCreatedDate().getTime()));
                 createFriendshipPs.setString(5, friend.getStatus().name());

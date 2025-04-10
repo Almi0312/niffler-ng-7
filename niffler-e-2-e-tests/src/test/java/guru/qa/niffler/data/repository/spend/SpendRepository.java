@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface SpendRepository {
-    SpendEntity create(SpendEntity spend);
+    SpendEntity createSpend(SpendEntity spend);
 
     Optional<SpendEntity> findById(UUID id);
 

@@ -1,11 +1,9 @@
 package guru.qa.niffler.data.repository.auth.impl;
 
 import guru.qa.niffler.config.Config;
-import guru.qa.niffler.data.dao.auth.AuthUserDAO;
-import guru.qa.niffler.data.dao.auth.mapper.AuthUserEntityRowMapper;
 import guru.qa.niffler.data.entity.auth.AuthUserEntity;
 import guru.qa.niffler.data.repository.auth.AuthUserRepository;
-import guru.qa.niffler.data.repository.auth.mapper.spring.AuthUserEntityRowExtractor;
+import guru.qa.niffler.data.repository.auth.mapper.AuthUserEntityRowExtractor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;

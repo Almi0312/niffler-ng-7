@@ -19,7 +19,7 @@ import java.util.UUID;
 
 import static guru.qa.niffler.data.template.DataSources.dataSource;
 
-public class UserdataUserSpringRepositoryJdbc implements UserdataUserRepository {
+public class UserdataSpringRepositoryJdbc implements UserdataUserRepository {
 
     private static final Config CFG = Config.getInstance();
 
@@ -27,7 +27,7 @@ public class UserdataUserSpringRepositoryJdbc implements UserdataUserRepository 
     private final UserdataUserDAO userdataUserDAO;
     private final JdbcTemplate jdbcTemplate;
 
-    public UserdataUserSpringRepositoryJdbc() {
+    public UserdataSpringRepositoryJdbc() {
         jdbcTemplate = new JdbcTemplate(dataSource(CFG.authJdbcUrl()));
         friendshipDAO = new FriendshipDAOSpringJdbc();
         userdataUserDAO = new UserdataUserDAOSpringJdbc();
@@ -90,14 +90,10 @@ public class UserdataUserSpringRepositoryJdbc implements UserdataUserRepository 
         return friendshipDAO.findUserFriendships(user, isRequester);
     }
 
-    public void createRequester(FriendshipStatus status, UserdataUserEntity requester, UserdataUserEntity... addressees) {
+    @Override
+    public void createOutcomeInvitations(FriendshipStatus status, UserdataUserEntity requester, UserdataUserEntity... addressees) {
         requester.addFriends(status, addressees);
         friendshipDAO.create(requester.getFriendshipRequests());
-    }
-
-    public void createAddressee(UserdataUserEntity request, UserdataUserEntity... requesters) {
-        request.addInvitations(requesters);
-        friendshipDAO.create(request.getFriendshipAddressees());
     }
 
 }

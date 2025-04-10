@@ -1,4 +1,5 @@
-package guru.qa.niffler.service.spend;
+package guru.qa.niffler.service.spend.dao;
+
 
 import guru.qa.niffler.config.Config;
 import guru.qa.niffler.data.dao.spend.CategoryDAO;
@@ -14,7 +15,6 @@ import java.sql.Connection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
 
 public class SpendDBClient {
 

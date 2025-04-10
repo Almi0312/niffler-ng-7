@@ -24,13 +24,13 @@ public class JdbcTransactionTemplate {
         Connection connection = null;
         try {
             connection = holder.connection();
-            connection.setAutoCommit(false);
             connection.setTransactionIsolation(isolatedLvl);
+            connection.setAutoCommit(false);
             T result = action.get();
             connection.commit();
             connection.setAutoCommit(true);
             return result;
-        } catch (SQLException e) {
+        } catch (Exception e) {
             if (connection != null) {
                 try {
                     connection.rollback();

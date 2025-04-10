@@ -1,4 +1,4 @@
-package guru.qa.niffler.service.auth;
+package guru.qa.niffler.service.auth.dao;
 
 import guru.qa.niffler.config.Config;
 import guru.qa.niffler.data.dao.auth.AuthUserDAO;

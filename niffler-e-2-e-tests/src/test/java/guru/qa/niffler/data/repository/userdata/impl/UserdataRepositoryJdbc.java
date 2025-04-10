@@ -18,7 +18,7 @@ import java.util.UUID;
 
 import static guru.qa.niffler.data.template.Connections.holder;
 
-public class UserdataUserRepositoryJdbc implements UserdataUserRepository {
+public class UserdataRepositoryJdbc implements UserdataUserRepository {
     private static final Config CFG = Config.getInstance();
 
     private final String udJdbcUrl = CFG.userdataJdbcUrl();
@@ -93,14 +93,9 @@ public class UserdataUserRepositoryJdbc implements UserdataUserRepository {
     }
 
     @Override
-    public void createRequester(FriendshipStatus status, UserdataUserEntity requester, UserdataUserEntity... addressees) {
+    public void createOutcomeInvitations(FriendshipStatus status, UserdataUserEntity requester, UserdataUserEntity... addressees) {
         requester.addFriends(status, addressees);
         friendshipDAO.create(requester.getFriendshipRequests());
     }
 
-    @Override
-    public void createAddressee(UserdataUserEntity requester, UserdataUserEntity... requesters) {
-        requester.addInvitations(requesters);
-        friendshipDAO.create(requester.getFriendshipAddressees());
-    }
 }

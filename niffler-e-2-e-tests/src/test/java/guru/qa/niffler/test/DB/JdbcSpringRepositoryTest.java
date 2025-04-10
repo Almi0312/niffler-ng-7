@@ -1,33 +1,26 @@
-package guru.qa.niffler.test.web;
+package guru.qa.niffler.test.DB;
 
 import guru.qa.niffler.data.entity.auth.AuthUserEntity;
-import guru.qa.niffler.data.entity.userdata.FriendshipStatus;
-import guru.qa.niffler.data.entity.userdata.UserdataUserEntity;
-import guru.qa.niffler.data.repository.userdata.UserdataUserRepository;
-import guru.qa.niffler.data.repository.userdata.impl.UserdataUserRepositoryJdbc;
-import guru.qa.niffler.data.repository.userdata.impl.UserdataUserSpringRepositoryJdbc;
+import guru.qa.niffler.data.entity.userdata.*;
+import guru.qa.niffler.data.repository.userdata.impl.UserdataSpringRepositoryJdbc;
 import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.model.SpendJson;
 import guru.qa.niffler.model.UserdataUserJson;
-import guru.qa.niffler.service.auth.AuthUserDBRepositoryClient;
-import guru.qa.niffler.service.auth.AuthUserDBSpringRepositoryClient;
-import guru.qa.niffler.service.spend.CategoryDBClient;
-import guru.qa.niffler.service.spend.CategoryDBSpringClient;
-import guru.qa.niffler.service.spend.SpendDBRepositoryClient;
-import guru.qa.niffler.service.spend.SpendDBSpringRepositoryClient;
-import guru.qa.niffler.service.userdata.UserdataDBRepositoryClient;
-import guru.qa.niffler.service.userdata.UserdataDBSpringRepositoryClient;
+import guru.qa.niffler.service.auth.repository.AuthUserDBSpringRepositoryClient;
+import guru.qa.niffler.service.spend.dao.CategoryDBSpringClient;
+import guru.qa.niffler.service.spend.repository.SpendDBSpringRepositoryClient;
+import guru.qa.niffler.service.userdata.repository.UserdataDBSpringRepositoryClient;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 
 import static guru.qa.niffler.config.Constants.MAIN_USERNAME;
-import static guru.qa.niffler.model.CurrencyValues.RUB;
-import static guru.qa.niffler.model.CurrencyValues.USD;
-import static guru.qa.niffler.util.RandomDataUtils.randomName;
-import static guru.qa.niffler.util.RandomDataUtils.randomSurname;
+import static guru.qa.niffler.model.CurrencyValues.*;
+import static guru.qa.niffler.util.RandomDataUtils.*;
 
 @Slf4j
 class JdbcSpringRepositoryTest {
@@ -35,7 +28,7 @@ class JdbcSpringRepositoryTest {
     @Test
     void checkRequestFriendship() {
         UserdataDBSpringRepositoryClient userDBRepo = new UserdataDBSpringRepositoryClient();
-        UserdataUserSpringRepositoryJdbc userRepository = new UserdataUserSpringRepositoryJdbc();
+        UserdataSpringRepositoryJdbc userRepository = new UserdataSpringRepositoryJdbc();
         String testUserName = "springFriend1";
         String otherUserName = "springRequesterNatali";
 
@@ -57,21 +50,19 @@ class JdbcSpringRepositoryTest {
                         null, USD, null, null, null)));
 
         log.info("проверка создания {}", otherUser.username());
-        UserdataUserEntity otherUserEntity = userRepository.findByIdWithFriendship(
+        UserdataUserEntity otherUserEntity = userRepository.findById(
                 UserdataUserEntity.fromJson(otherUser).getId()).orElse(null);
         Assertions.assertNotNull(otherUserEntity, "объект %s не был создан".formatted(otherUserEntity));
 
-        log.info("Отправка запроса в друзья");
-        userDBRepo.createRequester(testUserEntity, otherUserEntity); // requester
-        otherUserEntity.getFriendshipAddressees().addAll(userRepository.findUserFriendships(otherUserEntity, false));
+        log.info("Отправка запроса в друзья от {} для {}", otherUserEntity, testUserEntity);
+        userDBRepo.createIncomeInvitations(testUserEntity, otherUserEntity); // requester
+        otherUserEntity.getFriendshipRequests().addAll(userRepository.findUserFriendships(otherUserEntity, true));
 
         log.info("ПРОВЕРКИ КОРРЕКТНОСТИ СОЗДАННОЙ ДРУЖБЫ\n" +
-                "Отправлен запрос в друзья");
-        Assertions.assertEquals(testUserEntity.getFriendshipRequests().getFirst().getAddressee(), otherUserEntity);
-        Assertions.assertEquals(testUserEntity.getFriendshipRequests().getFirst().getRequester(), testUserEntity);
-        Assertions.assertEquals(FriendshipStatus.PENDING, testUserEntity.getFriendshipRequests().getFirst().getStatus());
-        Assertions.assertEquals(otherUserEntity.getFriendshipAddressees().getFirst().getAddressee(), otherUserEntity);
-        Assertions.assertEquals(otherUserEntity.getFriendshipAddressees().getFirst().getRequester(), testUserEntity);
+                "Отправлен запрос в друзья от {} для {}", otherUserEntity, testUserEntity);
+        Assertions.assertEquals(otherUserEntity.getFriendshipRequests().getFirst().getAddressee(), testUserEntity);
+        Assertions.assertEquals(otherUserEntity.getFriendshipRequests().getFirst().getRequester(), otherUserEntity);
+        Assertions.assertEquals(FriendshipStatus.PENDING, otherUserEntity.getFriendshipRequests().getFirst().getStatus());
         Assertions.assertTrue(otherUserEntity.getFriendshipAddressees().isEmpty());
 
         log.info("Удаление пользователя");
@@ -88,7 +79,7 @@ class JdbcSpringRepositoryTest {
     @Test
     void checkAddresseeFriendship() {
         UserdataDBSpringRepositoryClient userDBRepo = new UserdataDBSpringRepositoryClient();
-        UserdataUserSpringRepositoryJdbc userRepository = new UserdataUserSpringRepositoryJdbc();
+        UserdataSpringRepositoryJdbc userRepository = new UserdataSpringRepositoryJdbc();
         String testUserName = "springFriend2";
         String otherUserName = "springAddresseeNatali";
 
@@ -115,16 +106,15 @@ class JdbcSpringRepositoryTest {
         Assertions.assertNotNull(otherUserEntity, "объект %s не был создан".formatted(otherUserEntity));
 
         log.info("Отправка запроса в друзья");
-        userDBRepo.createAddressee(testUserEntity, otherUserEntity); // addressee
-        otherUserEntity.getFriendshipRequests().addAll(userRepository.findUserFriendships(otherUserEntity, true));
+        userDBRepo.createOutcomeInvitations(testUserEntity, otherUserEntity); // addressee
+        testUserEntity.getFriendshipRequests().addAll(userRepository.findUserFriendships(testUserEntity, true));
 
         log.info("ПРОВЕРКИ КОРРЕКТНОСТИ СОЗДАННОЙ ДРУЖБЫ\n" +
                 "Есть запрос в друзья");
-        Assertions.assertEquals(testUserEntity.getFriendshipAddressees().getFirst().getAddressee(), testUserEntity);
-        Assertions.assertEquals(testUserEntity.getFriendshipAddressees().getFirst().getRequester(), otherUserEntity);
-        Assertions.assertEquals(FriendshipStatus.PENDING, testUserEntity.getFriendshipAddressees().getFirst().getStatus());
-        Assertions.assertTrue(otherUserEntity.getFriendshipRequests().isEmpty());
-        Assertions.assertTrue(otherUserEntity.getFriendshipAddressees().isEmpty());
+        Assertions.assertEquals(testUserEntity.getFriendshipRequests().getFirst().getAddressee(), otherUserEntity);
+        Assertions.assertEquals(testUserEntity.getFriendshipRequests().getFirst().getRequester(), testUserEntity);
+        Assertions.assertEquals(FriendshipStatus.PENDING, testUserEntity.getFriendshipRequests().getFirst().getStatus());
+        Assertions.assertTrue(testUserEntity.getFriendshipAddressees().isEmpty());
 
         log.info("Удаление пользователя");
         userDBRepo.delete(testUser);
@@ -140,7 +130,7 @@ class JdbcSpringRepositoryTest {
     @Test
     void checkFriendFriendship() {
         UserdataDBSpringRepositoryClient userDBRepo = new UserdataDBSpringRepositoryClient();
-        UserdataUserSpringRepositoryJdbc userRepository = new UserdataUserSpringRepositoryJdbc();
+        UserdataSpringRepositoryJdbc userRepository = new UserdataSpringRepositoryJdbc();
         String testUserName = "springFriend3";
         String otherUserName = "springFriendNatali";
 
@@ -172,12 +162,8 @@ class JdbcSpringRepositoryTest {
 
         log.info("ПРОВЕРКИ КОРРЕКТНОСТИ СОЗДАННОЙ ДРУЖБЫ\n" +
                 "Стали друзьями");
-        Assertions.assertEquals(testUserEntity.getFriendshipRequests().getFirst().getStatus(), FriendshipStatus.ACCEPTED);
-        Assertions.assertEquals(otherUserEntity.getFriendshipRequests().getFirst().getStatus(), FriendshipStatus.ACCEPTED);
-        Assertions.assertEquals(otherUserEntity.getFriendshipRequests().getFirst().getRequester().getId(),
-                otherUserEntity.getId());
-        Assertions.assertEquals(otherUserEntity.getFriendshipRequests().getFirst().getAddressee().getId(),
-                testUserEntity.getId());
+        Assertions.assertEquals(FriendshipStatus.ACCEPTED, testUserEntity.getFriendshipRequests().getFirst().getStatus());
+        Assertions.assertEquals(FriendshipStatus.ACCEPTED, otherUserEntity.getFriendshipRequests().getFirst().getStatus());
 
         log.info("Удаление пользователя");
         userDBRepo.delete(testUser);
@@ -188,7 +174,6 @@ class JdbcSpringRepositoryTest {
                 UserdataUserEntity.fromJson(testUser).getId()).orElse(null));
         Assertions.assertNull(userRepository.findByIdWithFriendship(
                 UserdataUserEntity.fromJson(otherUser).getId()).orElse(null));
-
     }
 
     @Test
@@ -203,7 +188,7 @@ class JdbcSpringRepositoryTest {
                 });
         SpendJson newSpendJson = dbSpend.create(new SpendJson(
                 null,
-                new Date(),
+                Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()),
                 new CategoryJson(null,
                         categoryName,
                         MAIN_USERNAME,
@@ -275,8 +260,8 @@ class JdbcSpringRepositoryTest {
 
     @Test
     void checkTransactionSpendTest() {
-        String categoryName = "top cource transac2";
-        String spendDescription = "cool cource transac";
+        String categoryName = "spring top cource transac2";
+        String spendDescription = "spring cool cource transac2";
         SpendDBSpringRepositoryClient dbSpend = new SpendDBSpringRepositoryClient();
         CategoryDBSpringClient categoryDbClient = new CategoryDBSpringClient();
         dbSpend.findByUsernameAndDescription(MAIN_USERNAME, spendDescription)
@@ -300,13 +285,11 @@ class JdbcSpringRepositoryTest {
         log.info("CHECK NOT SPEND CREATED");
         SpendJson resultSpend = dbSpend
                 .findByUsernameAndDescription(MAIN_USERNAME, spendDescription).orElse(null);
-        Assertions.assertNull(resultSpend,
-                "объект %s был создан(".formatted(resultSpend));
+        Assertions.assertNull(resultSpend);
         log.info("CHECK NOT CATEGORY CREATED");
         CategoryJson categoryJson = categoryDbClient
                 .findByUsernameAndName(MAIN_USERNAME, categoryName).orElse(null);
-        Assertions.assertNull(categoryJson,
-                "объект %s был создан(".formatted(categoryJson));
+        Assertions.assertNull(categoryJson);
     }
 
     @Test

@@ -1,4 +1,4 @@
-package guru.qa.niffler.service.userdata;
+package guru.qa.niffler.service.userdata.dao;
 
 import guru.qa.niffler.config.Config;
 import guru.qa.niffler.data.dao.auth.AuthUserDAO;
@@ -11,11 +11,14 @@ import guru.qa.niffler.data.entity.auth.AuthUserEntity;
 import guru.qa.niffler.data.entity.auth.Authority;
 import guru.qa.niffler.data.entity.auth.AuthorityEntity;
 import guru.qa.niffler.data.entity.userdata.UserdataUserEntity;
-import guru.qa.niffler.data.template.JdbcTransactionTemplate;
+import guru.qa.niffler.data.template.DataSources;
 import guru.qa.niffler.data.template.XaTransactionTemplate;
 import guru.qa.niffler.model.UserdataUserJson;
+import org.springframework.jdbc.support.JdbcTransactionManager;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.Connection;
 import java.util.Arrays;
@@ -29,14 +32,15 @@ public class UserdataDBSpringClient {
     private final UserdataUserDAO udUserDAO;
     private final AuthUserDAO authUserDAO;
     private final AuthorityDAO authorityDAO;
-    private final JdbcTransactionTemplate txTemplate;
+    private final TransactionTemplate txTemplate;
     private final XaTransactionTemplate xaTxTemplate;
 
     public UserdataDBSpringClient() {
         udUserDAO = new UserdataUserDAOSpringJdbc();
         authUserDAO = new AuthUserDAOSpringJdbc();
         authorityDAO = new AuthorityDAOSpringJdbc();
-        txTemplate = new JdbcTransactionTemplate(CFG.userdataJdbcUrl());
+        txTemplate = new TransactionTemplate(
+                new JdbcTransactionManager(DataSources.dataSource(CFG.userdataJdbcUrl())));
         xaTxTemplate = new XaTransactionTemplate(CFG.userdataJdbcUrl(), CFG.authJdbcUrl());
     }
 
@@ -50,44 +54,47 @@ public class UserdataDBSpringClient {
                     authUser.setAccountNonExpired(true);
                     authUser.setAccountNonLocked(true);
                     authUser.setCredentialsNonExpired(true);
-                    authUserDAO.create(authUser);
+                    authUser.setId(
+                            authUserDAO.create(authUser).getId());
                     authorityDAO.create(
                             Arrays.stream(Authority.values())
                                     .map(a -> {
                                                 AuthorityEntity ae = new AuthorityEntity();
-                                                ae.getUser().setId(authUser.getId());
+                                                ae.setUser(authUser);
                                                 ae.setAuthority(a);
                                                 return ae;
                                             }
                                     ).toArray(AuthorityEntity[]::new));
-                    return null;
-                },
-                () -> UserdataUserJson.fromEntity(udUserDAO
-                        .create(
-                                UserdataUserEntity.fromJson(user)), null));
+                    return UserdataUserJson.fromEntity(udUserDAO
+                            .create(
+                                    UserdataUserEntity.fromJson(user)), null);
+                });
     }
 
     public Optional<UserdataUserJson> findById(UUID id) {
-        return txTemplate.execute(
-                () -> udUserDAO.findById(id)
+        txTemplate.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
+        return txTemplate.execute(con ->
+                udUserDAO.findById(id)
                         .map(x -> UserdataUserJson.fromEntity(x, null)));
     }
 
     public Optional<UserdataUserJson> findByUsername(String username) {
-        return txTemplate.execute(
-                () -> udUserDAO.findByUsername(username)
+        txTemplate.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
+        return txTemplate.execute(con ->
+                udUserDAO.findByUsername(username)
                         .map(x -> UserdataUserJson.fromEntity(x, null)));
     }
 
     public void delete(UserdataUserJson userdataUserJson) {
         xaTxTemplate.execute(Connection.TRANSACTION_SERIALIZABLE,
-                () -> udUserDAO.delete(
-                        UserdataUserEntity.fromJson(userdataUserJson)),
-                () ->
-                        authUserDAO.findByUsername(userdataUserJson.username())
-                                .ifPresent(entity -> {
-                                    authorityDAO.delete(entity);
-                                    authUserDAO.deleteByUsername(entity);
-                                }));
+                () -> {
+                    udUserDAO.delete(
+                            UserdataUserEntity.fromJson(userdataUserJson));
+                    authUserDAO.findByUsername(userdataUserJson.username())
+                            .ifPresent(entity -> {
+                                authorityDAO.delete(entity);
+                                authUserDAO.deleteByUsername(entity);
+                            });
+                });
     }
 }

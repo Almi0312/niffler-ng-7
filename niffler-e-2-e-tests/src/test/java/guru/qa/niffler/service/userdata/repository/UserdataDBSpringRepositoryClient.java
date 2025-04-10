@@ -1,4 +1,4 @@
-package guru.qa.niffler.service.userdata;
+package guru.qa.niffler.service.userdata.repository;
 
 import guru.qa.niffler.config.Config;
 import guru.qa.niffler.data.entity.auth.AuthUserEntity;
@@ -7,16 +7,17 @@ import guru.qa.niffler.data.entity.auth.AuthorityEntity;
 import guru.qa.niffler.data.entity.userdata.FriendshipStatus;
 import guru.qa.niffler.data.entity.userdata.UserdataUserEntity;
 import guru.qa.niffler.data.repository.auth.AuthUserRepository;
-import guru.qa.niffler.data.repository.auth.impl.AuthUserRepositoryJdbc;
 import guru.qa.niffler.data.repository.auth.impl.AuthUserSpringRepositoryJdbc;
 import guru.qa.niffler.data.repository.userdata.UserdataUserRepository;
-import guru.qa.niffler.data.repository.userdata.impl.UserdataUserRepositoryJdbc;
-import guru.qa.niffler.data.repository.userdata.impl.UserdataUserSpringRepositoryJdbc;
-import guru.qa.niffler.data.template.JdbcTransactionTemplate;
+import guru.qa.niffler.data.repository.userdata.impl.UserdataSpringRepositoryJdbc;
+import guru.qa.niffler.data.template.DataSources;
 import guru.qa.niffler.data.template.XaTransactionTemplate;
 import guru.qa.niffler.model.UserdataUserJson;
+import org.springframework.jdbc.support.JdbcTransactionManager;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.Connection;
 import java.util.Arrays;
@@ -29,13 +30,14 @@ public class UserdataDBSpringRepositoryClient {
 
     private final UserdataUserRepository udUserRepository;
     private final AuthUserRepository authUserRepository;
-    private final JdbcTransactionTemplate txTemplate;
+    private final TransactionTemplate txTemplate;
     private final XaTransactionTemplate xaTxTemplate;
 
     public UserdataDBSpringRepositoryClient() {
-        udUserRepository = new UserdataUserSpringRepositoryJdbc();
+        udUserRepository = new UserdataSpringRepositoryJdbc();
         authUserRepository = new AuthUserSpringRepositoryJdbc();
-        txTemplate = new JdbcTransactionTemplate(CFG.userdataJdbcUrl());
+        txTemplate = new TransactionTemplate(
+                new JdbcTransactionManager(DataSources.dataSource(CFG.userdataJdbcUrl())));
         xaTxTemplate = new XaTransactionTemplate(CFG.userdataJdbcUrl(), CFG.authJdbcUrl());
     }
 
@@ -63,38 +65,43 @@ public class UserdataDBSpringRepositoryClient {
                 }), user.friendState());
     }
 
-    public void createRequester(UserdataUserEntity requester, UserdataUserEntity... addressees) {
-        txTemplate.execute(Connection.TRANSACTION_READ_UNCOMMITTED,
-                con -> udUserRepository.createRequester(FriendshipStatus.PENDING, requester, addressees));
+    /* создать запрос в друзья от кого то */
+    public void createIncomeInvitations(UserdataUserEntity income, UserdataUserEntity... outcomes) {
+        txTemplate.setIsolationLevel(TransactionDefinition.ISOLATION_READ_UNCOMMITTED);
+        txTemplate.executeWithoutResult(con ->
+                Arrays.stream(outcomes).forEach(request ->
+                        udUserRepository.createOutcomeInvitations(FriendshipStatus.PENDING, request, income)));
     }
 
-    public void createAddressee(UserdataUserEntity addressee, UserdataUserEntity... requesters) {
-        txTemplate.execute(Connection.TRANSACTION_READ_UNCOMMITTED,
-                con -> udUserRepository.createAddressee(addressee, requesters));
+    /* создать запрос в друзья к кому то */
+    public void createOutcomeInvitations(UserdataUserEntity outcome, UserdataUserEntity... incomes) {
+        txTemplate.setIsolationLevel(TransactionDefinition.ISOLATION_READ_UNCOMMITTED);
+        txTemplate.executeWithoutResult(con ->
+                udUserRepository.createOutcomeInvitations(FriendshipStatus.PENDING, outcome, incomes));
     }
 
-    public void createFriends(UserdataUserEntity requester, UserdataUserEntity... addressees) {
-        txTemplate.execute(Connection.TRANSACTION_READ_COMMITTED,
-                con -> {
-                    udUserRepository.createRequester(FriendshipStatus.ACCEPTED, requester, addressees);
-                    Arrays.stream(addressees).forEach(addressee ->
-                            udUserRepository.createRequester(
-                                    FriendshipStatus.ACCEPTED, addressee, requester));
-                });
+    public void createFriends(UserdataUserEntity currentUser, UserdataUserEntity... potentialFriends) {
+        txTemplate.setIsolationLevel(TransactionDefinition.ISOLATION_READ_UNCOMMITTED);
+        txTemplate.executeWithoutResult(con -> {
+            udUserRepository.createOutcomeInvitations(FriendshipStatus.ACCEPTED, currentUser, potentialFriends);
+            Arrays.stream(potentialFriends).forEach(addressee ->
+                    udUserRepository.createOutcomeInvitations(
+                            FriendshipStatus.ACCEPTED, addressee, currentUser));
+        });
     }
 
     public Optional<UserdataUserJson> findById(UUID id) {
-        return txTemplate.execute(Connection.TRANSACTION_READ_COMMITTED,
-                () -> udUserRepository.findById(id)
-                        .map(x -> UserdataUserJson.fromEntity(
-                                x, null)));
+        txTemplate.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
+        return txTemplate.execute(con ->
+                udUserRepository.findById(id)
+                        .map(user -> UserdataUserJson.fromEntity(user, null)));
     }
 
     public Optional<UserdataUserJson> findByUsername(String username) {
-        return txTemplate.execute(Connection.TRANSACTION_READ_COMMITTED,
-                () -> udUserRepository.findByUsername(username)
-                        .map(x -> UserdataUserJson.fromEntity(
-                                x, null)));
+        txTemplate.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
+        return txTemplate.execute(con ->
+                udUserRepository.findByUsername(username)
+                        .map(user -> UserdataUserJson.fromEntity(user, null)));
     }
 
     public void delete(UserdataUserJson userdataUserJson) {

@@ -29,7 +29,7 @@ public class SpendRepositoryJdbc implements SpendRepository {
     private final CategoryDAO categoryDAO = new CategoryDAOJdbc();
 
     @Override
-    public SpendEntity create(SpendEntity spend) {
+    public SpendEntity createSpend(SpendEntity spend) {
         if (spend.getCategory().getId() == null) {
             CategoryEntity category = categoryDAO.create(spend.getCategory());
             spend.setCategory(category);
@@ -39,19 +39,43 @@ public class SpendRepositoryJdbc implements SpendRepository {
 
     @Override
     public Optional<SpendEntity> findById(UUID id) {
-        return spendDAO.findById(id);
+        String query = "SELECT s.*," +
+                " c.id as c_id, c.name c_name, c.username c_username, c.archived c_archived" +
+                " FROM spend s JOIN category c ON (s.category_id = c.id)" +
+                " WHERE s.id = ?";
+        try (PreparedStatement ps = holder(spendJdbcUrl).connection().prepareStatement(query)) {
+            ps.setObject(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    SpendEntity spend = SpendEntityRowMapper.instance.mapRow(rs, 0);
+                    if (spend.getCategory().getId() != null) {
+                        spend.setCategory(setResultSetValues(rs, spend.getCategory(),"c_"));
+                    }
+                    return Optional.ofNullable(spend);
+                }
+                return Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public List<SpendEntity> findAllByUsername(String username) {
-        String query = "SELECT * FROM spend s JOIN category c " +
-                "ON (s.category_id = c.id) WHERE username = ?";
+        String query = "SELECT s.*," +
+                " c.id as c_id, c.name c_name, c.username c_username, c.archived c_archived" +
+                " FROM spend s JOIN category c ON (s.category_id = c.id)" +
+                " WHERE username = ?";
         try (PreparedStatement ps = holder(spendJdbcUrl).connection().prepareStatement(query)) {
             ps.setString(1, username);
-            try (ResultSet resultSet = ps.executeQuery()) {
+            try (ResultSet rs = ps.executeQuery()) {
                 List<SpendEntity> spends = new ArrayList<>();
-                while (resultSet.next()) {
-                    spends.add(SpendEntityRowMapper.instance.mapRow(resultSet, 0));
+                while (rs.next()) {
+                    SpendEntity spend = SpendEntityRowMapper.instance.mapRow(rs, 0);
+                    if (spend.getCategory().getId() != null) {
+                        spend.setCategory(setResultSetValues(rs, spend.getCategory(),"c_"));
+                    }
+                    spends.add(SpendEntityRowMapper.instance.mapRow(rs, 0));
                 }
                 return spends;
             }
@@ -62,13 +86,17 @@ public class SpendRepositoryJdbc implements SpendRepository {
 
     @Override
     public List<SpendEntity> findAll() {
-        String query = "SELECT * FROM spend s JOIN category c " +
-                "ON (s.category_id = c.id)";
+        String query = "SELECT s.*," +
+                " c.id as c_id, c.name c_name, c.username c_username, c.archived c_archived" +
+                " FROM spend s JOIN category c ON (s.category_id = c.id)";
         try (PreparedStatement ps = holder(spendJdbcUrl).connection().prepareStatement(query)) {
-            try (ResultSet resultSet = ps.executeQuery()) {
+            try (ResultSet rs = ps.executeQuery()) {
                 List<SpendEntity> spends = new ArrayList<>();
-                while (resultSet.next()) {
-                    spends.add(SpendEntityRowMapper.instance.mapRow(resultSet, 0));
+                while (rs.next()) {
+                    SpendEntity spend = SpendEntityRowMapper.instance.mapRow(rs, 0);
+                    if (spend.getCategory().getId() != null) {
+                        spend.setCategory(setResultSetValues(rs, spend.getCategory(),"c_"));
+                    }
                 }
                 return spends;
             }
@@ -79,14 +107,20 @@ public class SpendRepositoryJdbc implements SpendRepository {
 
     @Override
     public Optional<SpendEntity> findByUsernameAndDescription(String username, String description) {
-        String query = "SELECT * FROM spend s JOIN category c" +
-                " ON (s.category_id = c.id) WHERE s.username = ? AND s.description = ?";
+        String query = "SELECT s.*," +
+                " c.id as c_id, c.name c_name, c.username c_username, c.archived c_archived" +
+                " FROM spend s JOIN category c ON (s.category_id = c.id)" +
+                " WHERE s.username = ? AND s.description = ?";
         try (PreparedStatement ps = holder(spendJdbcUrl).connection().prepareStatement(query)) {
             ps.setString(1, username);
             ps.setString(2, description);
-            try (ResultSet resultSet = ps.executeQuery()) {
-                if (resultSet.next()) {
-                    return Optional.ofNullable(SpendEntityRowMapper.instance.mapRow(resultSet, 0));
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    SpendEntity spend = SpendEntityRowMapper.instance.mapRow(rs, 0);
+                    if (spend.getCategory().getId() != null) {
+                        spend.setCategory(setResultSetValues(rs, spend.getCategory(),"c_"));
+                    }
+                    return Optional.ofNullable(spend);
                 }
                 return Optional.empty();
             }
@@ -137,4 +171,11 @@ public class SpendRepositoryJdbc implements SpendRepository {
         categoryDAO.delete(category);
     }
 
+    private CategoryEntity setResultSetValues(ResultSet rs, CategoryEntity category,
+                                              String alias) throws SQLException {
+        category.setUsername(rs.getString(alias + "username"));
+        category.setName(rs.getString(alias + "name"));
+        category.setArchived(rs.getBoolean(alias + "archived"));
+        return category;
+    }
 }
