@@ -61,7 +61,7 @@ public class UdDBSpringChainedXaClient {
                             Arrays.stream(Authority.values())
                                     .map(a -> {
                                                 AuthorityEntity ae = new AuthorityEntity();
-                                                ae.setUserId(authUser.getId());
+                                                ae.setUser(authUser);
                                                 ae.setAuthority(a);
                                                 return ae;
                                             }
