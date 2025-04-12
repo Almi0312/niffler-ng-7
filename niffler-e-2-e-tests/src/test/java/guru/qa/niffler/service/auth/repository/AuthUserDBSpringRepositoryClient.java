@@ -1,9 +1,8 @@
-package guru.qa.niffler.service.auth;
+package guru.qa.niffler.service.auth.repository;
 
 import guru.qa.niffler.config.Config;
 import guru.qa.niffler.data.entity.auth.AuthUserEntity;
 import guru.qa.niffler.data.repository.auth.AuthUserRepository;
-import guru.qa.niffler.data.repository.auth.impl.AuthUserRepositoryJdbc;
 import guru.qa.niffler.data.repository.auth.impl.AuthUserSpringRepositoryJdbc;
 import guru.qa.niffler.data.template.JdbcTransactionTemplate;
 

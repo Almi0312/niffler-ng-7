@@ -1,4 +1,4 @@
-package guru.qa.niffler.service.spend;
+package guru.qa.niffler.service.spend.dao;
 
 import guru.qa.niffler.config.Config;
 import guru.qa.niffler.data.dao.spend.impl.default_jdbc.CategoryDAOJdbc;

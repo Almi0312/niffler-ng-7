@@ -25,14 +25,8 @@ public class SpendEntityRowMapper implements RowMapper<SpendEntity> {
         spendEntity.setCurrency(CurrencyValues.valueOf(rs.getString("currency")));
         spendEntity.setAmount(rs.getDouble("amount"));
         spendEntity.setDescription(rs.getString("description"));
-        CategoryEntity category = new CategoryEntity();
-        category.setId(rs.getObject("category_id", UUID.class));
-        if(category.getId() != null) {
-            category.setUsername(rs.getString("username"));
-            category.setName(rs.getString("name"));
-            category.setArchived(rs.getBoolean("archived"));
-        }
-        spendEntity.setCategory(category);
+        spendEntity.setCategory(new CategoryEntity());
+        spendEntity.getCategory().setId(rs.getObject("category_id", UUID.class));
         return spendEntity;
     }
 }

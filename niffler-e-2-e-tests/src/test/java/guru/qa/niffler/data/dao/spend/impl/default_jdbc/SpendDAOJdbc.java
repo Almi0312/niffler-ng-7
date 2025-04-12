@@ -2,13 +2,14 @@ package guru.qa.niffler.data.dao.spend.impl.default_jdbc;
 
 import guru.qa.niffler.config.Config;
 import guru.qa.niffler.data.dao.spend.SpendDAO;
-import guru.qa.niffler.data.entity.spend.CategoryEntity;
+import guru.qa.niffler.data.dao.spend.mapper.SpendEntityRowMapper;
 import guru.qa.niffler.data.entity.spend.SpendEntity;
-import guru.qa.niffler.model.CurrencyValues;
 
 import java.sql.*;
-import java.sql.Date;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static guru.qa.niffler.data.template.Connections.holder;
 
@@ -16,15 +17,16 @@ public class SpendDAOJdbc implements SpendDAO {
 
     private static final Config CFG = Config.getInstance();
 
-    public SpendDAOJdbc() {
+    private final String spdUrlJdbc = CFG.spendJdbcUrl();
 
+    public SpendDAOJdbc() {
     }
 
     @Override
     public SpendEntity create(SpendEntity spend) {
         String query = "INSERT INTO spend (username, spend_date, currency, amount, description, category_id) " +
                 "VALUES (?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement preparedStatement = holder(CFG.spendJdbcUrl()).connection()
+        try (PreparedStatement preparedStatement = holder(spdUrlJdbc).connection()
                 .prepareStatement(
                         query, Statement.RETURN_GENERATED_KEYS
                 )) {
@@ -53,13 +55,13 @@ public class SpendDAOJdbc implements SpendDAO {
     @Override
     public Optional<SpendEntity> findById(UUID id) {
         String query = "SELECT * FROM spend WHERE id = ?";
-        try (PreparedStatement preparedStatement = holder(CFG.spendJdbcUrl()).connection()
+        try (PreparedStatement preparedStatement = holder(spdUrlJdbc).connection()
                 .prepareStatement(
                         query)) {
             preparedStatement.setObject(1, id);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
-                    return Optional.of(extractSpendEntityFromResultSet(resultSet));
+                    return Optional.of(SpendEntityRowMapper.instance.mapRow(resultSet, 0));
                 } else {
                     return Optional.empty();
                 }
@@ -72,14 +74,14 @@ public class SpendDAOJdbc implements SpendDAO {
     @Override
     public List<SpendEntity> findAllByUsername(String username) {
         String query = "SELECT * FROM spend WHERE username = ?";
-        try (PreparedStatement preparedStatement = holder(CFG.spendJdbcUrl()).connection()
+        try (PreparedStatement preparedStatement = holder(spdUrlJdbc).connection()
                 .prepareStatement(
                         query)) {
             preparedStatement.setString(1, username);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 List<SpendEntity> spendEntities = new ArrayList<>();
                 while (resultSet.next()) {
-                    spendEntities.add(extractSpendEntityFromResultSet(resultSet));
+                    spendEntities.add(SpendEntityRowMapper.instance.mapRow(resultSet, 0));
                 }
                 return spendEntities;
             }
@@ -91,13 +93,13 @@ public class SpendDAOJdbc implements SpendDAO {
     @Override
     public List<SpendEntity> findAll() {
         String query = "SELECT * FROM spend";
-        try (PreparedStatement ps = holder(CFG.spendJdbcUrl()).connection()
+        try (PreparedStatement ps = holder(spdUrlJdbc).connection()
                 .prepareStatement(
                         query)) {
             try (ResultSet resultSet = ps.executeQuery()) {
                 List<SpendEntity> entities = new ArrayList<>();
                 while (resultSet.next()) {
-                    entities.add(extractSpendEntityFromResultSet(resultSet));
+                    entities.add(SpendEntityRowMapper.instance.mapRow(resultSet, 0));
                 }
                 return entities;
             }
@@ -109,7 +111,7 @@ public class SpendDAOJdbc implements SpendDAO {
     @Override
     public Optional<SpendEntity> findByUsernameAndDescription(String username, String description) {
         String query = "SELECT * FROM spend WHERE username = ? and description = ?";
-        try (PreparedStatement preparedStatement = holder(CFG.spendJdbcUrl()).connection()
+        try (PreparedStatement preparedStatement = holder(spdUrlJdbc).connection()
                 .prepareStatement(
                         query
                 )) {
@@ -117,7 +119,7 @@ public class SpendDAOJdbc implements SpendDAO {
             preparedStatement.setString(2, description);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
-                    return Optional.of(extractSpendEntityFromResultSet(resultSet));
+                    return Optional.of(SpendEntityRowMapper.instance.mapRow(resultSet, 0));
                 } else {
                     return Optional.empty();
                 }
@@ -130,7 +132,7 @@ public class SpendDAOJdbc implements SpendDAO {
     @Override
     public void delete(SpendEntity spend) {
         String query = "DELETE FROM spend WHERE id = ?";
-        try (PreparedStatement preparedStatement = holder(CFG.spendJdbcUrl()).connection()
+        try (PreparedStatement preparedStatement = holder(spdUrlJdbc).connection()
                 .prepareStatement(
                         query)) {
             preparedStatement.setObject(1, spend.getId());
@@ -138,18 +140,5 @@ public class SpendDAOJdbc implements SpendDAO {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private SpendEntity extractSpendEntityFromResultSet(ResultSet resultSet) throws SQLException {
-        SpendEntity spendEntity = new SpendEntity();
-        spendEntity.setId(resultSet.getObject("id", UUID.class));
-        spendEntity.setUsername(resultSet.getString("username"));
-        spendEntity.setSpendDate(resultSet.getDate("spend_date"));
-        spendEntity.setCurrency(CurrencyValues.valueOf(resultSet.getString("currency")));
-        spendEntity.setAmount(resultSet.getDouble("amount"));
-        spendEntity.setDescription(resultSet.getString("description"));
-        spendEntity.setCategory(new CategoryEntity());
-        spendEntity.getCategory().setId(resultSet.getObject("category_id", UUID.class));
-        return spendEntity;
     }
 }

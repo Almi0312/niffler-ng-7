@@ -25,8 +25,6 @@ public interface UserdataUserRepository {
 
     void delete(UserdataUserEntity userdataUserEntity);
 
-    void createRequester(FriendshipStatus status, UserdataUserEntity requester, UserdataUserEntity... addressees);
-
-    void createAddressee(UserdataUserEntity addressee, UserdataUserEntity... requesters);
+    void createOutcomeInvitations(FriendshipStatus status, UserdataUserEntity requester, UserdataUserEntity... addressees);
 
 }

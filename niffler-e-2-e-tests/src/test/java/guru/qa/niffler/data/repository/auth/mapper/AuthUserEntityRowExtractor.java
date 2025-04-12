@@ -1,4 +1,4 @@
-package guru.qa.niffler.data.repository.auth.mapper.spring;
+package guru.qa.niffler.data.repository.auth.mapper;
 
 import guru.qa.niffler.data.entity.auth.AuthUserEntity;
 import guru.qa.niffler.data.entity.auth.Authority;

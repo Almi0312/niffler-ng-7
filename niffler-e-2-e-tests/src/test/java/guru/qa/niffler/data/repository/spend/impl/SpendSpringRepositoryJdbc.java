@@ -3,8 +3,8 @@ package guru.qa.niffler.data.repository.spend.impl;
 import guru.qa.niffler.config.Config;
 import guru.qa.niffler.data.dao.spend.CategoryDAO;
 import guru.qa.niffler.data.dao.spend.SpendDAO;
-import guru.qa.niffler.data.dao.spend.impl.default_jdbc.CategoryDAOJdbc;
-import guru.qa.niffler.data.dao.spend.impl.default_jdbc.SpendDAOJdbc;
+import guru.qa.niffler.data.dao.spend.impl.spring.CategoryDAOSpringJdbc;
+import guru.qa.niffler.data.dao.spend.impl.spring.SpendDAOSpringJdbc;
 import guru.qa.niffler.data.dao.spend.mapper.SpendEntityRowMapper;
 import guru.qa.niffler.data.entity.spend.CategoryEntity;
 import guru.qa.niffler.data.entity.spend.SpendEntity;
@@ -12,12 +12,7 @@ import guru.qa.niffler.data.repository.spend.SpendRepository;
 import guru.qa.niffler.data.repository.spend.mapper.SpendEntityExtractor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.util.*;
 
 import static guru.qa.niffler.data.template.DataSources.dataSource;
@@ -31,15 +26,12 @@ public class SpendSpringRepositoryJdbc implements SpendRepository {
 
     public SpendSpringRepositoryJdbc() {
         jdbcTemplate = new JdbcTemplate(dataSource(CFG.spendJdbcUrl()));
-        spendDAO = new SpendDAOJdbc();
-        categoryDAO = new CategoryDAOJdbc();
+        spendDAO = new SpendDAOSpringJdbc();
+        categoryDAO = new CategoryDAOSpringJdbc();
     }
 
     @Override
-    public SpendEntity create(SpendEntity spend) {
-        if (spend.getCategory().getId() == null) {
-            spend.setCategory(categoryDAO.create(spend.getCategory()));
-        }
+    public SpendEntity createSpend(SpendEntity spend) {
         return spendDAO.create(spend);
     }
 
