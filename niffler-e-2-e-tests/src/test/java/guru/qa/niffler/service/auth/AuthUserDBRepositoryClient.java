@@ -1,4 +1,4 @@
-package guru.qa.niffler.service.auth.repository;
+package guru.qa.niffler.service.auth;
 
 import guru.qa.niffler.config.Config;
 import guru.qa.niffler.data.entity.auth.AuthUserEntity;

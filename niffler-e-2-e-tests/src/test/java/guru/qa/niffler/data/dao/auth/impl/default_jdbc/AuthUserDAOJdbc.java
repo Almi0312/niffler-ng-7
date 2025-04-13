@@ -49,6 +49,33 @@ public class AuthUserDAOJdbc implements AuthUserDAO {
     }
 
     @Override
+    public AuthUserEntity update(AuthUserEntity authUserEntity) {
+        String userUpdateQuery = """
+                UPDATE \"user\" SET 
+                username = ?, 
+                password = ?, 
+                enabled = ?, 
+                account_non_expired = ?,
+                "account_non_locked = ?, 
+                credentials_non_expired = ?
+                WHERE id = ?"
+                """;
+        try (PreparedStatement userUpdatePs = holder(CFG.authJdbcUrl()).connection()
+                .prepareStatement(userUpdateQuery)) {
+            userUpdatePs.setString(1, authUserEntity.getUsername());
+            userUpdatePs.setObject(2, authUserEntity.getPassword());
+            userUpdatePs.setBoolean(3, authUserEntity.getEnabled());
+            userUpdatePs.setBoolean(4, authUserEntity.getAccountNonExpired());
+            userUpdatePs.setBoolean(5, authUserEntity.getAccountNonLocked());
+            userUpdatePs.setBoolean(6, authUserEntity.getCredentialsNonExpired());
+            userUpdatePs.executeUpdate();
+            return authUserEntity;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
     public Optional<AuthUserEntity> findById(UUID id) {
         String query = "SELECT * FROM \"user\" WHERE id = ?";
         try (PreparedStatement ps = holder(authUrlJdbc).connection()
@@ -90,12 +117,12 @@ public class AuthUserDAOJdbc implements AuthUserDAO {
     }
 
     @Override
-    public void deleteByUsername(AuthUserEntity authUserEntity) {
-        String query = "DELETE FROM \"user\" WHERE username = ?";
+    public void delete(AuthUserEntity authUserEntity) {
+        String query = "DELETE FROM \"user\" WHERE id = ?";
         try (PreparedStatement preparedStatement = holder(authUrlJdbc).connection()
                 .prepareStatement(
                         query)) {
-            preparedStatement.setString(1, authUserEntity.getUsername());
+            preparedStatement.setObject(1, authUserEntity.getId());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
