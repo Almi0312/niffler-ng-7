@@ -45,6 +45,21 @@ public class SpendDAOSpringJdbc implements SpendDAO {
     }
 
     @Override
+    public SpendEntity update(SpendEntity spend) {
+        String query = "UPDATE spend SET" +
+                " username = ?, spend_date = ?, currency = ?, amount = ?, description = ?" +
+                " WHERE id = ?";
+        jdbcTemplate.update(query,
+            spend.getUsername(),
+            new Date(spend.getSpendDate().getTime()),
+            spend.getCurrency().name(),
+            spend.getAmount(),
+            spend.getDescription(),
+            spend.getId());
+        return spend;
+    }
+
+    @Override
     public Optional<SpendEntity> findById(UUID id) {
         String query = "SELECT * FROM spend WHERE id = ?";
         try {

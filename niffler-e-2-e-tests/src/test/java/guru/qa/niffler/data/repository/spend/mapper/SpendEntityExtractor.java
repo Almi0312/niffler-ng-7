@@ -22,36 +22,24 @@ public class SpendEntityExtractor implements ResultSetExtractor<SpendEntity> {
 
     @Override
     public SpendEntity extractData(ResultSet rs) throws SQLException, DataAccessException {
-        Map<UUID, SpendEntity> spendMap = new ConcurrentHashMap<>();
-        UUID spendId = null;
-        while (rs.next()) {
-            spendId = rs.getObject("id", UUID.class);
-            spendMap.computeIfAbsent(spendId, id -> {
-                SpendEntity spendEntity = new SpendEntity();
-                try {
-                    spendEntity.setId(rs.getObject("id", UUID.class));
-                    spendEntity.setUsername(rs.getString("username"));
-                    spendEntity.setSpendDate(new Date(rs.getDate("spend_date").getTime()));
-                    spendEntity.setCurrency(CurrencyValues.valueOf(rs.getString("currency")));
-                    spendEntity.setAmount(rs.getDouble("amount"));
-                    spendEntity.setDescription(rs.getString("description"));
-                    CategoryEntity entity = new CategoryEntity();
-                    entity.setId(rs.getObject("category_id", UUID.class));
-                    if (entity.getId() != null) {
-                        entity.setUsername(rs.getString("username"));
-                        entity.setName(rs.getString("name"));
-                        entity.setArchived(rs.getBoolean("archived"));
-                    }
-                    spendEntity.setCategory(entity);
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
-                return spendEntity;
-            });
+        SpendEntity spend = null;
+        if (rs.next()) {
+            spend = new SpendEntity();
+            spend.setId(rs.getObject("id", UUID.class));
+            spend.setUsername(rs.getString("username"));
+            spend.setSpendDate(new Date(rs.getDate("spend_date").getTime()));
+            spend.setCurrency(CurrencyValues.valueOf(rs.getString("currency")));
+            spend.setAmount(rs.getDouble("amount"));
+            spend.setDescription(rs.getString("description"));
+            CategoryEntity entity = new CategoryEntity();
+            entity.setId(rs.getObject("category_id", UUID.class));
+            if (entity.getId() != null) {
+                entity.setUsername(rs.getString("username"));
+                entity.setName(rs.getString("name"));
+                entity.setArchived(rs.getBoolean("archived"));
+            }
+            spend.setCategory(entity);
         }
-        if (spendMap.isEmpty()) {
-            return null;
-        }
-        return spendMap.get(spendId);
+        return spend;
     }
 }

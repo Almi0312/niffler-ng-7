@@ -9,6 +9,8 @@ import java.util.UUID;
 public interface CategoryDAO {
     CategoryEntity create(CategoryEntity category);
 
+    CategoryEntity update(CategoryEntity category);
+
     Optional<CategoryEntity> findById(UUID id);
 
     Optional<CategoryEntity> findByUsernameAndName(String username, String categoryName);
@@ -16,8 +18,6 @@ public interface CategoryDAO {
     List<CategoryEntity> findAllByUsername(String username);
 
     List<CategoryEntity> findAll();
-
-    CategoryEntity update(CategoryEntity category);
 
     void delete(CategoryEntity category);
 }
