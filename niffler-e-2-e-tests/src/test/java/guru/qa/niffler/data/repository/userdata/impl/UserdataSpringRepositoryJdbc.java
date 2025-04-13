@@ -8,18 +8,17 @@ import guru.qa.niffler.data.dao.userdata.impl.UserdataUserDAOSpringJdbc;
 import guru.qa.niffler.data.entity.userdata.FriendshipEntity;
 import guru.qa.niffler.data.entity.userdata.FriendshipStatus;
 import guru.qa.niffler.data.entity.userdata.UserdataUserEntity;
-import guru.qa.niffler.data.repository.userdata.UserdataUserRepository;
-import guru.qa.niffler.data.repository.userdata.mapper.UdUserEntityExtractor;
-import org.springframework.dao.EmptyResultDataAccessException;
+import guru.qa.niffler.data.repository.userdata.UserdataRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static guru.qa.niffler.data.template.DataSources.dataSource;
 
-public class UserdataSpringRepositoryJdbc implements UserdataUserRepository {
+public class UserdataSpringRepositoryJdbc implements UserdataRepository {
 
     private static final Config CFG = Config.getInstance();
 
@@ -61,17 +60,13 @@ public class UserdataSpringRepositoryJdbc implements UserdataUserRepository {
 
     @Override
     public Optional<UserdataUserEntity> findByUsernameWithFriendship(String username) {
-        String query = """
-                SELECT *
-                FROM "user" u
-                LEFT JOIN friendship f ON (u.id = f.requester_id OR u.id = f.addressee_id)
-                WHERE u.username = ?
-                """;
-        try {
-            return Optional.ofNullable(jdbcTemplate.query(query, UdUserEntityExtractor.instance, username));
-        } catch (EmptyResultDataAccessException e) {
+        Optional<UserdataUserEntity> user = userdataUserDAO.findByUsername(username);
+        if (user.isEmpty()) {
             return Optional.empty();
         }
+        user.get().getFriendshipRequests().addAll(friendshipDAO.findUserFriendships(user.get(), true));
+        user.get().getFriendshipAddressees().addAll(friendshipDAO.findUserFriendships(user.get(), false));
+        return user;
     }
 
     @Override
@@ -80,7 +75,7 @@ public class UserdataSpringRepositoryJdbc implements UserdataUserRepository {
     }
 
     @Override
-    public void delete(UserdataUserEntity userdataUserEntity) {
+    public void remove(UserdataUserEntity userdataUserEntity) {
         friendshipDAO.delete(userdataUserEntity);
         userdataUserDAO.delete(userdataUserEntity);
     }
@@ -91,9 +86,18 @@ public class UserdataSpringRepositoryJdbc implements UserdataUserRepository {
     }
 
     @Override
-    public void createOutcomeInvitations(FriendshipStatus status, UserdataUserEntity requester, UserdataUserEntity... addressees) {
+    public void sendInvitation(FriendshipStatus status, UserdataUserEntity requester, UserdataUserEntity... addressees) {
         requester.addFriends(status, addressees);
         friendshipDAO.create(requester.getFriendshipRequests());
     }
 
+    @Override
+    public void addFriend(UserdataUserEntity outcome, UserdataUserEntity... incomes) {
+        outcome.addFriends(FriendshipStatus.ACCEPTED, incomes);
+        friendshipDAO.create(outcome.getFriendshipRequests());
+        Arrays.stream(incomes).forEach(income -> {
+            income.addFriends(FriendshipStatus.ACCEPTED, outcome);
+            friendshipDAO.create(income.getFriendshipRequests());
+        });
+    }
 }

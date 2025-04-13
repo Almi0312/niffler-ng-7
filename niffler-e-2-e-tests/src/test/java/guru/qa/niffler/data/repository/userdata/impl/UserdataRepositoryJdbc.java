@@ -8,17 +8,18 @@ import guru.qa.niffler.data.dao.userdata.impl.UserdataUserDAOJdbc;
 import guru.qa.niffler.data.entity.userdata.FriendshipEntity;
 import guru.qa.niffler.data.entity.userdata.FriendshipStatus;
 import guru.qa.niffler.data.entity.userdata.UserdataUserEntity;
-import guru.qa.niffler.data.repository.userdata.UserdataUserRepository;
+import guru.qa.niffler.data.repository.userdata.UserdataRepository;
 import guru.qa.niffler.data.repository.userdata.mapper.UdUserEntityExtractor;
 
 import java.sql.*;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static guru.qa.niffler.data.template.Connections.holder;
 
-public class UserdataRepositoryJdbc implements UserdataUserRepository {
+public class UserdataRepositoryJdbc implements UserdataRepository {
     private static final Config CFG = Config.getInstance();
 
     private final String udJdbcUrl = CFG.userdataJdbcUrl();
@@ -82,7 +83,7 @@ public class UserdataRepositoryJdbc implements UserdataUserRepository {
     }
 
     @Override
-    public void delete(UserdataUserEntity userdataUserEntity) {
+    public void remove(UserdataUserEntity userdataUserEntity) {
         friendshipDAO.delete(userdataUserEntity);
         userdataUserDAO.delete(userdataUserEntity);
     }
@@ -93,9 +94,18 @@ public class UserdataRepositoryJdbc implements UserdataUserRepository {
     }
 
     @Override
-    public void createOutcomeInvitations(FriendshipStatus status, UserdataUserEntity requester, UserdataUserEntity... addressees) {
+    public void sendInvitation(FriendshipStatus status, UserdataUserEntity requester, UserdataUserEntity... addressees) {
         requester.addFriends(status, addressees);
         friendshipDAO.create(requester.getFriendshipRequests());
     }
 
+    @Override
+    public void addFriend(UserdataUserEntity outcome, UserdataUserEntity... incomes) {
+        outcome.addFriends(FriendshipStatus.ACCEPTED, incomes);
+        friendshipDAO.create(outcome.getFriendshipRequests());
+        Arrays.stream(incomes).forEach(income -> {
+            income.addFriends(FriendshipStatus.ACCEPTED, outcome);
+            friendshipDAO.create(income.getFriendshipRequests());
+        });
+    }
 }
