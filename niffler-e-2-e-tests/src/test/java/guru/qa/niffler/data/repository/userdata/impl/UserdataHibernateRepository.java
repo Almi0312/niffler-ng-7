@@ -65,8 +65,10 @@ public class UserdataHibernateRepository implements UserdataRepository {
     @Override
     public void remove(UserdataUserEntity user) {
         entityManager.joinTransaction();
-        user = entityManager.find(UserdataUserEntity.class, user.getId());
-        entityManager.remove(user);
+        UserdataUserEntity userManaged = entityManager.find(UserdataUserEntity.class, user.getId());
+        userManaged.getFriendshipRequests().clear();
+        userManaged.getFriendshipAddressees().clear();
+        entityManager.remove(userManaged);
         entityManager.flush();
     }
 

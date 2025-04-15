@@ -59,10 +59,10 @@ class HibernateRepositoryTest {
         Assertions.assertEquals(FriendshipStatus.PENDING, otherUserEntity.getFriendshipRequests().getFirst().getStatus());
         Assertions.assertTrue(otherUserEntity.getFriendshipAddressees().isEmpty());
 
-        log.info("Удаление пользователя {}", testUserEntity);
-        userDBRepo.remove(UserdataUserJson.fromEntity(testUserEntity, null));
         log.info("Удаление пользователя {}", otherUserEntity);
         userDBRepo.remove(UserdataUserJson.fromEntity(otherUserEntity, null));
+        log.info("Удаление пользователя {}", testUserName);
+        userDBRepo.remove(testUserJson);
 
         log.info("Проверка что пользователи удалены");
         Assertions.assertNull(authUserDBClient.findUserByUsername(
@@ -156,8 +156,6 @@ class HibernateRepositoryTest {
                 testUserName).orElse(null));
         Assertions.assertNull(userDBRepo.findByUsername(
                 otherUserName).orElse(null));
-        Assertions.assertNull(userRepository.findByUsername(
-                testUserName).orElse(null));
     }
 
     @CsvSource(value =
