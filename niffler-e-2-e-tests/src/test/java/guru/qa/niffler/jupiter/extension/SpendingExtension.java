@@ -28,8 +28,8 @@ public class SpendingExtension implements BeforeEachCallback,
     public void beforeEach(ExtensionContext context) throws Exception {
         AnnotationSupport.findAnnotation(context.getRequiredTestMethod(), User.class)
                 .ifPresent(userAnno -> {
-                    UserdataUserJson userJson = context.getStore(NAMESPACE).get(context.getUniqueId(),
-                            UserdataUserJson.class);
+                    UserdataUserJson userJson = context.getStore(UserExtension.NAMESPACE)
+                            .get(context.getUniqueId(), UserdataUserJson.class);
                     final String username = userJson != null
                             ? userJson.username()
                             : userAnno.username();
@@ -53,10 +53,14 @@ public class SpendingExtension implements BeforeEachCallback,
                         );
                         createdSpends.add(spendClient.createSpend(spend));
                     }
+                    if (userJson != null) {
+                        userJson.testData().spendings().addAll(createdSpends);
+                    } else {
                         context.getStore(NAMESPACE).put(
                                 context.getUniqueId(),
                                 createdSpends
                         );
+                    }
                 });
     }
 
@@ -77,7 +81,7 @@ public class SpendingExtension implements BeforeEachCallback,
     @Override
     @SuppressWarnings("unchecked")
     public SpendJson[] resolveParameter(ParameterContext parameterContext,
-                                      ExtensionContext extensionContext) throws ParameterResolutionException {
+                                        ExtensionContext extensionContext) throws ParameterResolutionException {
         return (SpendJson[]) extensionContext.getStore(SpendingExtension.NAMESPACE)
                 .get(extensionContext.getUniqueId(), List.class)
                 .stream()
