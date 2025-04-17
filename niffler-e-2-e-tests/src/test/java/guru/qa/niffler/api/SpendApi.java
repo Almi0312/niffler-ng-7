@@ -1,5 +1,6 @@
 package guru.qa.niffler.api;
 
+import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.model.CurrencyValues;
 import guru.qa.niffler.model.Period;
 import guru.qa.niffler.model.SpendJson;
@@ -25,5 +26,14 @@ public interface SpendApi {
 
   @DELETE("internal/spends/remove")
   Call<Void> removeSpend(@Query("ids") List<String> ids);
+
+  @POST("internal/categories/add")
+  Call<CategoryJson> addCategories(@Body CategoryJson spend);
+
+  @PATCH("internal/categories/update")
+  Call<CategoryJson> updateCategories(@Body CategoryJson spend);
+
+  @GET("internal/categories/all")
+  Call<List<CategoryJson>> allCategories(@Query("excludeArchived") Boolean excludeArchived);
 
 }
