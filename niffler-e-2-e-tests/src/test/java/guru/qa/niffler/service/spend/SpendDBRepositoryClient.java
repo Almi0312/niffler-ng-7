@@ -29,15 +29,8 @@ public class SpendDBRepositoryClient implements SpendsClient {
 
     @Override
     public SpendJson createSpend(SpendJson spend) {
-        return txTemplate.execute(() -> {
-            SpendEntity spendEntity = SpendEntity.fromJson(spend);
-            CategoryEntity category = spendRepo.findCategoryByUsernameAndName(
-                            spend.category().username(),
-                            spend.category().name())
-                    .orElseGet(() -> spendRepo.createCategory(spendEntity.getCategory()));
-            spendEntity.setCategory(category);
-            return SpendJson.fromEntity(spendRepo.createSpend(spendEntity));
-        });
+        return txTemplate.execute(() ->
+            SpendJson.fromEntity(spendRepo.createSpend(SpendEntity.fromJson(spend))));
     }
 
     @Override

@@ -33,15 +33,8 @@ public class SpendDBSpringRepositoryClient implements SpendsClient{
 
     public SpendJson createSpend(SpendJson spend) {
         txTemplate.setIsolationLevel(Connection.TRANSACTION_READ_COMMITTED);
-        return txTemplate.execute(con -> {
-            SpendEntity spendEntity = SpendEntity.fromJson(spend);
-            CategoryEntity category = spendRepo.findCategoryByUsernameAndName(
-                            spend.category().username(),
-                            spend.category().name())
-                    .orElseGet(() -> spendRepo.createCategory(spendEntity.getCategory()));
-            spendEntity.setCategory(category);
-            return SpendJson.fromEntity(spendRepo.createSpend(spendEntity));
-        });
+        return txTemplate.execute(con ->
+                SpendJson.fromEntity(spendRepo.createSpend(SpendEntity.fromJson(spend))));
     }
 
     @Override
@@ -91,7 +84,8 @@ public class SpendDBSpringRepositoryClient implements SpendsClient{
     public CategoryJson createCategory(CategoryJson category) {
         txTemplate.setIsolationLevel(Connection.TRANSACTION_READ_COMMITTED);
         return txTemplate.execute(con ->
-                CategoryJson.fromEntity(spendRepo.createCategory(CategoryEntity.fromJson(category))));
+                CategoryJson.fromEntity(spendRepo.findCategoryByUsernameAndName(category.username(), category.name())
+                        .orElseGet(() -> spendRepo.createCategory(CategoryEntity.fromJson(category)))));
     }
 
     @Override

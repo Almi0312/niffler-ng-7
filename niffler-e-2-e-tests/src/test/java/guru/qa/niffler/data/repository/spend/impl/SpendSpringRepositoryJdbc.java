@@ -33,7 +33,8 @@ public class SpendSpringRepositoryJdbc implements SpendRepository {
     @Override
     public SpendEntity createSpend(SpendEntity spend) {
         if (spend.getCategory().getId() == null) {
-            CategoryEntity category = categoryDAO.create(spend.getCategory());
+            CategoryEntity category = findCategoryByUsernameAndName(spend.getCategory().getUsername(),
+                    spend.getCategory().getName()).orElseGet(() -> categoryDAO.create(spend.getCategory()));
             spend.setCategory(category);
         }
         return spendDAO.create(spend);

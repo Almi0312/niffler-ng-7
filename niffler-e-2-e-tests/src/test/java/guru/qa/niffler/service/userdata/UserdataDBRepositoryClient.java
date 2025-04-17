@@ -68,8 +68,7 @@ public class UserdataDBRepositoryClient implements UsersClient {
         UserdataUserEntity incomeEntity = udUserRepository.findById(income.id()).orElseThrow();
         for (String outcomeUsername : outcomesUsername) {
             xaTxTemplate.execute(() -> {
-                UserdataUserEntity outcomeEntity = udUserRepository.findByUsername(outcomeUsername).orElseGet(() ->
-                        createNewUser(outcomeUsername, CurrencyValues.RUB, "12345"));
+                UserdataUserEntity outcomeEntity = createNewUser(outcomeUsername, CurrencyValues.RUB, "12345");
                 udUserRepository.sendInvitation(
                         FriendshipStatus.PENDING,
                         outcomeEntity,
@@ -85,8 +84,7 @@ public class UserdataDBRepositoryClient implements UsersClient {
             UserdataUserEntity[] incomes = new UserdataUserEntity[incomesUsername.length];
             for (int x = 0; x < incomesUsername.length; x++) {
                 int y = x;
-                incomes[x] = udUserRepository.findByUsername(incomesUsername[x]).orElseGet(() ->
-                        createNewUser(incomesUsername[y], CurrencyValues.RUB, "12345"));
+                incomes[x] = createNewUser(incomesUsername[y], CurrencyValues.RUB, "12345");
             }
             udUserRepository.sendInvitation(
                     FriendshipStatus.PENDING,
@@ -102,8 +100,7 @@ public class UserdataDBRepositoryClient implements UsersClient {
             UserdataUserEntity[] friends = new UserdataUserEntity[friendsUsername.length];
             for (int x = 0; x < friendsUsername.length; x++) {
                 int y = x;
-                friends[x] = udUserRepository.findByUsername(friendsUsername[x]).orElseGet(() ->
-                        createNewUser(friendsUsername[y], CurrencyValues.RUB, "12345"));
+                friends[x] = createNewUser(friendsUsername[y], CurrencyValues.RUB, "12345");
             }
             udUserRepository.addFriend(
                     currentEntity,
@@ -123,9 +120,11 @@ public class UserdataDBRepositoryClient implements UsersClient {
     }
 
     private UserdataUserEntity createNewUser(String username, CurrencyValues currencyValue, String password) {
-        AuthUserEntity authUser = setAuthUserEntity(username, password);
-        authUserRepository.create(authUser);
-        return udUserRepository.create(setUdUserEntity(username, currencyValue));
+        return udUserRepository.findByUsername(username).orElseGet(() -> {
+            AuthUserEntity authUser = setAuthUserEntity(username, password);
+            authUserRepository.create(authUser);
+            return udUserRepository.create(setUdUserEntity(username, currencyValue));
+        });
     }
 
     private UserdataUserEntity setUdUserEntity(String username, CurrencyValues currencyValue) {
