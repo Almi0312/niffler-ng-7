@@ -28,8 +28,8 @@ public class FriendshipDAOJdbc implements FriendshipDAO {
         try (PreparedStatement createFriendshipPs = holder(udJdbcUrl).connection()
                 .prepareStatement(createFriendshipQuery)) {
             for (FriendshipEntity friend : friends) {
-                createFriendshipPs.setObject(2, friend.getRequester().getId());
-                createFriendshipPs.setObject(1, friend.getAddressee().getId());
+                createFriendshipPs.setObject(1, friend.getRequester().getId());
+                createFriendshipPs.setObject(2, friend.getAddressee().getId());
                 createFriendshipPs.setString(3, friend.getStatus().name());
                 createFriendshipPs.setDate(4, new Date(friend.getCreatedDate().getTime()));
                 createFriendshipPs.setString(5, friend.getStatus().name());

@@ -32,7 +32,16 @@ public class SpendSpringRepositoryJdbc implements SpendRepository {
 
     @Override
     public SpendEntity createSpend(SpendEntity spend) {
+        if (spend.getCategory().getId() == null) {
+            CategoryEntity category = categoryDAO.create(spend.getCategory());
+            spend.setCategory(category);
+        }
         return spendDAO.create(spend);
+    }
+
+    @Override
+    public SpendEntity updateSpend(SpendEntity spend) {
+        return spendDAO.update(spend);
     }
 
     @Override
@@ -78,7 +87,7 @@ public class SpendSpringRepositoryJdbc implements SpendRepository {
     }
 
     @Override
-    public void delete(SpendEntity spend) {
+    public void remove(SpendEntity spend) {
         spendDAO.delete(spend);
         categoryDAO.delete(spend.getCategory());
     }
@@ -114,7 +123,7 @@ public class SpendSpringRepositoryJdbc implements SpendRepository {
     }
 
     @Override
-    public void deleteCategory(CategoryEntity category) {
+    public void removeCategory(CategoryEntity category) {
         categoryDAO.delete(category);
     }
 }

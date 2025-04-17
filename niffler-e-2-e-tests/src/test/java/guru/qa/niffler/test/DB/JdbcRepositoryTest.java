@@ -1,17 +1,22 @@
 package guru.qa.niffler.test.DB;
 
 import guru.qa.niffler.data.entity.auth.AuthUserEntity;
+import guru.qa.niffler.data.entity.spend.CategoryEntity;
 import guru.qa.niffler.data.entity.userdata.*;
-import guru.qa.niffler.data.repository.userdata.UserdataUserRepository;
+import guru.qa.niffler.data.repository.spend.SpendRepository;
+import guru.qa.niffler.data.repository.spend.impl.SpendRepositoryJdbc;
+import guru.qa.niffler.data.repository.userdata.UserdataRepository;
 import guru.qa.niffler.data.repository.userdata.impl.UserdataRepositoryJdbc;
 import guru.qa.niffler.model.*;
-import guru.qa.niffler.service.auth.repository.AuthUserDBRepositoryClient;
-import guru.qa.niffler.service.spend.dao.CategoryDBClient;
-import guru.qa.niffler.service.spend.repository.SpendDBRepositoryClient;
-import guru.qa.niffler.service.userdata.repository.UserdataDBRepositoryClient;
+import guru.qa.niffler.service.auth.AuthUserDBRepositoryClient;
+import guru.qa.niffler.service.spend.SpendDBRepositoryClient;
+import guru.qa.niffler.service.spend.SpendsClient;
+import guru.qa.niffler.service.userdata.UserdataDBRepositoryClient;
+import guru.qa.niffler.service.userdata.UsersClient;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -19,173 +24,165 @@ import java.util.Date;
 
 import static guru.qa.niffler.config.Constants.MAIN_USERNAME;
 import static guru.qa.niffler.model.CurrencyValues.*;
-import static guru.qa.niffler.util.RandomDataUtils.*;
 
 @Slf4j
 class JdbcRepositoryTest {
 
-    @Test
-    void checkRequestFriendship() {
-        UserdataDBRepositoryClient userDBRepo = new UserdataDBRepositoryClient();
-        UserdataUserRepository userRepository = new UserdataRepositoryJdbc();
-        String testUserName = "testFriend1";
-        String otherUserName = "requesterNatali";
+    @CsvSource(value =
+            {"jdbc testFriend1, jdbc requesterNatali, 12345"})
+    @ParameterizedTest
+    void checkRequestFriendship(String testUserName, String otherUserName, String password) {
+        UsersClient userDBRepo = new UserdataDBRepositoryClient();
+        AuthUserDBRepositoryClient authUserDBClient = new AuthUserDBRepositoryClient();
+        UserdataRepository userRepository = new UserdataRepositoryJdbc();
 
         log.info("Создание объекта {}", testUserName);
-        UserdataUserJson testUser = userDBRepo.findByUsername(testUserName).orElseGet(() ->
-                userDBRepo.create(new UserdataUserJson(
-                        null, testUserName, null, null,
-                        null, RUB, null, null, null)));
+        UserdataUserJson testUserJson = userDBRepo.findByUsername(testUserName).orElseGet(() ->
+                userDBRepo.create(testUserName, RUB, password));
 
-        log.info("проверка создания {}", testUser.username());
-        UserdataUserEntity testUserEntity = userRepository.findById(
-                UserdataUserEntity.fromJson(testUser).getId()).orElse(null);
-        Assertions.assertNotNull(testUserEntity, "объект %s не был создан".formatted(testUserEntity));
+        log.info("проверка создания {}", testUserName);
+        testUserJson = userDBRepo.findById(
+                UserdataUserEntity.fromJson(testUserJson).getId()).orElseThrow(() ->
+                new RuntimeException("Объект с username - %s не создан".formatted(testUserName)));
 
-        log.info("Создание объекта для отправки запроса в друзья {}", otherUserName);
-        UserdataUserJson otherUser = userDBRepo.findByUsername(otherUserName).orElseGet(() ->
-                userDBRepo.create(new UserdataUserJson(
-                        null, otherUserName, null, null,
-                        null, USD, null, null, null)));
+        log.info("Отправка запроса в друзья от {} для {}", otherUserName, testUserName);
+        userDBRepo.createIncomeInvitations(testUserJson, otherUserName); // requester
 
-        log.info("проверка создания {}", otherUser.username());
-        UserdataUserEntity otherUserEntity = userRepository.findById(
-                UserdataUserEntity.fromJson(otherUser).getId()).orElse(null);
-        Assertions.assertNotNull(otherUserEntity, "объект %s не был создан".formatted(otherUserEntity));
-
-        log.info("Отправка запроса в друзья от {} для {}", otherUserEntity, testUserEntity);
-        userDBRepo.createIncomeInvitations(testUserEntity, otherUserEntity); // requester
-        otherUserEntity.getFriendshipRequests().addAll(userRepository.findUserFriendships(otherUserEntity, true));
+        log.info("Получение созданного юзера {} и его дружеские связи", otherUserName);
+        UserdataUserEntity otherUserEntity = userRepository.findByUsernameWithFriendship(otherUserName)
+                        .orElseThrow(() -> new RuntimeException("Объект с username - %s не создан".formatted(otherUserName)));
 
         log.info("ПРОВЕРКИ КОРРЕКТНОСТИ СОЗДАННОЙ ДРУЖБЫ\n" +
-                "Отправлен запрос в друзья от {} для {}", otherUserEntity, testUserEntity);
-        Assertions.assertEquals(otherUserEntity.getFriendshipRequests().getFirst().getAddressee(), testUserEntity);
-        Assertions.assertEquals(otherUserEntity.getFriendshipRequests().getFirst().getRequester(), otherUserEntity);
+                "Отправлен запрос в друзья от {} для {}", otherUserEntity, testUserJson);
+        Assertions.assertEquals(otherUserEntity.getFriendshipRequests().getFirst().getAddressee().getId(), testUserJson.id());
+        Assertions.assertEquals(otherUserEntity.getFriendshipRequests().getFirst().getRequester().getId(), otherUserEntity.getId());
         Assertions.assertEquals(FriendshipStatus.PENDING, otherUserEntity.getFriendshipRequests().getFirst().getStatus());
         Assertions.assertTrue(otherUserEntity.getFriendshipAddressees().isEmpty());
 
         log.info("Удаление пользователя");
-        userDBRepo.delete(testUser);
-        userDBRepo.delete(otherUser);
+        userDBRepo.remove(testUserJson);
+        userDBRepo.remove(UserdataUserJson.fromEntity(otherUserEntity, null));
 
         log.info("Проверка что пользователи удалены");
-        Assertions.assertNull(userRepository.findByIdWithFriendship(
-                UserdataUserEntity.fromJson(testUser).getId()).orElse(null));
-        Assertions.assertNull(userRepository.findByIdWithFriendship(
-                UserdataUserEntity.fromJson(otherUser).getId()).orElse(null));
+        Assertions.assertNull(authUserDBClient.findUserByUsername(
+                otherUserName).orElse(null));
+        Assertions.assertNull(authUserDBClient.findUserByUsername(
+                testUserName).orElse(null));
+        Assertions.assertNull(userRepository.findByUsername(
+                otherUserName).orElse(null));
+        Assertions.assertNull(userRepository.findByUsername(
+                testUserName).orElse(null));
     }
 
-    @Test
-    void checkAddresseeFriendship() {
-        UserdataDBRepositoryClient userDBRepo = new UserdataDBRepositoryClient();
-        UserdataUserRepository userRepository = new UserdataRepositoryJdbc();
-        String testUserName = "testFriend2";
-        String otherUserName = "addresseeNatali";
+    @CsvSource(value =
+            {"jdbc testFriend2, jdbc addresseeNatali, 12345"})
+    @ParameterizedTest
+    void checkAddresseeFriendship(String testUserName, String otherUserName, String password) {
+        UsersClient userDBRepo = new UserdataDBRepositoryClient();
+        AuthUserDBRepositoryClient authUserDBClient = new AuthUserDBRepositoryClient();
+        UserdataRepository userRepository = new UserdataRepositoryJdbc();
 
         log.info("Создание объекта {}", testUserName);
-        UserdataUserJson testUser = userDBRepo.findByUsername(testUserName).orElseGet(() ->
-                userDBRepo.create(new UserdataUserJson(
-                        null, testUserName, null, null,
-                        null, RUB, null, null, null)));
+        UserdataUserJson testUserJson = userDBRepo.findByUsername(testUserName).orElseGet(() ->
+                userDBRepo.create(testUserName, RUB, password));
 
-        log.info("проверка создания {}", testUser.username());
-        UserdataUserEntity testUserEntity = userRepository.findById(
-                UserdataUserEntity.fromJson(testUser).getId()).orElse(null);
-        Assertions.assertNotNull(testUserEntity, "объект %s не был создан".formatted(testUserEntity));
+        log.info("проверка создания {}", testUserName);
+        testUserJson = userDBRepo.findById(
+                UserdataUserEntity.fromJson(testUserJson).getId()).orElseThrow(() ->
+                new RuntimeException("Объект с username - %s не создан".formatted(testUserName)));
+        log.info("Отправка запроса в друзья от {} для {}", testUserName, otherUserName);
+        userDBRepo.createOutcomeInvitations(testUserJson, otherUserName); // addressee
 
-        log.info("Создание объекта для отправки запроса в друзья {}", otherUserName);
-        UserdataUserJson otherUser = userDBRepo.findByUsername(otherUserName).orElseGet(() ->
-                userDBRepo.create(new UserdataUserJson(
-                        null, otherUserName, null, null,
-                        null, USD, null, null, null)));
-
-        log.info("проверка создания {}", otherUser.username());
-        UserdataUserEntity otherUserEntity = userRepository.findById(
-                UserdataUserEntity.fromJson(otherUser).getId()).orElse(null);
-        Assertions.assertNotNull(otherUserEntity, "объект %s не был создан".formatted(otherUserEntity));
-
-        log.info("Отправка запроса в друзья");
-        userDBRepo.createOutcomeInvitations(testUserEntity, otherUserEntity); // addressee
-        testUserEntity.getFriendshipRequests().addAll(userRepository.findUserFriendships(testUserEntity, true));
+        log.info("Получение созданного юзера {} и его дружеские связи", otherUserName);
+        UserdataUserEntity otherUserEntity = userRepository.findByUsernameWithFriendship(otherUserName)
+                .orElseThrow(() -> new RuntimeException("Объект с username - %s не создан".formatted(otherUserName)));
 
         log.info("ПРОВЕРКИ КОРРЕКТНОСТИ СОЗДАННОЙ ДРУЖБЫ\n" +
-                "Отправлен запрос в друзья от {} для {}", testUserEntity, otherUserEntity);
-        Assertions.assertEquals(testUserEntity.getFriendshipRequests().getFirst().getAddressee(), otherUserEntity);
-        Assertions.assertEquals(testUserEntity.getFriendshipRequests().getFirst().getRequester(), testUserEntity);
-        Assertions.assertEquals(FriendshipStatus.PENDING, testUserEntity.getFriendshipRequests().getFirst().getStatus());
-        Assertions.assertTrue(testUserEntity.getFriendshipAddressees().isEmpty());
+                "Отправлен запрос в друзья от {} для {}", testUserName, otherUserName);
+        Assertions.assertEquals(otherUserEntity.getFriendshipAddressees().getFirst().getAddressee().getId(), otherUserEntity.getId());
+        Assertions.assertEquals(otherUserEntity.getFriendshipAddressees().getFirst().getRequester().getId(), testUserJson.id());
+        Assertions.assertEquals(FriendshipStatus.PENDING, otherUserEntity.getFriendshipAddressees().getFirst().getStatus());
+        Assertions.assertTrue(otherUserEntity.getFriendshipRequests().isEmpty());
 
         log.info("Удаление пользователя");
-        userDBRepo.delete(testUser);
-        userDBRepo.delete(otherUser);
+        userDBRepo.remove(testUserJson);
+        userDBRepo.remove(UserdataUserJson.fromEntity(otherUserEntity, null));
 
         log.info("Проверка что пользователи удалены");
-        Assertions.assertNull(userRepository.findByIdWithFriendship(
-                UserdataUserEntity.fromJson(testUser).getId()).orElse(null));
-        Assertions.assertNull(userRepository.findByIdWithFriendship(
-                UserdataUserEntity.fromJson(otherUser).getId()).orElse(null));
+        Assertions.assertNull(authUserDBClient.findUserByUsername(
+                otherUserName).orElse(null));
+        Assertions.assertNull(authUserDBClient.findUserByUsername(
+                testUserName).orElse(null));
+        Assertions.assertNull(userRepository.findByUsername(
+                otherUserName).orElse(null));
+        Assertions.assertNull(userRepository.findByUsername(
+                testUserName).orElse(null));
     }
 
-    @Test
-    void checkFriendFriendship() {
-        UserdataDBRepositoryClient userDBRepo = new UserdataDBRepositoryClient();
-        UserdataUserRepository userRepository = new UserdataRepositoryJdbc();
-        String testUserName = "testFriend3";
-        String otherUserName = "friendNatali";
+    @CsvSource(value =
+            {"jdbc testFriend3, jdbc friendNatali, 12345"})
+    @ParameterizedTest
+    void checkFriendFriendship(String testUserName, String otherUserName, String password) {
+        UsersClient userDBRepo = new UserdataDBRepositoryClient();
+        AuthUserDBRepositoryClient authUserDBClient = new AuthUserDBRepositoryClient();
+        UserdataRepository userRepository = new UserdataRepositoryJdbc();
 
         log.info("Создание объекта {}", testUserName);
-        UserdataUserJson testUser = userDBRepo.findByUsername(testUserName).orElseGet(() ->
-                userDBRepo.create(new UserdataUserJson(
-                        null, testUserName, null, null,
-                        null, RUB, null, null, null)));
+        UserdataUserJson testUserJson = userDBRepo.findByUsername(testUserName).orElseGet(() ->
+                userDBRepo.create(testUserName, RUB, password));
 
-        log.info("проверка создания {}", testUser.username());
-        UserdataUserEntity testUserEntity = userRepository.findById(
-                UserdataUserEntity.fromJson(testUser).getId()).orElse(null);
-        Assertions.assertNotNull(testUserEntity, "объект %s не был создан".formatted(testUserEntity));
+        log.info("проверка создания {}", testUserName);
+        testUserJson = userDBRepo.findById(
+                UserdataUserEntity.fromJson(testUserJson).getId()).orElseThrow(() ->
+                new RuntimeException("Объект с username - %s не создан".formatted(testUserName)));
+        log.info("{} и {} должны быть друзьями", testUserName, otherUserName);
+        userDBRepo.createFriends(testUserJson, otherUserName); // friend
 
-        log.info("Создание объекта для отправки запроса в друзья {}", otherUserName);
-        UserdataUserJson otherUser = userDBRepo.findByUsername(otherUserName).orElseGet(() ->
-                userDBRepo.create(new UserdataUserJson(
-                        null, otherUserName, null, null,
-                        null, USD, null, null, null)));
-
-        log.info("проверка создания {}", otherUser.username());
-        UserdataUserEntity otherUserEntity = userRepository.findById(
-                UserdataUserEntity.fromJson(otherUser).getId()).orElse(null);
-        Assertions.assertNotNull(otherUserEntity, "объект %s не был создан".formatted(otherUserEntity));
-
-        log.info("Отправка запроса в друзья");
-        userDBRepo.createFriends(testUserEntity, otherUserEntity); // friend
-        otherUserEntity.getFriendshipRequests().addAll(userRepository.findUserFriendships(otherUserEntity, true));
+        log.info("Получение созданного юзера {} и его дружеские связи", otherUserName);
+        UserdataUserEntity otherUserEntity = userRepository.findByUsernameWithFriendship(otherUserName)
+                .orElseThrow(() -> new RuntimeException("Объект с username - %s не создан".formatted(otherUserName)));
+        UserdataUserEntity testUserEntity = userRepository.findByUsernameWithFriendship(testUserName)
+                .orElseThrow(() -> new RuntimeException("Объект с username - %s не создан".formatted(testUserName)));
 
         log.info("ПРОВЕРКИ КОРРЕКТНОСТИ СОЗДАННОЙ ДРУЖБЫ\n" +
-                "Стали друзьями");
-        Assertions.assertEquals(FriendshipStatus.ACCEPTED, testUserEntity.getFriendshipRequests().getFirst().getStatus());
+                "Отправлен запрос в друзья от {} для {}", testUserName, otherUserName);
+        Assertions.assertEquals(otherUserEntity.getFriendshipAddressees().getFirst().getAddressee().getId(), otherUserEntity.getId());
+        Assertions.assertEquals(otherUserEntity.getFriendshipAddressees().getFirst().getRequester().getId(), testUserJson.id());
+        Assertions.assertEquals(otherUserEntity.getFriendshipRequests().size(), 1);
+        Assertions.assertEquals(otherUserEntity.getFriendshipAddressees().size(), 1);
+        Assertions.assertEquals(testUserEntity.getFriendshipRequests().size(), 1);
+        Assertions.assertEquals(testUserEntity.getFriendshipAddressees().size(), 1);
         Assertions.assertEquals(FriendshipStatus.ACCEPTED, otherUserEntity.getFriendshipRequests().getFirst().getStatus());
+        Assertions.assertEquals(FriendshipStatus.ACCEPTED, otherUserEntity.getFriendshipAddressees().getFirst().getStatus());
+        Assertions.assertEquals(FriendshipStatus.ACCEPTED, testUserEntity.getFriendshipRequests().getFirst().getStatus());
+        Assertions.assertEquals(FriendshipStatus.ACCEPTED, testUserEntity.getFriendshipAddressees().getFirst().getStatus());
 
         log.info("Удаление пользователя");
-        userDBRepo.delete(testUser);
-        userDBRepo.delete(otherUser);
+        userDBRepo.remove(testUserJson);
+        userDBRepo.remove(UserdataUserJson.fromEntity(otherUserEntity, null));
 
         log.info("Проверка что пользователи удалены");
-        Assertions.assertNull(userRepository.findByIdWithFriendship(
-                UserdataUserEntity.fromJson(testUser).getId()).orElse(null));
-        Assertions.assertNull(userRepository.findByIdWithFriendship(
-                UserdataUserEntity.fromJson(otherUser).getId()).orElse(null));
+        Assertions.assertNull(authUserDBClient.findUserByUsername(
+                otherUserName).orElse(null));
+        Assertions.assertNull(authUserDBClient.findUserByUsername(
+                testUserName).orElse(null));
+        Assertions.assertNull(userRepository.findByUsername(
+                otherUserName).orElse(null));
+        Assertions.assertNull(userRepository.findByUsername(
+                testUserName).orElse(null));
     }
 
-    @Test
-    void daoCRUDSpendTest() {
-        String categoryName = "top cource";
-        String spendDescription = "cool cource";
-        SpendDBRepositoryClient dbSpend = new SpendDBRepositoryClient();
+    @CsvSource(value =
+            {"jdbc top cource, jdbc cool cource"})
+    @ParameterizedTest
+    void daoCRUDSpendTest(String categoryName, String spendDescription) {
+        SpendsClient dbSpend = new SpendDBRepositoryClient();
         dbSpend.findByUsernameAndDescription(MAIN_USERNAME, spendDescription)
                 .ifPresent(entity -> {
-                    dbSpend.delete(entity);
+                    dbSpend.remove(entity);
                     log.info("SPEND DELETED");
                 });
-        SpendJson newSpendJson = dbSpend.create(new SpendJson(
+        SpendJson newSpendJson = dbSpend.createSpend(new SpendJson(
                 null,
                 Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()),
                 new CategoryJson(null,
@@ -208,29 +205,21 @@ class JdbcRepositoryTest {
                 "объект %s не равен %s".formatted(newSpendJson, resultSpend));
     }
 
-    @Test
-    void daoCreateAndCheckUserTest() {
-        UserdataDBRepositoryClient userdataDBClient = new UserdataDBRepositoryClient();
+    @CsvSource(value =
+            {"jdbc twix, 12345"})
+    @ParameterizedTest
+    void daoCreateAndCheckUserTest(String username, String password) {
+        UsersClient userdataDBClient = new UserdataDBRepositoryClient();
         AuthUserDBRepositoryClient authUserDBClient = new AuthUserDBRepositoryClient();
-        String username = "twix";
         userdataDBClient.findByUsername(username)
                 .ifPresent(userJson -> {
-                    userdataDBClient.delete(userJson);
+                    userdataDBClient.remove(userJson);
                     log.info("DELETED USER");
                 });
 
         log.info("CREATE USER");
         UserdataUserJson createUserJson = userdataDBClient.create(
-                new UserdataUserJson(
-                        null,
-                        username,
-                        randomSurname(),
-                        randomSurname(),
-                        randomName(),
-                        RUB,
-                        null,
-                        null,
-                        null));
+                username, RUB, password);
 
         log.info("CHECK USER");
         UserdataUserJson findedUserJson = userdataDBClient.findById(createUserJson.id()).orElse(null);
@@ -243,31 +232,30 @@ class JdbcRepositoryTest {
 
         log.info("CHECK AUTH_USER");
         AuthUserEntity authUserEntity = authUserDBClient.findUserByUsername(findedUserJson.username()).orElse(null);
-        Assertions.assertNotNull(authUserEntity, "Юзер авторизации %s не был создан".formatted(authUserEntity));
-        Assertions.assertEquals(2, authUserEntity.getAuthorities().size(), "Authority не был создан корректно");
-        Assertions.assertEquals(findedUserJson.username(), authUserEntity.getUsername(), "Юзер создан неверно");
+        Assertions.assertNotNull(authUserEntity);
+        Assertions.assertEquals(2, authUserEntity.getAuthorities().size());
+        Assertions.assertEquals(findedUserJson.username(), authUserEntity.getUsername());
 
         log.info("DELETE USER");
-        userdataDBClient.delete(createUserJson);
+        userdataDBClient.remove(createUserJson);
         findedUserJson = userdataDBClient.findById(createUserJson.id()).orElse(null);
-        Assertions.assertNull(findedUserJson, "Юзер %s не удален".formatted(findedUserJson));
+        Assertions.assertNull(findedUserJson);
         authUserEntity = authUserDBClient.findUserByUsername(createUserJson.username()).orElse(null);
-        Assertions.assertNull(authUserEntity, "Юзер авторизации %s был создан".formatted(authUserEntity));
+        Assertions.assertNull(authUserEntity);
     }
 
-    @Test
-    void checkTransactionSpendTest() {
-        String categoryName = "top cource transac2";
-        String spendDescription = "cool cource transac";
-        SpendDBRepositoryClient dbSpend = new SpendDBRepositoryClient();
-        CategoryDBClient categoryDbClient = new CategoryDBClient();
+    @CsvSource(value =
+            {"jdbc top cource transac2, jdbc cool cource transac2"})
+    @ParameterizedTest
+    void checkTransactionSpendTest(String categoryName, String spendDescription) {
+        SpendsClient dbSpend = new SpendDBRepositoryClient();
         dbSpend.findByUsernameAndDescription(MAIN_USERNAME, spendDescription)
                 .ifPresent(entity -> {
-                    dbSpend.delete(entity);
+                    dbSpend.remove(entity);
                     log.info("SPEND DELETED");
                 });
         Assertions.assertThrows(RuntimeException.class,
-                () -> dbSpend.create(new SpendJson(
+                () -> dbSpend.createSpend(new SpendJson(
                         null,
                         new Date(),
                         new CategoryJson(null,
@@ -282,43 +270,35 @@ class JdbcRepositoryTest {
         log.info("CHECK NOT SPEND CREATED");
         SpendJson resultSpend = dbSpend
                 .findByUsernameAndDescription(MAIN_USERNAME, spendDescription).orElse(null);
-        Assertions.assertNull(resultSpend,
-                "объект %s был создан(".formatted(resultSpend));
+        Assertions.assertNull(resultSpend);
         log.info("CHECK NOT CATEGORY CREATED");
-        CategoryJson categoryJson = categoryDbClient
-                .findByUsernameAndName(MAIN_USERNAME, categoryName).orElse(null);
-        Assertions.assertNull(categoryJson,
-                "объект %s был создан(".formatted(categoryJson));
+        CategoryJson categoryEntity = dbSpend
+                .findCategoryByUsernameAndName(MAIN_USERNAME, categoryName).orElse(null);
+        Assertions.assertNull(categoryEntity);
     }
 
-    @Test
-    void checkTransactionByUserTest() {
-        UserdataDBRepositoryClient userdataDBClient = new UserdataDBRepositoryClient();
+    @CsvSource(value =
+            {"jdbc transac, 12345"})
+    @ParameterizedTest
+    void checkTransactionByUserTest(String username, String password) {
+        UsersClient userdataDBClient = new UserdataDBRepositoryClient();
         AuthUserDBRepositoryClient authUserDBClient = new AuthUserDBRepositoryClient();
-        String username = "transac";
         userdataDBClient.findByUsername(username)
                 .ifPresent(userJson -> {
-                    userdataDBClient.delete(userJson);
+                    userdataDBClient.remove(userJson);
                     log.info("DELETED USER");
                 });
         Assertions.assertThrows(RuntimeException.class, () ->
                 userdataDBClient.create(
-                        new UserdataUserJson(
-                                null,
-                                username,
-                                randomSurname(),
-                                randomSurname(),
-                                randomName(),
-                                null, // Здесь падение транзакции
-                                null,
-                                null,
-                                null
-                        )));
+                        username, null, // падение транзакции
+                        password));
+
         log.info("EXPECT NOT CREATED USER");
         UserdataUserJson udUser = userdataDBClient.findByUsername(username).orElse(null);
-        Assertions.assertNull(udUser, "Юзер %s был создан".formatted(udUser));
+        Assertions.assertNull(udUser);
+
         log.info("EXPECT NOT CREATED AUTH_USER");
         AuthUserEntity authUserEntity = authUserDBClient.findUserByUsername(username).orElse(null);
-        Assertions.assertNull(authUserEntity, "Юзер авторизации %s был создан".formatted(authUserEntity));
+        Assertions.assertNull(authUserEntity);
     }
 }

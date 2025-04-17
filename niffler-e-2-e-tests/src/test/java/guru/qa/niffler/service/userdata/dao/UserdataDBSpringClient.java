@@ -93,7 +93,7 @@ public class UserdataDBSpringClient {
                     authUserDAO.findByUsername(userdataUserJson.username())
                             .ifPresent(entity -> {
                                 authorityDAO.delete(entity);
-                                authUserDAO.deleteByUsername(entity);
+                                authUserDAO.delete(entity);
                             });
                 });
     }

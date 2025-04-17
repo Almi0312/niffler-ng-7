@@ -7,7 +7,8 @@ import java.util.UUID;
 
 public interface AuthUserDAO {
     AuthUserEntity create(AuthUserEntity authUserEntity);
+    AuthUserEntity update(AuthUserEntity authUserEntity);
     Optional<AuthUserEntity> findById(UUID id);
     Optional<AuthUserEntity> findByUsername(String userEntity);
-    void deleteByUsername(AuthUserEntity authUserEntity);
+    void delete(AuthUserEntity authUserEntity);
 }

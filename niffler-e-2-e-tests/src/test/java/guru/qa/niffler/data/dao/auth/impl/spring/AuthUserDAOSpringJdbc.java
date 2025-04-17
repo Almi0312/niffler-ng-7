@@ -49,6 +49,28 @@ public class AuthUserDAOSpringJdbc implements AuthUserDAO {
     }
 
     @Override
+    public AuthUserEntity update(AuthUserEntity authUserEntity) {
+        String userUpdateQuery = """
+                UPDATE \"user\" SET 
+                username = ?, 
+                password = ?, 
+                enabled = ?, 
+                account_non_expired = ?,
+                "account_non_locked = ?, 
+                credentials_non_expired = ?
+                WHERE id = ?"
+                """;
+        jdbcTemplate.update(userUpdateQuery,
+                authUserEntity.getUsername(),
+                authUserEntity.getPassword(),
+                authUserEntity.getEnabled(),
+                authUserEntity.getAccountNonExpired(),
+                authUserEntity.getAccountNonLocked(),
+                authUserEntity.getCredentialsNonExpired());
+        return authUserEntity;
+    }
+
+    @Override
     public Optional<AuthUserEntity> findById(UUID id) {
         String query = "SELECT * FROM \"user\" WHERE id = ?";
         try {
@@ -71,8 +93,8 @@ public class AuthUserDAOSpringJdbc implements AuthUserDAO {
     }
 
     @Override
-    public void deleteByUsername(AuthUserEntity authUserEntity) {
-        String query = "DELETE FROM \"user\" WHERE username = ?";
-        jdbcTemplate.update(query, authUserEntity.getUsername());
+    public void delete(AuthUserEntity authUserEntity) {
+        String query = "DELETE FROM \"user\" WHERE id = ?";
+        jdbcTemplate.update(query, authUserEntity.getId());
     }
 }

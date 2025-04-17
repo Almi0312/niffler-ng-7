@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface UserdataUserRepository {
+public interface UserdataRepository {
     UserdataUserEntity create(UserdataUserEntity userdataUserEntity);
 
     Optional<UserdataUserEntity> findById(UUID id);
@@ -23,8 +23,9 @@ public interface UserdataUserRepository {
 
     UserdataUserEntity update(UserdataUserEntity user);
 
-    void delete(UserdataUserEntity userdataUserEntity);
+    void remove(UserdataUserEntity userdataUserEntity);
 
-    void createOutcomeInvitations(FriendshipStatus status, UserdataUserEntity requester, UserdataUserEntity... addressees);
+    void sendInvitation(FriendshipStatus status, UserdataUserEntity requester, UserdataUserEntity... addressees);
 
+    void addFriend(UserdataUserEntity outcome, UserdataUserEntity... incomes);
 }

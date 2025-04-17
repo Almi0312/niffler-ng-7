@@ -9,6 +9,8 @@ import java.util.UUID;
 public interface SpendDAO {
     SpendEntity create(SpendEntity spend);
 
+    SpendEntity update(SpendEntity spend);
+
     Optional<SpendEntity> findById(UUID id);
 
     Optional<SpendEntity> findByUsernameAndDescription(String username, String name);

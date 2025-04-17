@@ -1,22 +1,22 @@
 package guru.qa.niffler.test.DB;
 
 import guru.qa.niffler.data.entity.auth.AuthUserEntity;
-import guru.qa.niffler.data.entity.spend.CategoryEntity;
-import guru.qa.niffler.data.entity.userdata.*;
-import guru.qa.niffler.data.repository.spend.SpendRepository;
-import guru.qa.niffler.data.repository.spend.impl.SpendSpringRepositoryJdbc;
+import guru.qa.niffler.data.entity.userdata.FriendshipStatus;
+import guru.qa.niffler.data.entity.userdata.UserdataUserEntity;
 import guru.qa.niffler.data.repository.userdata.UserdataRepository;
-import guru.qa.niffler.data.repository.userdata.impl.UserdataSpringRepositoryJdbc;
+import guru.qa.niffler.data.repository.userdata.impl.UserdataHibernateRepository;
 import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.model.SpendJson;
 import guru.qa.niffler.model.UserdataUserJson;
-import guru.qa.niffler.service.auth.AuthUserDBSpringRepositoryClient;
-import guru.qa.niffler.service.spend.SpendDBSpringRepositoryClient;
+import guru.qa.niffler.service.auth.AuthUserHibernateDBClient;
 import guru.qa.niffler.service.spend.SpendsClient;
-import guru.qa.niffler.service.userdata.UserdataDBSpringRepositoryClient;
+import guru.qa.niffler.service.spend.dao.CategoryDBClient;
+import guru.qa.niffler.service.spend.SpendHibernateDBClient;
+import guru.qa.niffler.service.userdata.UserdataHibernateDBClient;
 import guru.qa.niffler.service.userdata.UsersClient;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -25,45 +25,44 @@ import java.time.ZoneId;
 import java.util.Date;
 
 import static guru.qa.niffler.config.Constants.MAIN_USERNAME;
-import static guru.qa.niffler.model.CurrencyValues.*;
+import static guru.qa.niffler.model.CurrencyValues.RUB;
 
 @Slf4j
-class JdbcSpringRepositoryTest {
+class HibernateRepositoryTest {
+
+    static UsersClient userDBRepo = new UserdataHibernateDBClient();
+    static SpendsClient dbSpend = new SpendHibernateDBClient();
+    static AuthUserHibernateDBClient authUserDBClient = new AuthUserHibernateDBClient();
 
     @CsvSource(value =
-            {"spring testFriend1, spring requesterNatali, 12345"})
+            "hibernate testFriend1, hibernate requesterNatali, 12345")
     @ParameterizedTest
     void checkRequestFriendship(String testUserName, String otherUserName, String password) {
-        UsersClient userDBRepo = new UserdataDBSpringRepositoryClient();
-        AuthUserDBSpringRepositoryClient authUserDBClient = new AuthUserDBSpringRepositoryClient();
-        UserdataRepository userRepository = new UserdataSpringRepositoryJdbc();
+        UserdataRepository userRepository = new UserdataHibernateRepository();
 
         log.info("Создание объекта {}", testUserName);
         UserdataUserJson testUserJson = userDBRepo.findByUsername(testUserName).orElseGet(() ->
                 userDBRepo.create(testUserName, RUB, password));
 
-        log.info("проверка создания {}", testUserName);
-        testUserJson = userDBRepo.findById(
-                UserdataUserEntity.fromJson(testUserJson).getId()).orElseThrow(() ->
-                new RuntimeException("Объект с username - %s не создан".formatted(testUserName)));
+        UserdataUserEntity testUserEntity = userRepository.findById(testUserJson.id()).orElseThrow(() ->
+                new RuntimeException("объект с username = %s не был создан".formatted(testUserName)));
 
         log.info("Отправка запроса в друзья от {} для {}", otherUserName, testUserName);
         userDBRepo.createIncomeInvitations(testUserJson, otherUserName); // requester
-
-        log.info("Получение созданного юзера {} и его дружеские связи", otherUserName);
-        UserdataUserEntity otherUserEntity = userRepository.findByUsernameWithFriendship(otherUserName)
-                .orElseThrow(() -> new RuntimeException("Объект с username - %s не создан".formatted(otherUserName)));
+        UserdataUserEntity otherUserEntity = userRepository.findByUsername(otherUserName).orElseThrow(
+                () -> new RuntimeException("объект с username = %s не был создан".formatted(otherUserName)));
 
         log.info("ПРОВЕРКИ КОРРЕКТНОСТИ СОЗДАННОЙ ДРУЖБЫ\n" +
-                "Отправлен запрос в друзья от {} для {}", otherUserEntity, testUserJson);
+                "Отправлен запрос в друзья от {} для {}", otherUserName, testUserName);
         Assertions.assertEquals(otherUserEntity.getFriendshipRequests().getFirst().getAddressee().getId(), testUserJson.id());
         Assertions.assertEquals(otherUserEntity.getFriendshipRequests().getFirst().getRequester().getId(), otherUserEntity.getId());
         Assertions.assertEquals(FriendshipStatus.PENDING, otherUserEntity.getFriendshipRequests().getFirst().getStatus());
         Assertions.assertTrue(otherUserEntity.getFriendshipAddressees().isEmpty());
 
-        log.info("Удаление пользователя");
-        userDBRepo.remove(testUserJson);
+        log.info("Удаление пользователя {}", otherUserEntity);
         userDBRepo.remove(UserdataUserJson.fromEntity(otherUserEntity, null));
+        log.info("Удаление пользователя {}", testUserName);
+        userDBRepo.remove(testUserJson);
 
         log.info("Проверка что пользователи удалены");
         Assertions.assertNull(authUserDBClient.findUserByUsername(
@@ -77,27 +76,21 @@ class JdbcSpringRepositoryTest {
     }
 
     @CsvSource(value =
-            {"spring testFriend2, spring addresseeNatali, 12345"})
+            "hibernate testFriend2, hibernate addresseeNatali, 12345")
     @ParameterizedTest
     void checkAddresseeFriendship(String testUserName, String otherUserName, String password) {
-        UsersClient userDBRepo = new UserdataDBSpringRepositoryClient();
-        AuthUserDBSpringRepositoryClient authUserDBClient = new AuthUserDBSpringRepositoryClient();
-        UserdataRepository userRepository = new UserdataSpringRepositoryJdbc();
+        UserdataRepository userRepository = new UserdataHibernateRepository();
 
         log.info("Создание объекта {}", testUserName);
         UserdataUserJson testUserJson = userDBRepo.findByUsername(testUserName).orElseGet(() ->
                 userDBRepo.create(testUserName, RUB, password));
 
-        log.info("проверка создания {}", testUserName);
-        testUserJson = userDBRepo.findById(
-                UserdataUserEntity.fromJson(testUserJson).getId()).orElseThrow(() ->
-                new RuntimeException("Объект с username - %s не создан".formatted(testUserName)));
+        UserdataUserEntity testUserEntity = userRepository.findById(testUserJson.id()).orElseThrow(() ->
+                new RuntimeException("объект с username = %s не был создан".formatted(testUserName)));
+
         log.info("Отправка запроса в друзья от {} для {}", testUserName, otherUserName);
         userDBRepo.createOutcomeInvitations(testUserJson, otherUserName); // addressee
-
-        log.info("Получение созданного юзера {} и его дружеские связи", otherUserName);
-        UserdataUserEntity otherUserEntity = userRepository.findByUsernameWithFriendship(otherUserName)
-                .orElseThrow(() -> new RuntimeException("Объект с username - %s не создан".formatted(otherUserName)));
+        UserdataUserEntity otherUserEntity = userRepository.findByUsername(otherUserName).orElseThrow();
 
         log.info("ПРОВЕРКИ КОРРЕКТНОСТИ СОЗДАННОЙ ДРУЖБЫ\n" +
                 "Отправлен запрос в друзья от {} для {}", testUserName, otherUserName);
@@ -122,32 +115,22 @@ class JdbcSpringRepositoryTest {
     }
 
     @CsvSource(value =
-            {"spring testFriend3, spring friendNatali, 12345"})
+            "hibernate testFriend3, hibernate friendNatali, 12345")
     @ParameterizedTest
     void checkFriendFriendship(String testUserName, String otherUserName, String password) {
-        UsersClient userDBRepo = new UserdataDBSpringRepositoryClient();
-        AuthUserDBSpringRepositoryClient authUserDBClient = new AuthUserDBSpringRepositoryClient();
-        UserdataRepository userRepository = new UserdataSpringRepositoryJdbc();
+        UserdataRepository userRepository = new UserdataHibernateRepository();
 
         log.info("Создание объекта {}", testUserName);
         UserdataUserJson testUserJson = userDBRepo.findByUsername(testUserName).orElseGet(() ->
                 userDBRepo.create(testUserName, RUB, password));
+        UserdataUserEntity testUserEntity = userRepository.findById(testUserJson.id()).orElseThrow();
 
-        log.info("проверка создания {}", testUserName);
-        testUserJson = userDBRepo.findById(
-                UserdataUserEntity.fromJson(testUserJson).getId()).orElseThrow(() ->
-                new RuntimeException("Объект с username - %s не создан".formatted(testUserName)));
         log.info("{} и {} должны быть друзьями", testUserName, otherUserName);
         userDBRepo.createFriends(testUserJson, otherUserName); // friend
-
-        log.info("Получение созданного юзера {} и его дружеские связи", otherUserName);
-        UserdataUserEntity otherUserEntity = userRepository.findByUsernameWithFriendship(otherUserName)
-                .orElseThrow(() -> new RuntimeException("Объект с username - %s не создан".formatted(otherUserName)));
-        UserdataUserEntity testUserEntity = userRepository.findByUsernameWithFriendship(testUserName)
-                .orElseThrow(() -> new RuntimeException("Объект с username - %s не создан".formatted(testUserName)));
+        UserdataUserEntity otherUserEntity = userRepository.findByUsername(otherUserName).orElseThrow();
 
         log.info("ПРОВЕРКИ КОРРЕКТНОСТИ СОЗДАННОЙ ДРУЖБЫ\n" +
-                "Отправлен запрос в друзья от {} для {}", testUserName, otherUserName);
+                "Стали друзьями");
         Assertions.assertEquals(otherUserEntity.getFriendshipAddressees().getFirst().getAddressee().getId(), otherUserEntity.getId());
         Assertions.assertEquals(otherUserEntity.getFriendshipAddressees().getFirst().getRequester().getId(), testUserJson.id());
         Assertions.assertEquals(otherUserEntity.getFriendshipRequests().size(), 1);
@@ -159,8 +142,9 @@ class JdbcSpringRepositoryTest {
         Assertions.assertEquals(FriendshipStatus.ACCEPTED, testUserEntity.getFriendshipRequests().getFirst().getStatus());
         Assertions.assertEquals(FriendshipStatus.ACCEPTED, testUserEntity.getFriendshipAddressees().getFirst().getStatus());
 
-        log.info("Удаление пользователя");
+        log.info("Удаление пользователя {}", testUserEntity);
         userDBRepo.remove(testUserJson);
+        log.info("Удаление пользователя {}", otherUserEntity);
         userDBRepo.remove(UserdataUserJson.fromEntity(otherUserEntity, null));
 
         log.info("Проверка что пользователи удалены");
@@ -168,17 +152,16 @@ class JdbcSpringRepositoryTest {
                 otherUserName).orElse(null));
         Assertions.assertNull(authUserDBClient.findUserByUsername(
                 testUserName).orElse(null));
-        Assertions.assertNull(userRepository.findByUsername(
-                otherUserName).orElse(null));
-        Assertions.assertNull(userRepository.findByUsername(
+        Assertions.assertNull(userDBRepo.findByUsername(
                 testUserName).orElse(null));
+        Assertions.assertNull(userDBRepo.findByUsername(
+                otherUserName).orElse(null));
     }
 
     @CsvSource(value =
-            {"spring top cource, spring cool cource"})
+            "hibernate top cource, hibernate cool cource")
     @ParameterizedTest
     void daoCRUDSpendTest(String categoryName, String spendDescription) {
-        SpendsClient dbSpend = new SpendDBSpringRepositoryClient();
         dbSpend.findByUsernameAndDescription(MAIN_USERNAME, spendDescription)
                 .ifPresent(entity -> {
                     dbSpend.remove(entity);
@@ -207,28 +190,29 @@ class JdbcSpringRepositoryTest {
                 "объект %s не равен %s".formatted(newSpendJson, resultSpend));
     }
 
-    @CsvSource(value =
-            {"spring twix, 12345"})
-    @ParameterizedTest
-    void daoCreateAndCheckUserTest(String username, String password) {
-        UsersClient userdataDBClient = new UserdataDBSpringRepositoryClient();
-        AuthUserDBSpringRepositoryClient authUserDBClient = new AuthUserDBSpringRepositoryClient();
-        userdataDBClient.findByUsername(username)
+    @Test
+    void daoCreateAndCheckUserTest() {
+        UserdataHibernateRepository userdataRepository = new UserdataHibernateRepository();
+        String username = "hibernate twix";
+        String password = "12345";
+        userdataRepository.findByUsername(username)
                 .ifPresent(userJson -> {
-                    userdataDBClient.remove(userJson);
+                    userDBRepo.remove(UserdataUserJson.fromEntity(userJson, null));
                     log.info("DELETED USER");
                 });
 
         log.info("CREATE USER");
-        UserdataUserJson createUserJson = userdataDBClient.create(
-                username, RUB, password);
+        UserdataUserJson createUserJson = userDBRepo
+                .create(username, RUB, password);
 
         log.info("CHECK USER");
-        UserdataUserJson findedUserJson = userdataDBClient.findById(createUserJson.id()).orElse(null);
+        UserdataUserJson findedUserJson = userdataRepository.findById(createUserJson.id())
+                .map(user -> UserdataUserJson.fromEntity(user, null)).orElse(null);
         Assertions.assertNotNull(findedUserJson);
         Assertions.assertEquals(createUserJson, findedUserJson);
 
-        findedUserJson = userdataDBClient.findByUsername(username).orElse(null);
+        findedUserJson = userdataRepository.findById(createUserJson.id())
+                .map(user -> UserdataUserJson.fromEntity(user, null)).orElse(null);
         Assertions.assertNotNull(findedUserJson);
         Assertions.assertEquals(createUserJson, findedUserJson);
 
@@ -239,18 +223,18 @@ class JdbcSpringRepositoryTest {
         Assertions.assertEquals(findedUserJson.username(), authUserEntity.getUsername());
 
         log.info("DELETE USER");
-        userdataDBClient.remove(createUserJson);
-        findedUserJson = userdataDBClient.findById(createUserJson.id()).orElse(null);
-        Assertions.assertNull(findedUserJson);
+        userDBRepo.remove(createUserJson);
         authUserEntity = authUserDBClient.findUserByUsername(createUserJson.username()).orElse(null);
         Assertions.assertNull(authUserEntity);
+        findedUserJson = userDBRepo.findById(createUserJson.id()).orElse(null);
+        Assertions.assertNull(findedUserJson);
     }
 
-    @CsvSource(value =
-            {"spring top cource transac2, spring cool cource transac2"})
-    @ParameterizedTest
-    void checkTransactionSpendTest(String categoryName, String spendDescription) {
-        SpendsClient dbSpend = new SpendDBSpringRepositoryClient();
+    @Test
+    void checkTransactionSpendTest() {
+        String categoryName = "hibernate top cource transac2";
+        String spendDescription = "hibernate cool cource transac";
+        CategoryDBClient categoryDbClient = new CategoryDBClient();
         dbSpend.findByUsernameAndDescription(MAIN_USERNAME, spendDescription)
                 .ifPresent(entity -> {
                     dbSpend.remove(entity);
@@ -272,35 +256,35 @@ class JdbcSpringRepositoryTest {
         log.info("CHECK NOT SPEND CREATED");
         SpendJson resultSpend = dbSpend
                 .findByUsernameAndDescription(MAIN_USERNAME, spendDescription).orElse(null);
-        Assertions.assertNull(resultSpend);
+        Assertions.assertNull(resultSpend,
+                "объект %s был создан(".formatted(resultSpend));
         log.info("CHECK NOT CATEGORY CREATED");
-        CategoryJson categoryJson = dbSpend
-                .findCategoryByUsernameAndName(MAIN_USERNAME, categoryName).orElse(null);
-        Assertions.assertNull(categoryJson);
+        CategoryJson categoryJson = categoryDbClient
+                .findByUsernameAndName(MAIN_USERNAME, categoryName).orElse(null);
+        Assertions.assertNull(categoryJson,
+                "объект %s был создан(".formatted(categoryJson));
     }
 
-    @CsvSource(value =
-            {"spring transac, 12345"})
-    @ParameterizedTest
-    void checkTransactionByUserTest(String username, String password) {
-        UserdataDBSpringRepositoryClient userdataDBClient = new UserdataDBSpringRepositoryClient();
-        AuthUserDBSpringRepositoryClient authUserDBClient = new AuthUserDBSpringRepositoryClient();
-        userdataDBClient.findByUsername(username)
+    @Test
+    void checkTransactionByUserTest() {
+        UserdataHibernateRepository userRepository = new UserdataHibernateRepository();
+        String username = "hibernate usertransac";
+        String password = "12345";
+        userRepository.findByUsername(username)
                 .ifPresent(userJson -> {
-                    userdataDBClient.remove(userJson);
+                    userDBRepo.remove(UserdataUserJson.fromEntity(userJson, null));
                     log.info("DELETED USER");
                 });
         Assertions.assertThrows(RuntimeException.class, () ->
-                userdataDBClient.create(
-                        username, null, // падение транзакции
+                userDBRepo.create(username,
+                        null, // Здесь падение транзакции
                         password));
-
         log.info("EXPECT NOT CREATED USER");
-        UserdataUserJson udUser = userdataDBClient.findByUsername(username).orElse(null);
-        Assertions.assertNull(udUser);
-
+        UserdataUserJson udUser = userRepository.findByUsername(username)
+                .map(user -> UserdataUserJson.fromEntity(user, null)).orElse(null);
+        Assertions.assertNull(udUser, "Юзер %s был создан".formatted(udUser));
         log.info("EXPECT NOT CREATED AUTH_USER");
         AuthUserEntity authUserEntity = authUserDBClient.findUserByUsername(username).orElse(null);
-        Assertions.assertNull(authUserEntity);
+        Assertions.assertNull(authUserEntity, "Юзер авторизации %s был создан".formatted(authUserEntity));
     }
 }
