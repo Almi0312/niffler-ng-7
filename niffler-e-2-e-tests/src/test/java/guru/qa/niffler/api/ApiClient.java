@@ -6,6 +6,7 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
 
 public enum ApiClient {
     SPEND_API(Config.getInstance().spendUrl()),
+    USERDATA_API(Config.getInstance().userdataUrl()),
     GH_API(Config.getInstance().spendUrl()),
     FRONT_API(Config.getInstance().spendUrl());
 

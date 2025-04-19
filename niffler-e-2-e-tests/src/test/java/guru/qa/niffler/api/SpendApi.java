@@ -11,29 +11,30 @@ import java.util.List;
 
 public interface SpendApi {
 
-  @POST("internal/spends/add")
-  Call<SpendJson> addSpend(@Body SpendJson spend);
+    @POST("internal/spends/add")
+    Call<SpendJson> addSpend(@Body SpendJson spend);
 
-  @PATCH("internal/spends/edit")
-  Call<SpendJson> editSpend(@Body SpendJson spend);
+    @PATCH("internal/spends/edit")
+    Call<SpendJson> editSpend(@Body SpendJson spend);
 
-  @GET("internal/spends/{id}")
-  Call<SpendJson> getIDSpend(@Query("id") String id);
+    @GET("internal/spends/{id}")
+    Call<SpendJson> getIDSpend(@Query("id") String id);
 
-  @GET("internal/spends/all")
-  Call<List<SpendJson>> getAllSpend(@Query("filterPeriod") Period period,
-                                    @Query("filterCurrency") CurrencyValues currency);
+    @GET("internal/spends/all")
+    Call<List<SpendJson>> getAllSpend(@Query("filterPeriod") Period period,
+                                      @Query("filterCurrency") CurrencyValues currency);
 
-  @DELETE("internal/spends/remove")
-  Call<Void> removeSpend(@Query("ids") List<String> ids);
+    @DELETE("internal/spends/remove")
+    Call<Void> removeSpend(@Query("ids") List<String> ids);
 
-  @POST("internal/categories/add")
-  Call<CategoryJson> addCategories(@Body CategoryJson spend);
+    @POST("internal/categories/add")
+    Call<CategoryJson> addCategories(@Body CategoryJson spend);
 
-  @PATCH("internal/categories/update")
-  Call<CategoryJson> updateCategories(@Body CategoryJson spend);
+    @PATCH("internal/categories/update")
+    Call<CategoryJson> updateCategories(@Body CategoryJson spend);
 
-  @GET("internal/categories/all")
-  Call<List<CategoryJson>> allCategories(@Query("excludeArchived") Boolean excludeArchived);
+    @GET("internal/categories/all")
+    Call<List<CategoryJson>> allCategories(@Query("username") String username,
+                                           @Query("excludeArchived") Boolean excludeArchived);
 
 }

@@ -85,7 +85,6 @@ public class SpendApiClient {
     return response.body();
   }
 
-  @PATCH("internal/categories/update")
   public CategoryJson updateCategory(CategoryJson category) {
     final Response<CategoryJson> response;
     try {
@@ -97,11 +96,10 @@ public class SpendApiClient {
     return response.body();
   }
 
-  @GET("internal/categories/all")
-  public List<CategoryJson> getAllCategories(Boolean excludeArchived) {
+  public List<CategoryJson> getAllCategories(String username, Boolean excludeArchived) {
     final Response<List<CategoryJson>> response;
     try {
-      response = spendApi.allCategories(excludeArchived).execute();
+      response = spendApi.allCategories(username, excludeArchived).execute();
     } catch (IOException e) {
       throw new AssertionError();
     }
