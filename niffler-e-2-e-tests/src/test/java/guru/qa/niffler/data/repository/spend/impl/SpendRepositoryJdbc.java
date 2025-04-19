@@ -30,6 +30,11 @@ public class SpendRepositoryJdbc implements SpendRepository {
 
     @Override
     public SpendEntity createSpend(SpendEntity spend) {
+        if (spend.getCategory().getId() == null) {
+            CategoryEntity category = findCategoryByUsernameAndName(spend.getCategory().getUsername(),
+                    spend.getCategory().getName()).orElseGet(() -> categoryDAO.create(spend.getCategory()));
+            spend.setCategory(category);
+        }
         return spendDAO.create(spend);
     }
 
@@ -45,7 +50,7 @@ public class SpendRepositoryJdbc implements SpendRepository {
                 if (rs.next()) {
                     SpendEntity spend = SpendEntityRowMapper.instance.mapRow(rs, 0);
                     if (spend.getCategory().getId() != null) {
-                        spend.setCategory(setResultSetValues(rs, spend.getCategory(),"c_"));
+                        spend.setCategory(setResultSetValues(rs, spend.getCategory(), "c_"));
                     }
                     return Optional.ofNullable(spend);
                 }
@@ -74,7 +79,7 @@ public class SpendRepositoryJdbc implements SpendRepository {
                 while (rs.next()) {
                     SpendEntity spend = SpendEntityRowMapper.instance.mapRow(rs, 0);
                     if (spend.getCategory().getId() != null) {
-                        spend.setCategory(setResultSetValues(rs, spend.getCategory(),"c_"));
+                        spend.setCategory(setResultSetValues(rs, spend.getCategory(), "c_"));
                     }
                     spends.add(SpendEntityRowMapper.instance.mapRow(rs, 0));
                 }
@@ -96,7 +101,7 @@ public class SpendRepositoryJdbc implements SpendRepository {
                 while (rs.next()) {
                     SpendEntity spend = SpendEntityRowMapper.instance.mapRow(rs, 0);
                     if (spend.getCategory().getId() != null) {
-                        spend.setCategory(setResultSetValues(rs, spend.getCategory(),"c_"));
+                        spend.setCategory(setResultSetValues(rs, spend.getCategory(), "c_"));
                     }
                 }
                 return spends;
@@ -119,7 +124,7 @@ public class SpendRepositoryJdbc implements SpendRepository {
                 if (rs.next()) {
                     SpendEntity spend = SpendEntityRowMapper.instance.mapRow(rs, 0);
                     if (spend.getCategory().getId() != null) {
-                        spend.setCategory(setResultSetValues(rs, spend.getCategory(),"c_"));
+                        spend.setCategory(setResultSetValues(rs, spend.getCategory(), "c_"));
                     }
                     return Optional.ofNullable(spend);
                 }

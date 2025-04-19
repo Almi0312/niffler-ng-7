@@ -3,7 +3,11 @@ package guru.qa.niffler.test.web;
 import com.codeborne.selenide.Selenide;
 import guru.qa.niffler.config.Config;
 import guru.qa.niffler.config.Constants;
+import guru.qa.niffler.jupiter.annotation.Category;
+import guru.qa.niffler.jupiter.annotation.Spending;
+import guru.qa.niffler.jupiter.annotation.User;
 import guru.qa.niffler.jupiter.annotation.meta.WebTest;
+import guru.qa.niffler.model.UserdataUserJson;
 import guru.qa.niffler.page.LoginPage;
 import org.junit.jupiter.api.Test;
 
@@ -56,9 +60,22 @@ public class RegistrationWebTest {
     }
 
     @Test
-    void mainPageShouldBeDisplayedAfterSuccessLogin() {
+    @User(
+            categories = {
+                    @Category(name = "Магазины2", archived = false),
+                    @Category(name = "Бары2", archived = true)
+            },
+            spendings = {
+                    @Spending(
+                            category = "Обучение2",
+                            description = "QA.GURU Advanced 7",
+                            amount = 80000
+                    )
+            }
+    )
+    void mai0nPageShouldBeDisplayedAfterSuccessLogin(UserdataUserJson userJson) {
         Selenide.open(CFG.frontUrl(), LoginPage.class)
-                .login(Constants.MAIN_USERNAME, Constants.MAIN_PASSWORD)
+                .login(userJson.username(), userJson.testData().password())
                 .checkDiagramStatistics()
                 .checkTableSpending();
     }

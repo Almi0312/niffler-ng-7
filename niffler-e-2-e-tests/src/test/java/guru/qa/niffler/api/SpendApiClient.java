@@ -1,9 +1,13 @@
 package guru.qa.niffler.api;
 
+import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.model.CurrencyValues;
 import guru.qa.niffler.model.Period;
 import guru.qa.niffler.model.SpendJson;
+import org.junit.jupiter.api.Assertions;
 import retrofit2.Response;
+import retrofit2.http.GET;
+import retrofit2.http.PATCH;
 
 import java.io.IOException;
 import java.util.List;
@@ -69,4 +73,40 @@ public class SpendApiClient {
     }
     assertEquals(200, response.code(), "Трата не удалена" + response.message());
   }
+
+  public CategoryJson addCategory(CategoryJson category) {
+    final Response<CategoryJson> response;
+    try {
+      response = spendApi.addCategories(category).execute();
+    } catch (IOException e) {
+      throw new AssertionError();
+    }
+    assertEquals(200, response.code(), format("Категория %s не была создана", category.toString()));
+    return response.body();
+  }
+
+  @PATCH("internal/categories/update")
+  public CategoryJson updateCategory(CategoryJson category) {
+    final Response<CategoryJson> response;
+    try {
+      response = spendApi.updateCategories(category).execute();
+    } catch (IOException e) {
+      throw new AssertionError();
+    }
+    Assertions.assertEquals(200, response.code(), "Категория не была обновлена");
+    return response.body();
+  }
+
+  @GET("internal/categories/all")
+  public List<CategoryJson> getAllCategories(Boolean excludeArchived) {
+    final Response<List<CategoryJson>> response;
+    try {
+      response = spendApi.allCategories(excludeArchived).execute();
+    } catch (IOException e) {
+      throw new AssertionError();
+    }
+    Assertions.assertEquals(200, response.code(), "Получить все категории не удалось");
+    return response.body();
+  }
+
 }

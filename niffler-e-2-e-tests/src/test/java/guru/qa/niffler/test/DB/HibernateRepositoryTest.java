@@ -10,7 +10,6 @@ import guru.qa.niffler.model.SpendJson;
 import guru.qa.niffler.model.UserdataUserJson;
 import guru.qa.niffler.service.auth.AuthUserHibernateDBClient;
 import guru.qa.niffler.service.spend.SpendsClient;
-import guru.qa.niffler.service.spend.dao.CategoryDBClient;
 import guru.qa.niffler.service.spend.SpendHibernateDBClient;
 import guru.qa.niffler.service.userdata.UserdataHibernateDBClient;
 import guru.qa.niffler.service.userdata.UsersClient;
@@ -133,10 +132,10 @@ class HibernateRepositoryTest {
                 "Стали друзьями");
         Assertions.assertEquals(otherUserEntity.getFriendshipAddressees().getFirst().getAddressee().getId(), otherUserEntity.getId());
         Assertions.assertEquals(otherUserEntity.getFriendshipAddressees().getFirst().getRequester().getId(), testUserJson.id());
-        Assertions.assertEquals(otherUserEntity.getFriendshipRequests().size(), 1);
-        Assertions.assertEquals(otherUserEntity.getFriendshipAddressees().size(), 1);
-        Assertions.assertEquals(testUserEntity.getFriendshipRequests().size(), 1);
-        Assertions.assertEquals(testUserEntity.getFriendshipAddressees().size(), 1);
+        Assertions.assertEquals(1, otherUserEntity.getFriendshipRequests().size());
+        Assertions.assertEquals(1, otherUserEntity.getFriendshipAddressees().size());
+        Assertions.assertEquals(1, testUserEntity.getFriendshipRequests().size());
+        Assertions.assertEquals(1, testUserEntity.getFriendshipAddressees().size());
         Assertions.assertEquals(FriendshipStatus.ACCEPTED, otherUserEntity.getFriendshipRequests().getFirst().getStatus());
         Assertions.assertEquals(FriendshipStatus.ACCEPTED, otherUserEntity.getFriendshipAddressees().getFirst().getStatus());
         Assertions.assertEquals(FriendshipStatus.ACCEPTED, testUserEntity.getFriendshipRequests().getFirst().getStatus());
@@ -234,7 +233,6 @@ class HibernateRepositoryTest {
     void checkTransactionSpendTest() {
         String categoryName = "hibernate top cource transac2";
         String spendDescription = "hibernate cool cource transac";
-        CategoryDBClient categoryDbClient = new CategoryDBClient();
         dbSpend.findByUsernameAndDescription(MAIN_USERNAME, spendDescription)
                 .ifPresent(entity -> {
                     dbSpend.remove(entity);
@@ -259,8 +257,8 @@ class HibernateRepositoryTest {
         Assertions.assertNull(resultSpend,
                 "объект %s был создан(".formatted(resultSpend));
         log.info("CHECK NOT CATEGORY CREATED");
-        CategoryJson categoryJson = categoryDbClient
-                .findByUsernameAndName(MAIN_USERNAME, categoryName).orElse(null);
+        CategoryJson categoryJson = dbSpend
+                .findCategoryByUsernameAndName(MAIN_USERNAME, categoryName).orElse(null);
         Assertions.assertNull(categoryJson,
                 "объект %s был создан(".formatted(categoryJson));
     }
