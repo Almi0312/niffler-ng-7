@@ -4,8 +4,7 @@ import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 
 import static com.codeborne.selenide.Condition.*;
-import static com.codeborne.selenide.Selenide.$$x;
-import static com.codeborne.selenide.Selenide.$x;
+import static com.codeborne.selenide.Selenide.*;
 import static java.lang.String.format;
 
 public class FriendsPage {
@@ -15,6 +14,7 @@ public class FriendsPage {
     private final SelenideElement friendsTable = $x(".//table[./tbody[@id='friends']]");
     private final SelenideElement requestTable = $x(".//table[./tbody[@id='requests']]");
     private final SelenideElement emptyMessageInsteadTable = $x(".//p[contains(@class, 'MuiTypography-root')]");
+    private final SelenideElement searchInput = $x(".//input[@aria-label='search']");
 
     public FriendsPage checkTabsByName(String tabName) {
         tabs.find(text(tabName)).shouldBe(visible);
@@ -32,13 +32,18 @@ public class FriendsPage {
         return this;
     }
 
+    public void sendUserInfoInSearchLine(String spendingDescription) {
+        searchInput.shouldBe(exist).setValue(spendingDescription).pressEnter();
+    }
 
     public FriendsPage checkFriendInTable(String friendName) {
+        sendUserInfoInSearchLine(friendName);
         friendsTable.$$x(".//tr").find(text(friendName)).shouldBe(visible);
         return this;
     }
 
     public FriendsPage checkIncomeInTable(String incomeName) {
+        sendUserInfoInSearchLine(incomeName);
         requestTable.$$x(".//tr").find(text(incomeName)).shouldBe(allOf(visible,
                 text("Accept"),
                 text("Decline")));
