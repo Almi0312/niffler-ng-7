@@ -8,13 +8,13 @@ public class RandomDataUtils {
     private static final Faker faker = new Faker(Locale.US);
 
     public static String randomUsername() {
-        return faker.name().username();
+        return faker.name().username() + System.currentTimeMillis();
     }
     public static String randomName() {
-        return faker.name().name();
+        return faker.name().name() + System.currentTimeMillis();
     }
     public static String randomSurname() {
-        return faker.superhero().name();
+        return faker.superhero().name() + System.currentTimeMillis();
     }
     public static String randomPassword() {
         return faker.internet().password();
@@ -24,6 +24,6 @@ public class RandomDataUtils {
         return faker.book().title() + System.currentTimeMillis();
     }
     public static String randomSentence() {
-        return faker.elderScrolls().creature();
+        return faker.elderScrolls().creature() + System.currentTimeMillis();
     }
 }

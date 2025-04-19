@@ -14,13 +14,15 @@ import org.junit.jupiter.api.extension.*;
 import org.junit.platform.commons.support.AnnotationSupport;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Slf4j
 public class UserExtension implements BeforeEachCallback,
         ParameterResolver {
 
     public static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(UserExtension.class);
-    private static final String defaultPassword = "12345";
+    private static final String defaultPassword = "pass";
 
     private final UsersClient usersClient = new UserdataDBSpringRepositoryClient();
 
@@ -32,13 +34,23 @@ public class UserExtension implements BeforeEachCallback,
                             RandomDataUtils.randomUsername()
                             : userAnno.username();
                     UserdataUserJson userJson = usersClient.create(username, CurrencyValues.RUB, defaultPassword);
+                    String[] incomes = getArrayWithRandomUsername(userAnno.incomeInvitations());
+                    String[] outcomes = getArrayWithRandomUsername(userAnno.outcomeInvitations());
+                    String[] friends = getArrayWithRandomUsername(userAnno.friends());
+                    usersClient.createIncomeInvitations(userJson, incomes);
+                    usersClient.createOutcomeInvitations(userJson, outcomes);
+                    usersClient.createFriends(userJson, friends);
                     context.getStore(NAMESPACE).put(
                             context.getUniqueId(),
                             userJson.addTestData(
                                     new TestData(
                                             defaultPassword,
                                             new ArrayList<>(),
-                                            new ArrayList<>())));
+                                            new ArrayList<>(),
+                                            findUsersByUsername(incomes),
+                                            findUsersByUsername(outcomes),
+                                            findUsersByUsername(friends)
+                                            )));
                 });
         log.info("создан пользователь - {}", context.getStore(NAMESPACE). get(context.getUniqueId(), UserdataUserJson.class));
     }
@@ -54,4 +66,19 @@ public class UserExtension implements BeforeEachCallback,
                 extensionContext.getUniqueId(),
                 UserdataUserJson.class);
     }
+
+    private List<UserdataUserJson> findUsersByUsername(String[] usernames) {
+        return Arrays.stream(usernames)
+                .map(x -> usersClient.findByUsername(x).orElse(null))
+                .toList();
+    }
+
+    private String[] getArrayWithRandomUsername(int x) {
+        String[] usernames = new String[x];
+        for (int i = 0; i < x; i++) {
+            usernames[i] = RandomDataUtils.randomUsername();
+        }
+        return usernames;
+    }
+
 }
