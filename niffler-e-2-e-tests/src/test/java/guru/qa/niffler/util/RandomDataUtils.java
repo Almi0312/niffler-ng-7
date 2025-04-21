@@ -26,4 +26,12 @@ public class RandomDataUtils {
     public static String randomSentence() {
         return faker.elderScrolls().creature() + System.currentTimeMillis();
     }
+
+    public static String[] getArrayWithRandomUsername(int x) {
+        String[] usernames = new String[x];
+        for (int i = 0; i < x; i++) {
+            usernames[i] = RandomDataUtils.randomUsername();
+        }
+        return usernames;
+    }
 }

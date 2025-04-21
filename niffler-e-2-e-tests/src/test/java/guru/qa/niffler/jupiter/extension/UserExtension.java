@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static guru.qa.niffler.util.RandomDataUtils.getArrayWithRandomUsername;
+
 @Slf4j
 public class UserExtension implements BeforeEachCallback,
         ParameterResolver {
@@ -71,14 +73,6 @@ public class UserExtension implements BeforeEachCallback,
         return Arrays.stream(usernames)
                 .map(x -> usersClient.findByUsername(x).orElse(null))
                 .toList();
-    }
-
-    private String[] getArrayWithRandomUsername(int x) {
-        String[] usernames = new String[x];
-        for (int i = 0; i < x; i++) {
-            usernames[i] = RandomDataUtils.randomUsername();
-        }
-        return usernames;
     }
 
 }

@@ -92,15 +92,14 @@ public class UserdataApiClient {
         return response.body();
     }
 
-    public UserdataUserJson removeFriend(String username, @Nullable String targetUsername) {
-        final Response<UserdataUserJson> response;
+    public void removeFriend(String username, @Nullable String targetUsername) {
+        final Response<Void> response;
         try {
             response = userdataApi.removeFriend(username, targetUsername).execute();
         } catch (IOException e) {
             throw new AssertionError(e.getMessage());
         }
         Assertions.assertEquals(200, response.code(), response.message());
-        return response.body();
     }
 
 }

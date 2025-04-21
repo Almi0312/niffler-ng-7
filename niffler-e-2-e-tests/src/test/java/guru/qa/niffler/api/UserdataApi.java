@@ -34,6 +34,6 @@ public interface UserdataApi {
                                          @Query("searchQuery") @Nullable String searchQuery);
 
     @DELETE("api/friends/remove")
-    Call<UserdataUserJson> removeFriend(@Query("username") String username,
+    Call<Void> removeFriend(@Query("username") String username,
                                         @Query("targetUsername") @Nullable String targetUsername);
 }

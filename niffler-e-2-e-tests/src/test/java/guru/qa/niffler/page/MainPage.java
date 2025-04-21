@@ -24,8 +24,7 @@ public class MainPage {
   private final ElementsCollection linksProfileDropdownMenu = $$x(".//ul[@role='menu']/li//a");
 
   public EditSpendingPage editSpending(String spendingDescription) {
-    searchInput.shouldBe(exist).setValue(spendingDescription);
-    new Actions(driver().getWebDriver()).sendKeys(Keys.ENTER).perform();
+    sendSpendInfoInSearchLine(spendingDescription);
     tableRows.find(text(spendingDescription)).$$("td").get(5).shouldBe(visible).click();
     return new EditSpendingPage();
   }
