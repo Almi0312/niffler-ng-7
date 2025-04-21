@@ -6,7 +6,7 @@ import guru.qa.niffler.config.Constants;
 import guru.qa.niffler.jupiter.annotation.User;
 import guru.qa.niffler.jupiter.annotation.meta.WebTest;
 import guru.qa.niffler.jupiter.annotation.Category;
-import guru.qa.niffler.model.CategoryJson;
+import guru.qa.niffler.model.UserdataUserJson;
 import guru.qa.niffler.page.LoginPage;
 import org.junit.jupiter.api.Test;
 
@@ -17,24 +17,26 @@ public class ProfileTest {
     @Test
     @User(username = Constants.MAIN_USERNAME,
             categories = @Category(archived = true))
-    void archivedCategoryShouldPresentInCategoriesList(CategoryJson category) {
+    void archivedCategoryShouldPresentInCategoriesList(UserdataUserJson user) {
         Selenide.open(CFG.frontUrl(), LoginPage.class)
                 .login(Constants.MAIN_USERNAME, Constants.MAIN_PASSWORD)
                 .clickByUserAvatar()
                 .clickByProfile()
                 .activatedShowArchiveCategory()
-                .checkNameSpendInCategoryList(category.name());
+                .checkNameSpendInCategoryList(
+                        user.testData().categories().getFirst().name());
     }
 
     @Test
     @User(username = Constants.MAIN_USERNAME,
             categories = @Category(archived = false))
-    void activeCategoryShouldPresentInCategoriesList(CategoryJson category) {
+    void activeCategoryShouldPresentInCategoriesList(UserdataUserJson user) {
         Selenide.open(CFG.frontUrl(), LoginPage.class)
                 .login(Constants.MAIN_USERNAME, Constants.MAIN_PASSWORD)
                 .clickByUserAvatar()
                 .clickByProfile()
-                .checkNameSpendInCategoryList(category.name());
+                .checkNameSpendInCategoryList(
+                        user.testData().categories().getFirst().name());
     }
 
 }

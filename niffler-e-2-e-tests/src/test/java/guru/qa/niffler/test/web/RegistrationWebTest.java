@@ -59,7 +59,6 @@ public class RegistrationWebTest {
                 .checkErrorMessagePassword("Passwords should be equal");
     }
 
-    @Test
     @User(
             categories = {
                     @Category(name = "Магазины2", archived = false),
@@ -73,6 +72,7 @@ public class RegistrationWebTest {
                     )
             }
     )
+    @Test
     void mai0nPageShouldBeDisplayedAfterSuccessLogin(UserdataUserJson userJson) {
         Selenide.open(CFG.frontUrl(), LoginPage.class)
                 .login(userJson.username(), userJson.testData().password())
