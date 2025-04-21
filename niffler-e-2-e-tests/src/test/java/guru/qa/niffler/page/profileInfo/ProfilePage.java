@@ -2,6 +2,7 @@ package guru.qa.niffler.page.profileInfo;
 
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
+import guru.qa.niffler.config.Config;
 
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
@@ -9,6 +10,8 @@ import static com.codeborne.selenide.Selenide.$$x;
 import static com.codeborne.selenide.Selenide.$x;
 
 public class ProfilePage {
+
+    public static String url = Config.getInstance().frontUrl() + "profile";
     private final SelenideElement archiveButton = $x(".//button[@aria-label = 'Archive category']");
     private final SelenideElement showArchiveCategories = $x(
             ".//*[./*[normalize-space(text()) = 'Show archived']]");

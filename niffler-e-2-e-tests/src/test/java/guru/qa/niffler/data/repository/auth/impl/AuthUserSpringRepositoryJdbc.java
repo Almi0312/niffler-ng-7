@@ -12,11 +12,14 @@ import guru.qa.niffler.data.repository.auth.mapper.AuthUserEntityRowExtractor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Optional;
 import java.util.UUID;
 
-import static guru.qa.niffler.data.template.DataSources.dataSource;
+import static guru.qa.niffler.data.jdbc.DataSources.dataSource;
 
+@ParametersAreNonnullByDefault
 public class AuthUserSpringRepositoryJdbc implements AuthUserRepository {
 
     private static final Config CFG = Config.getInstance();
@@ -32,19 +35,19 @@ public class AuthUserSpringRepositoryJdbc implements AuthUserRepository {
     }
 
     @Override
-    public AuthUserEntity create(AuthUserEntity user) {
+    public @Nonnull AuthUserEntity create(AuthUserEntity user) {
         user.setId(authUserDAO.create(user).getId());
         authorityDAO.create(user.getAuthorities().toArray(AuthorityEntity[]::new));
         return user;
     }
 
     @Override
-    public AuthUserEntity update(AuthUserEntity authUserEntity) {
+    public @Nonnull AuthUserEntity update(AuthUserEntity authUserEntity) {
         return authUserDAO.update(authUserEntity);
     }
 
     @Override
-    public Optional<AuthUserEntity> findById(UUID id) {
+    public @Nonnull Optional<AuthUserEntity> findById(UUID id) {
         String query = "SELECT * FROM \"user\" u JOIN authority a ON (u.id = a.user_id) WHERE u.id = ?";
         try {
             return Optional.ofNullable(jdbcTemplate.query(
@@ -55,7 +58,7 @@ public class AuthUserSpringRepositoryJdbc implements AuthUserRepository {
     }
 
     @Override
-    public Optional<AuthUserEntity> findByUsername(String userEntity) {
+    public @Nonnull Optional<AuthUserEntity> findByUsername(String userEntity) {
         String query = "SELECT u.id, u.username, u.password, u.enabled, u.account_non_expired," +
                 " u.account_non_locked, u.credentials_non_expired, a.id AS authority_id, a.user_id, a.authority" +
                 " FROM \"user\" AS u JOIN authority AS a ON (u.id = a.user_id) WHERE u.username = ?";

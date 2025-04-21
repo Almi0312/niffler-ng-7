@@ -13,10 +13,13 @@ import guru.qa.niffler.data.repository.spend.mapper.SpendEntityExtractor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.*;
 
-import static guru.qa.niffler.data.template.DataSources.dataSource;
+import static guru.qa.niffler.data.jdbc.DataSources.dataSource;
 
+@ParametersAreNonnullByDefault
 public class SpendSpringRepositoryJdbc implements SpendRepository {
     private static final Config CFG = Config.getInstance();
 
@@ -31,7 +34,7 @@ public class SpendSpringRepositoryJdbc implements SpendRepository {
     }
 
     @Override
-    public SpendEntity createSpend(SpendEntity spend) {
+    public @Nonnull SpendEntity createSpend(SpendEntity spend) {
         if (spend.getCategory().getId() == null) {
             CategoryEntity category = findCategoryByUsernameAndName(spend.getCategory().getUsername(),
                     spend.getCategory().getName()).orElseGet(() -> categoryDAO.create(spend.getCategory()));
@@ -41,12 +44,12 @@ public class SpendSpringRepositoryJdbc implements SpendRepository {
     }
 
     @Override
-    public SpendEntity updateSpend(SpendEntity spend) {
+    public @Nonnull SpendEntity updateSpend(SpendEntity spend) {
         return spendDAO.update(spend);
     }
 
     @Override
-    public Optional<SpendEntity> findById(UUID id) {
+    public @Nonnull Optional<SpendEntity> findById(UUID id) {
         String query = "SELECT * FROM spend s JOIN category c " +
                 "ON (s.category_id = c.id) WHERE s.id = ?";
         try {
@@ -58,14 +61,14 @@ public class SpendSpringRepositoryJdbc implements SpendRepository {
     }
 
     @Override
-    public List<SpendEntity> findAllByUsername(String username) {
+    public @Nonnull List<SpendEntity> findAllByUsername(String username) {
         String query = "SELECT * FROM spend s JOIN category c " +
                 "ON (s.category_id = c.id) WHERE s.username = ?";
         return jdbcTemplate.query(query, SpendEntityRowMapper.instance, username);
     }
 
     @Override
-    public Optional<SpendEntity> findByUsernameAndDescription(String username, String description) {
+    public @Nonnull Optional<SpendEntity> findByUsernameAndDescription(String username, String description) {
         String query = "SELECT * FROM spend s JOIN category c" +
                 " ON (s.category_id = c.id) WHERE s.username = ? and s.description = ?";
         try {
@@ -77,7 +80,7 @@ public class SpendSpringRepositoryJdbc implements SpendRepository {
     }
 
     @Override
-    public List<SpendEntity> findAll() {
+    public @Nonnull List<SpendEntity> findAll() {
         String query = "SELECT * FROM spend s JOIN category c " +
                 "ON (s.category_id = c.id)";
         try {
@@ -94,32 +97,32 @@ public class SpendSpringRepositoryJdbc implements SpendRepository {
     }
 
     @Override
-    public CategoryEntity createCategory(CategoryEntity category) {
+    public @Nonnull CategoryEntity createCategory(CategoryEntity category) {
         return categoryDAO.create(category);
     }
 
     @Override
-    public Optional<CategoryEntity> findCategoryById(UUID id) {
+    public @Nonnull Optional<CategoryEntity> findCategoryById(UUID id) {
         return categoryDAO.findById(id);
     }
 
     @Override
-    public Optional<CategoryEntity> findCategoryByUsernameAndName(String username, String categoryName) {
+    public @Nonnull Optional<CategoryEntity> findCategoryByUsernameAndName(String username, String categoryName) {
         return categoryDAO.findByUsernameAndName(username, categoryName);
     }
 
     @Override
-    public List<CategoryEntity> findAllCategoryByUsername(String username) {
+    public @Nonnull List<CategoryEntity> findAllCategoryByUsername(String username) {
         return categoryDAO.findAllByUsername(username);
     }
 
     @Override
-    public List<CategoryEntity> findAllCategory() {
+    public @Nonnull List<CategoryEntity> findAllCategory() {
         return categoryDAO.findAll();
     }
 
     @Override
-    public CategoryEntity updateCategory(CategoryEntity category) {
+    public @Nonnull CategoryEntity updateCategory(CategoryEntity category) {
         return categoryDAO.update(category);
     }
 

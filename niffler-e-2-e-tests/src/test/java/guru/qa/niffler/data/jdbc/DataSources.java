@@ -1,8 +1,9 @@
-package guru.qa.niffler.data.template;
+package guru.qa.niffler.data.jdbc;
 
 import com.atomikos.jdbc.AtomikosDataSourceBean;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
@@ -17,7 +18,7 @@ public class DataSources {
     private DataSources() {
     }
 
-    public static DataSource dataSource(String jdbcUrl) {
+    public static @Nonnull DataSource dataSource(@Nonnull String jdbcUrl) {
         return dataSources.computeIfAbsent(
                 jdbcUrl,
                 key -> {

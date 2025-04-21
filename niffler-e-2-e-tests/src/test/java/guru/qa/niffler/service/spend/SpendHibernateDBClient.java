@@ -5,7 +5,7 @@ import guru.qa.niffler.data.entity.spend.CategoryEntity;
 import guru.qa.niffler.data.entity.spend.SpendEntity;
 import guru.qa.niffler.data.repository.spend.SpendRepository;
 import guru.qa.niffler.data.repository.spend.impl.SpendSpringRepositoryJdbc;
-import guru.qa.niffler.data.template.DataSources;
+import guru.qa.niffler.data.jdbc.DataSources;
 import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.model.SpendJson;
 import org.springframework.jdbc.support.JdbcTransactionManager;

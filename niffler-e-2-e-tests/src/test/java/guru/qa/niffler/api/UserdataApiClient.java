@@ -5,16 +5,20 @@ import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Assertions;
 import retrofit2.Response;
 
+import javax.annotation.ParametersAreNullableByDefault;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 import static guru.qa.niffler.api.ApiClient.USERDATA_API;
 import static java.lang.String.format;
 
+@ParametersAreNullableByDefault
 public class UserdataApiClient {
 
     private final UserdataApi userdataApi = USERDATA_API.getINSTANCE().create(UserdataApi.class);
 
-    public UserdataUserJson updateUser(UserdataUserJson user) {
+    public @Nullable UserdataUserJson updateUser(UserdataUserJson user) {
         final Response<UserdataUserJson> response;
         try {
             response = userdataApi.updateUser(user).execute();
@@ -25,7 +29,7 @@ public class UserdataApiClient {
         return response.body();
     }
 
-    public UserdataUserJson getCurrentUserInfo(String username) {
+    public @Nullable UserdataUserJson getCurrentUserInfo(String username) {
         final Response<UserdataUserJson> response;
         try {
             response = userdataApi.getCurrentUserInfo(username).execute();
@@ -36,18 +40,20 @@ public class UserdataApiClient {
         return response.body();
     }
 
-    public UserdataUserJson getAllUsers(String username, @Nullable String searchQuery) {
-        final Response<UserdataUserJson> response;
+    public @Nullable List<UserdataUserJson> getAllUsers(String username, @Nullable String searchQuery) {
+        final Response<List<UserdataUserJson>> response;
         try {
             response = userdataApi.getAllUsers(username, searchQuery).execute();
         } catch (IOException e) {
             throw new AssertionError(e.getMessage());
         }
         Assertions.assertEquals(200, response.code(), "Юзеры не найдены - " + response.message());
-        return response.body();
+        return response.body() != null
+                ? response.body()
+                : Collections.emptyList();
     }
 
-    UserdataUserJson sendInvitation(String username, String targetUser) {
+    public @Nullable UserdataUserJson sendInvitation(String username, String targetUser) {
         final Response<UserdataUserJson> response;
         try {
             response = userdataApi.sendInvitation(username, targetUser).execute();
@@ -58,7 +64,7 @@ public class UserdataApiClient {
         return response.body();
     }
 
-    public UserdataUserJson declineInvitation(String username, String targetUser) {
+    public @Nullable UserdataUserJson declineInvitation(String username, String targetUser) {
         final Response<UserdataUserJson> response;
         try {
             response = userdataApi.declineInvitation(username, targetUser).execute();
@@ -69,7 +75,7 @@ public class UserdataApiClient {
         return response.body();
     }
 
-    public UserdataUserJson acceptInvitation(String username, String targetUser) {
+    public @Nullable UserdataUserJson acceptInvitation(String username, String targetUser) {
         final Response<UserdataUserJson> response;
         try {
             response = userdataApi.acceptInvitation(username, targetUser).execute();
@@ -81,15 +87,17 @@ public class UserdataApiClient {
     }
 
 
-    public UserdataUserJson getAllFriends(String username, @Nullable String searchQuery) {
-        final Response<UserdataUserJson> response;
+    public @Nullable List<UserdataUserJson> getAllFriends(String username, @Nullable String searchQuery) {
+        final Response<List<UserdataUserJson>> response;
         try {
             response = userdataApi.getAllFriends(username, searchQuery).execute();
         } catch (IOException e) {
             throw new AssertionError(e.getMessage());
         }
         Assertions.assertEquals(200, response.code(), response.message());
-        return response.body();
+        return response.body() != null
+                ? response.body()
+                : Collections.emptyList();
     }
 
     public void removeFriend(String username, @Nullable String targetUsername) {

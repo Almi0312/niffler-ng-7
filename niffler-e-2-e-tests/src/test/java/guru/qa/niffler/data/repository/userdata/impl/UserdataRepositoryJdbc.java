@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static guru.qa.niffler.data.template.Connections.holder;
+import static guru.qa.niffler.data.jdbc.Connections.holder;
 
 public class UserdataRepositoryJdbc implements UserdataRepository {
     private static final Config CFG = Config.getInstance();

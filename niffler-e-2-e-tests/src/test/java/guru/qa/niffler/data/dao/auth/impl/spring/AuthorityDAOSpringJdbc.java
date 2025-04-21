@@ -9,13 +9,16 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
-import static guru.qa.niffler.data.template.DataSources.dataSource;
+import static guru.qa.niffler.data.jdbc.DataSources.dataSource;
 
+@ParametersAreNonnullByDefault
 public class AuthorityDAOSpringJdbc implements AuthorityDAO {
 
     private static final Config CFG = Config.getInstance();
@@ -46,6 +49,7 @@ public class AuthorityDAOSpringJdbc implements AuthorityDAO {
     }
 
     @Override
+    @Nonnull
     public List<AuthorityEntity> findByAuthUserId(AuthUserEntity authUser) {
         String query = "SELECT * FROM authority WHERE \"user_id\" = ?";
         try {

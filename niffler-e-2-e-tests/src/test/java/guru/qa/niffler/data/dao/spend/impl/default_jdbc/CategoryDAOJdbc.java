@@ -5,6 +5,8 @@ import guru.qa.niffler.data.dao.spend.CategoryDAO;
 import guru.qa.niffler.data.dao.spend.mapper.CategoryEntityRowMapper;
 import guru.qa.niffler.data.entity.spend.CategoryEntity;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,8 +16,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static guru.qa.niffler.data.template.Connections.holder;
+import static guru.qa.niffler.data.jdbc.Connections.holder;
 
+@ParametersAreNonnullByDefault
 public class CategoryDAOJdbc implements CategoryDAO {
 
     private static final Config CFG = Config.getInstance();
@@ -25,6 +28,8 @@ public class CategoryDAOJdbc implements CategoryDAO {
     public CategoryDAOJdbc() {
     }
 
+    @SuppressWarnings("resource")
+    @Nonnull
     @Override
     public CategoryEntity create(CategoryEntity category) {
         String query = "INSERT INTO category (username, name, archived) VALUES (?, ?, ?)";
@@ -51,6 +56,8 @@ public class CategoryDAOJdbc implements CategoryDAO {
         }
     }
 
+    @SuppressWarnings("resource")
+    @Nonnull
     @Override
     public Optional<CategoryEntity> findById(UUID id) {
         String query = "SELECT * FROM category WHERE id = ?";
@@ -70,6 +77,8 @@ public class CategoryDAOJdbc implements CategoryDAO {
         }
     }
 
+    @SuppressWarnings("resource")
+    @Nonnull
     @Override
     public Optional<CategoryEntity> findByUsernameAndName(String username, String categoryName) {
         String query = "SELECT * FROM category WHERE username = ? and name = ?";
@@ -90,6 +99,8 @@ public class CategoryDAOJdbc implements CategoryDAO {
         }
     }
 
+    @SuppressWarnings("resource")
+    @Nonnull
     @Override
     public List<CategoryEntity> findAllByUsername(String username) {
         String query = "SELECT * FROM category WHERE username = ?";
@@ -109,6 +120,8 @@ public class CategoryDAOJdbc implements CategoryDAO {
         }
     }
 
+    @SuppressWarnings("resource")
+    @Nonnull
     @Override
     public List<CategoryEntity> findAll() {
         String query = "SELECT * FROM category";
@@ -127,6 +140,8 @@ public class CategoryDAOJdbc implements CategoryDAO {
         }
     }
 
+    @SuppressWarnings("resource")
+    @Nonnull
     @Override
     public CategoryEntity update(CategoryEntity category) {
         String query = "UPDATE category SET username = ?, name = ?, archived = ? " +
@@ -146,6 +161,7 @@ public class CategoryDAOJdbc implements CategoryDAO {
         }
     }
 
+    @SuppressWarnings("resource")
     @Override
     public void delete(CategoryEntity category) {
         String query = "DELETE FROM category WHERE id = ?";

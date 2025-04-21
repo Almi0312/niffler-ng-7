@@ -9,12 +9,15 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.*;
 import java.util.Optional;
 import java.util.UUID;
 
-import static guru.qa.niffler.data.template.DataSources.dataSource;
+import static guru.qa.niffler.data.jdbc.DataSources.dataSource;
 
+@ParametersAreNonnullByDefault
 public class AuthUserDAOSpringJdbc implements AuthUserDAO {
 
     private static final Config CFG = Config.getInstance();
@@ -49,6 +52,7 @@ public class AuthUserDAOSpringJdbc implements AuthUserDAO {
     }
 
     @Override
+    @Nonnull
     public AuthUserEntity update(AuthUserEntity authUserEntity) {
         String userUpdateQuery = """
                 UPDATE \"user\" SET 
@@ -71,6 +75,7 @@ public class AuthUserDAOSpringJdbc implements AuthUserDAO {
     }
 
     @Override
+    @Nonnull
     public Optional<AuthUserEntity> findById(UUID id) {
         String query = "SELECT * FROM \"user\" WHERE id = ?";
         try {
@@ -82,6 +87,7 @@ public class AuthUserDAOSpringJdbc implements AuthUserDAO {
     }
 
     @Override
+    @Nonnull
     public Optional<AuthUserEntity> findByUsername(String userEntity) {
         String query = "SELECT * FROM \"user\" WHERE username = ?";
         try {

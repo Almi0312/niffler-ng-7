@@ -6,6 +6,8 @@ import guru.qa.niffler.model.CurrencyValues;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,6 +15,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+@ParametersAreNonnullByDefault
 public class SpendEntityExtractor implements ResultSetExtractor<SpendEntity> {
 
     public static final SpendEntityExtractor instance = new SpendEntityExtractor();
@@ -21,10 +24,9 @@ public class SpendEntityExtractor implements ResultSetExtractor<SpendEntity> {
     }
 
     @Override
-    public SpendEntity extractData(ResultSet rs) throws SQLException, DataAccessException {
-        SpendEntity spend = null;
+    public @Nonnull SpendEntity extractData(ResultSet rs) throws SQLException, DataAccessException {
+        SpendEntity spend = new SpendEntity();
         if (rs.next()) {
-            spend = new SpendEntity();
             spend.setId(rs.getObject("id", UUID.class));
             spend.setUsername(rs.getString("username"));
             spend.setSpendDate(new Date(rs.getDate("spend_date").getTime()));

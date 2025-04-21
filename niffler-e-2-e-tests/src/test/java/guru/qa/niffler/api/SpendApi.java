@@ -7,6 +7,7 @@ import guru.qa.niffler.model.SpendJson;
 import retrofit2.Call;
 import retrofit2.http.*;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 public interface SpendApi {
@@ -21,8 +22,10 @@ public interface SpendApi {
     Call<SpendJson> getIDSpend(@Query("id") String id);
 
     @GET("internal/spends/all")
-    Call<List<SpendJson>> getAllSpend(@Query("filterPeriod") Period period,
-                                      @Query("filterCurrency") CurrencyValues currency);
+    Call<List<SpendJson>> getAllSpend(@Query("username") String username,
+                                      @Query("filterCurrency") CurrencyValues filterCurrency,
+                                      @Query("from") String from,
+                                      @Query("to") String to);
 
     @DELETE("internal/spends/remove")
     Call<Void> removeSpend(@Query("ids") List<String> ids);

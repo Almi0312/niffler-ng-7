@@ -8,10 +8,13 @@ import guru.qa.niffler.data.repository.spend.SpendRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@ParametersAreNonnullByDefault
 public class SpendHibernateRepository implements SpendRepository {
 
     private static final Config CFG = Config.getInstance();
@@ -19,21 +22,21 @@ public class SpendHibernateRepository implements SpendRepository {
     private final EntityManager entityManager = EntityManagers.em(CFG.authJdbcUrl());
 
     @Override
-    public SpendEntity createSpend(SpendEntity spend) {
+    public @Nonnull SpendEntity createSpend(SpendEntity spend) {
         entityManager.joinTransaction();
         entityManager.persist(spend);
         return spend;
     }
 
     @Override
-    public SpendEntity updateSpend(SpendEntity spend) {
+    public @Nonnull SpendEntity updateSpend(SpendEntity spend) {
         entityManager.joinTransaction();
         entityManager.merge(spend);
         return spend;
     }
 
     @Override
-    public Optional<SpendEntity> findById(UUID id) {
+    public @Nonnull Optional<SpendEntity> findById(UUID id) {
         String query = "SELECT s FROM SpendEntity s JOIN FETCH s.category c WHERE s.id=:id";
         try {
             return Optional.ofNullable(entityManager.createQuery(query, SpendEntity.class)
@@ -45,7 +48,7 @@ public class SpendHibernateRepository implements SpendRepository {
     }
 
     @Override
-    public Optional<SpendEntity> findByUsernameAndDescription(String username, String name) {
+    public @Nonnull Optional<SpendEntity> findByUsernameAndDescription(String username, String name) {
         String query = "SELECT s FROM SpendEntity s JOIN FETCH s.category c WHERE s.username=:username and s.name=:name";
         try {
             return Optional.ofNullable(entityManager.createQuery(query, SpendEntity.class)
@@ -58,13 +61,13 @@ public class SpendHibernateRepository implements SpendRepository {
     }
 
     @Override
-    public List<SpendEntity> findAll() {
+    public @Nonnull List<SpendEntity> findAll() {
         String query = "SELECT s FROM SpendEntity s JOIN FETCH s.category";
             return entityManager.createQuery(query, SpendEntity.class).getResultList();
     }
 
     @Override
-    public List<SpendEntity> findAllByUsername(String username) {
+    public @Nonnull List<SpendEntity> findAllByUsername(String username) {
         String query = "SELECT s FROM SpendEntity s JOIN FETCH s.category WHERE s.username=:username";
             return entityManager.createQuery(query, SpendEntity.class)
                     .setParameter("username", username)
@@ -81,19 +84,19 @@ public class SpendHibernateRepository implements SpendRepository {
     }
 
     @Override
-    public CategoryEntity createCategory(CategoryEntity category) {
+    public @Nonnull CategoryEntity createCategory(CategoryEntity category) {
         entityManager.joinTransaction();
         entityManager.persist(category);
         return category;
     }
 
     @Override
-    public Optional<CategoryEntity> findCategoryById(UUID id) {
+    public @Nonnull Optional<CategoryEntity> findCategoryById(UUID id) {
         return Optional.ofNullable(entityManager.find(CategoryEntity.class, id));
     }
 
     @Override
-    public Optional<CategoryEntity> findCategoryByUsernameAndName(String username, String categoryName) {
+    public @Nonnull Optional<CategoryEntity> findCategoryByUsernameAndName(String username, String categoryName) {
         String query = "SELECT c FROM CategoryEntity c WHERE c.username=:username AND c.name=:name";
         try {
             return Optional.ofNullable(entityManager.createQuery(query, CategoryEntity.class)
@@ -106,7 +109,7 @@ public class SpendHibernateRepository implements SpendRepository {
     }
 
     @Override
-    public List<CategoryEntity> findAllCategoryByUsername(String username) {
+    public @Nonnull List<CategoryEntity> findAllCategoryByUsername(String username) {
         String query = "SELECT c FROM CategoryEntity c WHERE c.username=:username";
             return entityManager.createQuery(query, CategoryEntity.class)
                     .setParameter("username", username)
@@ -114,14 +117,14 @@ public class SpendHibernateRepository implements SpendRepository {
     }
 
     @Override
-    public List<CategoryEntity> findAllCategory() {
+    public @Nonnull List<CategoryEntity> findAllCategory() {
         String query = "SELECT c FROM CategoryEntity c";
             return entityManager.createQuery(query, CategoryEntity.class)
                     .getResultList();
     }
 
     @Override
-    public CategoryEntity updateCategory(CategoryEntity category) {
+    public @Nonnull CategoryEntity updateCategory(CategoryEntity category) {
         entityManager.joinTransaction();
         entityManager.merge(category);
         return category;

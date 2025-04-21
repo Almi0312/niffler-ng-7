@@ -5,6 +5,7 @@ import retrofit2.Call;
 import retrofit2.http.*;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 public interface UserdataApi {
     @POST("api/users/update")
@@ -14,7 +15,7 @@ public interface UserdataApi {
     Call<UserdataUserJson> getCurrentUserInfo(@Query("username") String username);
 
     @GET("api/users/all")
-    Call<UserdataUserJson> getAllUsers(@Query("username") String username,
+    Call<List<UserdataUserJson>> getAllUsers(@Query("username") String username,
                                        @Query("searchQuery") @Nullable String searchQuery);
 
     @POST("api/invitations/send")
@@ -30,8 +31,8 @@ public interface UserdataApi {
                                             @Query("targetUsername") @Nullable String targetUsername);
 
     @GET("api/friends/all")
-    Call<UserdataUserJson> getAllFriends(@Query("username") String username,
-                                         @Query("searchQuery") @Nullable String searchQuery);
+    Call<List<UserdataUserJson>> getAllFriends(@Query("username") String username,
+                                              @Query("searchQuery") @Nullable String searchQuery);
 
     @DELETE("api/friends/remove")
     Call<Void> removeFriend(@Query("username") String username,

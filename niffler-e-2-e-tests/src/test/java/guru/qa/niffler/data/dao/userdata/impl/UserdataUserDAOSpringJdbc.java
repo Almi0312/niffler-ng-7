@@ -9,14 +9,17 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static guru.qa.niffler.data.template.DataSources.dataSource;
+import static guru.qa.niffler.data.jdbc.DataSources.dataSource;
 
+@ParametersAreNonnullByDefault
 public class UserdataUserDAOSpringJdbc implements UserdataUserDAO {
 
     private static final Config CFG = Config.getInstance();
@@ -27,6 +30,7 @@ public class UserdataUserDAOSpringJdbc implements UserdataUserDAO {
         jdbcTemplate = new JdbcTemplate(dataSource(CFG.userdataJdbcUrl()));
     }
 
+    @Nonnull
     @Override
     public UserdataUserEntity create(UserdataUserEntity user) {
         String query = "INSERT INTO \"user\" (username, currency, firstname, surname, photo, photo_small, full_name) " +
@@ -51,6 +55,7 @@ public class UserdataUserDAOSpringJdbc implements UserdataUserDAO {
         return user;
     }
 
+    @Nonnull
     @Override
     public Optional<UserdataUserEntity> findById(UUID id) {
         String query = "SELECT * FROM \"user\" WHERE id = ?";
@@ -62,6 +67,7 @@ public class UserdataUserDAOSpringJdbc implements UserdataUserDAO {
         }
     }
 
+    @Nonnull
     @Override
     public Optional<UserdataUserEntity> findByUsername(String username) {
         String query = "SELECT * FROM \"user\" WHERE username = ?";
@@ -73,6 +79,7 @@ public class UserdataUserDAOSpringJdbc implements UserdataUserDAO {
         }
     }
 
+    @Nonnull
     @Override
     public List<UserdataUserEntity> findAll() {
         String query = "SELECT * FROM \"user\" WHERE username = ?";
@@ -84,6 +91,7 @@ public class UserdataUserDAOSpringJdbc implements UserdataUserDAO {
         }
     }
 
+    @Nonnull
     @Override
     public UserdataUserEntity update(UserdataUserEntity user) {
         String queryUpdateUser = "UPDATE \"user\" SET username = ?, currency = ?, firstname = ?, surname = ?, photo = ?, " +

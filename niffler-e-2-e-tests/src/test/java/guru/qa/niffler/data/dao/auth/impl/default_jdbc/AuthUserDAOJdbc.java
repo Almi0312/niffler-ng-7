@@ -5,14 +5,17 @@ import guru.qa.niffler.data.dao.auth.AuthUserDAO;
 import guru.qa.niffler.data.dao.auth.mapper.AuthUserEntityRowMapper;
 import guru.qa.niffler.data.entity.auth.AuthUserEntity;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
 import java.util.UUID;
 
-import static guru.qa.niffler.data.template.Connections.holder;
+import static guru.qa.niffler.data.jdbc.Connections.holder;
 
+@ParametersAreNonnullByDefault
 public class AuthUserDAOJdbc implements AuthUserDAO {
 
     private static final Config CFG = Config.getInstance();
@@ -20,6 +23,8 @@ public class AuthUserDAOJdbc implements AuthUserDAO {
     private final String authUrlJdbc = CFG.authJdbcUrl();
 
     @Override
+    @SuppressWarnings("resource")
+    @Nonnull
     public AuthUserEntity create(AuthUserEntity authUserEntity) {
         String query = "INSERT INTO \"user\" (username, password, enabled, account_non_expired, " +
                 "account_non_locked, credentials_non_expired) VALUES (?, ?, ?, ?, ?, ?)";
@@ -49,6 +54,8 @@ public class AuthUserDAOJdbc implements AuthUserDAO {
     }
 
     @Override
+    @SuppressWarnings("resource")
+    @Nonnull
     public AuthUserEntity update(AuthUserEntity authUserEntity) {
         String userUpdateQuery = """
                 UPDATE \"user\" SET 
@@ -76,6 +83,8 @@ public class AuthUserDAOJdbc implements AuthUserDAO {
     }
 
     @Override
+    @SuppressWarnings("resource")
+    @Nonnull
     public Optional<AuthUserEntity> findById(UUID id) {
         String query = "SELECT * FROM \"user\" WHERE id = ?";
         try (PreparedStatement ps = holder(authUrlJdbc).connection()
@@ -98,6 +107,8 @@ public class AuthUserDAOJdbc implements AuthUserDAO {
     }
 
     @Override
+    @SuppressWarnings("resource")
+    @Nonnull
     public Optional<AuthUserEntity> findByUsername(String username) {
         String query = "SELECT * FROM \"user\" WHERE username = ?";
         try (PreparedStatement preparedStatement = holder(authUrlJdbc).connection()
@@ -117,6 +128,7 @@ public class AuthUserDAOJdbc implements AuthUserDAO {
     }
 
     @Override
+    @SuppressWarnings("resource")
     public void delete(AuthUserEntity authUserEntity) {
         String query = "DELETE FROM \"user\" WHERE id = ?";
         try (PreparedStatement preparedStatement = holder(authUrlJdbc).connection()

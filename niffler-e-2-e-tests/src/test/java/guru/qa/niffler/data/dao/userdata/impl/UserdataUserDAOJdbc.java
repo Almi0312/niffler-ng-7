@@ -5,16 +5,21 @@ import guru.qa.niffler.data.dao.userdata.UserdataUserDAO;
 import guru.qa.niffler.data.dao.userdata.mapper.UdUserEntityRowMapper;
 import guru.qa.niffler.data.entity.userdata.UserdataUserEntity;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.*;
 import java.util.*;
 
-import static guru.qa.niffler.data.template.Connections.holder;
+import static guru.qa.niffler.data.jdbc.Connections.holder;
 
+@ParametersAreNonnullByDefault
 public class UserdataUserDAOJdbc implements UserdataUserDAO {
 
     private static final Config CFG = Config.getInstance();
     private final String udUrlJdbc = CFG.userdataJdbcUrl();
 
+    @SuppressWarnings("resource")
+    @Nonnull
     @Override
     public UserdataUserEntity create(UserdataUserEntity user) {
         String query = "INSERT INTO \"user\" (username, currency, firstname, surname, photo, photo_small, full_name) " +
@@ -46,6 +51,9 @@ public class UserdataUserDAOJdbc implements UserdataUserDAO {
         }
     }
 
+    @SuppressWarnings("resource")
+    @Nonnull
+    @Override
     public UserdataUserEntity update(UserdataUserEntity user) {
         String queryUpdateUser = "UPDATE \"user\" SET username = ?, currency = ?, firstname = ?, surname = ?, photo = ?, " +
                 "photo_small = ?, full_name = ? WHERE id = ?";
@@ -65,6 +73,8 @@ public class UserdataUserDAOJdbc implements UserdataUserDAO {
         }
     }
 
+    @SuppressWarnings("resource")
+    @Nonnull
     @Override
     public Optional<UserdataUserEntity> findById(UUID id) {
         String query = "SELECT * FROM \"user\" WHERE id = ?";
@@ -84,6 +94,8 @@ public class UserdataUserDAOJdbc implements UserdataUserDAO {
         }
     }
 
+    @SuppressWarnings("resource")
+    @Nonnull
     @Override
     public Optional<UserdataUserEntity> findByUsername(String username) {
         String query = "SELECT * FROM \"user\" WHERE username = ?";
@@ -102,6 +114,8 @@ public class UserdataUserDAOJdbc implements UserdataUserDAO {
         }
     }
 
+    @SuppressWarnings("resource")
+    @Nonnull
     @Override
     public List<UserdataUserEntity> findAll() {
         String query = "SELECT * FROM \"user\" u";
@@ -120,6 +134,7 @@ public class UserdataUserDAOJdbc implements UserdataUserDAO {
         }
     }
 
+    @SuppressWarnings("resource")
     @Override
     public void delete(UserdataUserEntity userdataUserEntity) {
         String query = "DELETE FROM \"user\" WHERE id = ?";

@@ -10,7 +10,7 @@ import guru.qa.niffler.data.repository.auth.AuthUserRepository;
 import guru.qa.niffler.data.repository.auth.impl.AuthUserSpringRepositoryJdbc;
 import guru.qa.niffler.data.repository.userdata.UserdataRepository;
 import guru.qa.niffler.data.repository.userdata.impl.UserdataSpringRepositoryJdbc;
-import guru.qa.niffler.data.template.DataSources;
+import guru.qa.niffler.data.jdbc.DataSources;
 import guru.qa.niffler.data.template.XaTransactionTemplate;
 import guru.qa.niffler.model.CurrencyValues;
 import guru.qa.niffler.model.UserdataUserJson;
@@ -20,11 +20,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.Connection;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+@ParametersAreNonnullByDefault
 public class UserdataDBSpringRepositoryClient implements UsersClient{
     private static final Config CFG = Config.getInstance();
     private static final PasswordEncoder pe = PasswordEncoderFactories.createDelegatingPasswordEncoder();
@@ -42,20 +46,22 @@ public class UserdataDBSpringRepositoryClient implements UsersClient{
         xaTxTemplate = new XaTransactionTemplate(CFG.userdataJdbcUrl(), CFG.authJdbcUrl());
     }
 
-    public UserdataUserJson create(String username, CurrencyValues currencyValue, String password) {
+    @Override
+    public @Nonnull UserdataUserJson create(String username, CurrencyValues currencyValue, String password) {
         txTemplate.setIsolationLevel(Connection.TRANSACTION_READ_COMMITTED);
         return xaTxTemplate.execute(
                 () -> UserdataUserJson.fromEntity(createNewUser(username, currencyValue, password), null));
     }
 
     @Override
-    public UserdataUserJson update(UserdataUserJson user) {
+    public @Nonnull UserdataUserJson update(UserdataUserJson user) {
         txTemplate.setIsolationLevel(Connection.TRANSACTION_REPEATABLE_READ);
-        return txTemplate.execute(con ->
-                UserdataUserJson.fromEntity(udUserRepository.update(UserdataUserEntity.fromJson(user)), null));
+        return Objects.requireNonNull(txTemplate.execute(con ->
+                UserdataUserJson.fromEntity(udUserRepository.update(UserdataUserEntity.fromJson(user)), null)));
     }
 
     /* создать запрос в друзья от кого то */
+    @Override
     public void createIncomeInvitations(UserdataUserJson income, String... outcomesUsername) {
         UserdataUserEntity incomeEntity = udUserRepository.findById(income.id()).orElseThrow();
         for (String outcomeUsername : outcomesUsername) {
@@ -70,6 +76,7 @@ public class UserdataDBSpringRepositoryClient implements UsersClient{
     }
 
     /* создать запрос в друзья к кому то */
+    @Override
     public void createOutcomeInvitations(UserdataUserJson outcome, String... incomesUsername) {
         UserdataUserEntity outcomeEntity = udUserRepository.findById(outcome.id()).orElseThrow();
         xaTxTemplate.execute(() -> {
@@ -86,6 +93,7 @@ public class UserdataDBSpringRepositoryClient implements UsersClient{
         });
     }
 
+    @Override
     public void createFriends(UserdataUserJson currentUser, String... friendsUsername) {
         UserdataUserEntity currentEntity = udUserRepository.findById(currentUser.id()).orElseThrow();
         xaTxTemplate.execute(() -> {
@@ -101,14 +109,16 @@ public class UserdataDBSpringRepositoryClient implements UsersClient{
         });
     }
 
-    public Optional<UserdataUserJson> findById(UUID id) {
+    @Override
+    public @Nonnull Optional<UserdataUserJson> findById(UUID id) {
         txTemplate.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
         return txTemplate.execute(con ->
                 udUserRepository.findById(id)
                         .map(user -> UserdataUserJson.fromEntity(user, null)));
     }
 
-    public Optional<UserdataUserJson> findByUsername(String username) {
+    @Override
+    public @Nonnull Optional<UserdataUserJson> findByUsername(String username) {
         txTemplate.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
         return txTemplate.execute(con ->
                 udUserRepository.findByUsername(username)

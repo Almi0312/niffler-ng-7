@@ -9,11 +9,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.*;
 import java.util.*;
 
-import static guru.qa.niffler.data.template.DataSources.dataSource;
+import static guru.qa.niffler.data.jdbc.DataSources.dataSource;
 
+@ParametersAreNonnullByDefault
 public class CategoryDAOSpringJdbc implements CategoryDAO {
     private static final Config CFG = Config.getInstance();
 
@@ -23,6 +26,7 @@ public class CategoryDAOSpringJdbc implements CategoryDAO {
         jdbcTemplate = new JdbcTemplate(dataSource(CFG.spendJdbcUrl()));
     }
 
+    @Nonnull
     @Override
     public CategoryEntity create(CategoryEntity category) {
         String query = "INSERT INTO category (username, name, archived) VALUES (?, ?, ?)";
@@ -39,6 +43,7 @@ public class CategoryDAOSpringJdbc implements CategoryDAO {
         return category;
     }
 
+    @Nonnull
     @Override
     public Optional<CategoryEntity> findById(UUID id) {
         String query = "SELECT * FROM category WHERE id = ?";
@@ -50,6 +55,7 @@ public class CategoryDAOSpringJdbc implements CategoryDAO {
         }
     }
 
+    @Nonnull
     @Override
     public Optional<CategoryEntity> findByUsernameAndName(String username, String categoryName) {
         String query = "SELECT * FROM category WHERE username = ? and name = ?";
@@ -61,6 +67,7 @@ public class CategoryDAOSpringJdbc implements CategoryDAO {
         }
     }
 
+    @Nonnull
     @Override
     public List<CategoryEntity> findAllByUsername(String username) {
         String query = "SELECT * FROM category WHERE username = ?";
@@ -71,6 +78,7 @@ public class CategoryDAOSpringJdbc implements CategoryDAO {
         }
     }
 
+    @Nonnull
     @Override
     public List<CategoryEntity> findAll() {
         String query = "SELECT * FROM category";
@@ -81,6 +89,7 @@ public class CategoryDAOSpringJdbc implements CategoryDAO {
         }
     }
 
+    @Nonnull
     @Override
     public CategoryEntity update(CategoryEntity category) {
         String query = "UPDATE category SET username = ?, name = ?, archived = ? WHERE id = ?";

@@ -10,6 +10,8 @@ import guru.qa.niffler.data.entity.spend.CategoryEntity;
 import guru.qa.niffler.data.entity.spend.SpendEntity;
 import guru.qa.niffler.data.repository.spend.SpendRepository;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,8 +20,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static guru.qa.niffler.data.template.Connections.holder;
+import static guru.qa.niffler.data.jdbc.Connections.holder;
 
+@ParametersAreNonnullByDefault
 public class SpendRepositoryJdbc implements SpendRepository {
 
     private static final Config CFG = Config.getInstance();
@@ -29,7 +32,7 @@ public class SpendRepositoryJdbc implements SpendRepository {
     private final CategoryDAO categoryDAO = new CategoryDAOJdbc();
 
     @Override
-    public SpendEntity createSpend(SpendEntity spend) {
+    public @Nonnull SpendEntity createSpend(SpendEntity spend) {
         if (spend.getCategory().getId() == null) {
             CategoryEntity category = findCategoryByUsernameAndName(spend.getCategory().getUsername(),
                     spend.getCategory().getName()).orElseGet(() -> categoryDAO.create(spend.getCategory()));
@@ -38,8 +41,9 @@ public class SpendRepositoryJdbc implements SpendRepository {
         return spendDAO.create(spend);
     }
 
+    @SuppressWarnings("resource")
     @Override
-    public Optional<SpendEntity> findById(UUID id) {
+    public @Nonnull Optional<SpendEntity> findById(UUID id) {
         String query = "SELECT s.*," +
                 " c.id as c_id, c.name c_name, c.username c_username, c.archived c_archived" +
                 " FROM spend s JOIN category c ON (s.category_id = c.id)" +
@@ -52,7 +56,7 @@ public class SpendRepositoryJdbc implements SpendRepository {
                     if (spend.getCategory().getId() != null) {
                         spend.setCategory(setResultSetValues(rs, spend.getCategory(), "c_"));
                     }
-                    return Optional.ofNullable(spend);
+                    return Optional.of(spend);
                 }
                 return Optional.empty();
             }
@@ -62,12 +66,13 @@ public class SpendRepositoryJdbc implements SpendRepository {
     }
 
     @Override
-    public SpendEntity updateSpend(SpendEntity spend) {
+    public @Nonnull SpendEntity updateSpend(SpendEntity spend) {
         return spendDAO.update(spend);
     }
 
+    @SuppressWarnings("resource")
     @Override
-    public List<SpendEntity> findAllByUsername(String username) {
+    public @Nonnull List<SpendEntity> findAllByUsername(String username) {
         String query = "SELECT s.*," +
                 " c.id as c_id, c.name c_name, c.username c_username, c.archived c_archived" +
                 " FROM spend s JOIN category c ON (s.category_id = c.id)" +
@@ -90,8 +95,9 @@ public class SpendRepositoryJdbc implements SpendRepository {
         }
     }
 
+    @SuppressWarnings("resource")
     @Override
-    public List<SpendEntity> findAll() {
+    public @Nonnull List<SpendEntity> findAll() {
         String query = "SELECT s.*," +
                 " c.id as c_id, c.name c_name, c.username c_username, c.archived c_archived" +
                 " FROM spend s JOIN category c ON (s.category_id = c.id)";
@@ -111,8 +117,9 @@ public class SpendRepositoryJdbc implements SpendRepository {
         }
     }
 
+    @SuppressWarnings("resource")
     @Override
-    public Optional<SpendEntity> findByUsernameAndDescription(String username, String description) {
+    public @Nonnull Optional<SpendEntity> findByUsernameAndDescription(String username, String description) {
         String query = "SELECT s.*," +
                 " c.id as c_id, c.name c_name, c.username c_username, c.archived c_archived" +
                 " FROM spend s JOIN category c ON (s.category_id = c.id)" +
@@ -143,32 +150,32 @@ public class SpendRepositoryJdbc implements SpendRepository {
     }
 
     @Override
-    public CategoryEntity createCategory(CategoryEntity category) {
+    public @Nonnull CategoryEntity createCategory(CategoryEntity category) {
         return categoryDAO.create(category);
     }
 
     @Override
-    public Optional<CategoryEntity> findCategoryById(UUID id) {
+    public @Nonnull Optional<CategoryEntity> findCategoryById(UUID id) {
         return categoryDAO.findById(id);
     }
 
     @Override
-    public Optional<CategoryEntity> findCategoryByUsernameAndName(String username, String categoryName) {
+    public @Nonnull Optional<CategoryEntity> findCategoryByUsernameAndName(String username, String categoryName) {
         return categoryDAO.findByUsernameAndName(username, categoryName);
     }
 
     @Override
-    public List<CategoryEntity> findAllCategoryByUsername(String username) {
+    public @Nonnull List<CategoryEntity> findAllCategoryByUsername(String username) {
         return categoryDAO.findAllByUsername(username);
     }
 
     @Override
-    public List<CategoryEntity> findAllCategory() {
+    public @Nonnull List<CategoryEntity> findAllCategory() {
         return categoryDAO.findAll();
     }
 
     @Override
-    public CategoryEntity updateCategory(CategoryEntity category) {
+    public @Nonnull CategoryEntity updateCategory(CategoryEntity category) {
         return categoryDAO.update(category);
     }
 
@@ -177,7 +184,7 @@ public class SpendRepositoryJdbc implements SpendRepository {
         categoryDAO.delete(category);
     }
 
-    private CategoryEntity setResultSetValues(ResultSet rs, CategoryEntity category,
+    private @Nonnull CategoryEntity setResultSetValues(ResultSet rs, CategoryEntity category,
                                               String alias) throws SQLException {
         category.setUsername(rs.getString(alias + "username"));
         category.setName(rs.getString(alias + "name"));
