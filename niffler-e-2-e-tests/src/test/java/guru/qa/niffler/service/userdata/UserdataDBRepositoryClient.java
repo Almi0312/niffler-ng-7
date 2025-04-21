@@ -17,9 +17,12 @@ import guru.qa.niffler.model.UserdataUserJson;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.Connection;
 import java.util.*;
 
+@ParametersAreNonnullByDefault
 public class UserdataDBRepositoryClient implements UsersClient {
     private static final Config CFG = Config.getInstance();
     private static final PasswordEncoder pe = PasswordEncoderFactories.createDelegatingPasswordEncoder();
@@ -36,27 +39,27 @@ public class UserdataDBRepositoryClient implements UsersClient {
         xaTxTemplate = new XaTransactionTemplate(CFG.userdataJdbcUrl(), CFG.authJdbcUrl());
     }
 
-    public UserdataUserJson create(String username, CurrencyValues currencyValue, String password) {
+    public @Nonnull UserdataUserJson create(String username, CurrencyValues currencyValue, String password) {
         return xaTxTemplate.execute(Connection.TRANSACTION_READ_UNCOMMITTED,
                 () -> UserdataUserJson.fromEntity(
                         createNewUser(username, currencyValue, password), null));
     }
 
     @Override
-    public UserdataUserJson update(UserdataUserJson user) {
+    public @Nonnull UserdataUserJson update(UserdataUserJson user) {
         return xaTxTemplate.execute(() ->
                 UserdataUserJson.fromEntity(udUserRepository
                         .update(UserdataUserEntity.fromJson(user)), user.friendState()));
     }
 
-    public Optional<UserdataUserJson> findByUsername(String username) {
+    public @Nonnull Optional<UserdataUserJson> findByUsername(String username) {
         return txTemplate.execute(Connection.TRANSACTION_READ_COMMITTED,
                 () -> udUserRepository.findByUsername(username)
                         .map(x -> UserdataUserJson.fromEntity(
                                 x, null)));
     }
 
-    public Optional<UserdataUserJson> findById(UUID id) {
+    public @Nonnull Optional<UserdataUserJson> findById(UUID id) {
         return txTemplate.execute(Connection.TRANSACTION_READ_COMMITTED,
                 () -> udUserRepository.findById(id)
                         .map(x -> UserdataUserJson.fromEntity(

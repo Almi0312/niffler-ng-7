@@ -1,64 +1,58 @@
 package guru.qa.niffler.config;
 
-import com.codeborne.selenide.Configuration;
-
 import javax.annotation.Nonnull;
 
-enum LocalConfig implements Config {
+enum DockerConfig implements Config {
   INSTANCE;
-
-  static {
-    Configuration.timeout = 8000;
-  }
 
   @Override
   public @Nonnull String frontUrl() {
-    return "http://127.0.0.1:3000/";
+    return "";
   }
 
   @Override
   public @Nonnull String authJdbcUrl() {
-    return "jdbc:postgresql://127.0.0.1:5432/niffler-auth";
+    return "";
   }
 
   @Override
   public @Nonnull String authUrl() {
-      return "http://127.0.0.1:9000";
+      return "";
   }
 
   @Override
   public @Nonnull String spendUrl() {
-    return "http://127.0.0.1:8093/";
+    return "";
   }
 
   @Override
   public @Nonnull String spendJdbcUrl() {
-    return "jdbc:postgresql://127.0.0.1:5432/niffler-spend";
+    return "";
   }
 
   @Override
   public @Nonnull String currencyJdbcUrl() {
-    return "jdbc:postgresql://127.0.0.1:5432/niffler-currency";
+    return "";
   }
 
   @Override
   public @Nonnull String ghUrl() {
-    return "https://api.github.com/";
+    return "";
   }
 
   @Override
   public @Nonnull String userdataJdbcUrl() {
-    return "jdbc:postgresql://127.0.0.1:5432/niffler-userdata";
+    return "";
   }
 
   @Override
   public @Nonnull String userdataUrl() {
-      return "http://127.0.0.1:8089";
+      return "";
   }
 
   @Override
   public @Nonnull String gatewayUrl() {
-    return "http://127.0.0.1:8090";
+    return "";
   }
 
 }

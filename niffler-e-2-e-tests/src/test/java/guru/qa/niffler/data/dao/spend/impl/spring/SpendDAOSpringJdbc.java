@@ -9,12 +9,15 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.*;
 import java.sql.Date;
 import java.util.*;
 
-import static guru.qa.niffler.data.template.DataSources.dataSource;
+import static guru.qa.niffler.data.jdbc.DataSources.dataSource;
 
+@ParametersAreNonnullByDefault
 public class SpendDAOSpringJdbc implements SpendDAO {
     private static final Config CFG = Config.getInstance();
 
@@ -24,6 +27,7 @@ public class SpendDAOSpringJdbc implements SpendDAO {
         jdbcTemplate = new JdbcTemplate(dataSource(CFG.spendJdbcUrl()));
     }
 
+    @Nonnull
     @Override
     public SpendEntity create(SpendEntity spend) {
         String query = "INSERT INTO spend (username, spend_date, currency, amount, description, category_id) " +
@@ -44,6 +48,7 @@ public class SpendDAOSpringJdbc implements SpendDAO {
         return spend;
     }
 
+    @Nonnull
     @Override
     public SpendEntity update(SpendEntity spend) {
         String query = "UPDATE spend SET" +
@@ -59,6 +64,7 @@ public class SpendDAOSpringJdbc implements SpendDAO {
         return spend;
     }
 
+    @Nonnull
     @Override
     public Optional<SpendEntity> findById(UUID id) {
         String query = "SELECT * FROM spend WHERE id = ?";
@@ -70,6 +76,7 @@ public class SpendDAOSpringJdbc implements SpendDAO {
         }
     }
 
+    @Nonnull
     @Override
     public List<SpendEntity> findAllByUsername(String username) {
         String query = "SELECT * FROM spend WHERE username = ?";
@@ -81,6 +88,7 @@ public class SpendDAOSpringJdbc implements SpendDAO {
         }
     }
 
+    @Nonnull
     @Override
     public Optional<SpendEntity> findByUsernameAndDescription(String username, String description) {
         String query = "SELECT * FROM spend WHERE username = ? and description = ?";
@@ -92,6 +100,7 @@ public class SpendDAOSpringJdbc implements SpendDAO {
         }
     }
 
+    @Nonnull
     @Override
     public List<SpendEntity> findAll() {
         String query = "SELECT * FROM spend";

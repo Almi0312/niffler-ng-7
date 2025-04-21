@@ -1,9 +1,13 @@
 package guru.qa.niffler.data.template;
 
 import com.atomikos.icatch.jta.UserTransactionImp;
+import guru.qa.niffler.data.jdbc.Connections;
+import guru.qa.niffler.data.jdbc.JdbcConnectionHolders;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.UserTransaction;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.Connection;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
@@ -11,6 +15,7 @@ import java.util.function.Supplier;
 /**
  * Распределенная транзакция
  */
+@ParametersAreNonnullByDefault
 public class XaTransactionTemplate {
 
     private final JdbcConnectionHolders holders;
@@ -20,16 +25,16 @@ public class XaTransactionTemplate {
         this.holders = Connections.holders(jdbcUrl);
     }
 
-    public XaTransactionTemplate holdConnectionAfterAction() {
+    public @Nonnull XaTransactionTemplate holdConnectionAfterAction() {
         this.closeAfterAction.set(false);
         return this;
     }
 
-    public <T> T execute(Supplier<T> ... actions) {
+    public @Nonnull <T> T execute(Supplier<T>... actions) {
         return execute(Connection.TRANSACTION_READ_COMMITTED, actions);
     }
 
-    public <T> T execute(int isolatedLvl, Supplier<T> ... actions) {
+    public @Nonnull <T> T execute(int isolatedLvl, Supplier<T>... actions) {
         UserTransaction userTransaction = new UserTransactionImp();
         try {
             holders.setIsolation(isolatedLvl);
@@ -54,11 +59,11 @@ public class XaTransactionTemplate {
         }
     }
 
-    public void execute(Runnable ... actions) {
+    public void execute(Runnable... actions) {
         execute(Connection.TRANSACTION_READ_COMMITTED, actions);
     }
 
-    public void execute(int isolatedLvl, Runnable ... actions) {
+    public void execute(int isolatedLvl, Runnable... actions) {
         // Создаем распределенную транзакцию
         UserTransaction userTransaction = new UserTransactionImp();
         try {

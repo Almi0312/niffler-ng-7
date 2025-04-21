@@ -5,14 +5,17 @@ import guru.qa.niffler.data.dao.spend.SpendDAO;
 import guru.qa.niffler.data.dao.spend.mapper.SpendEntityRowMapper;
 import guru.qa.niffler.data.entity.spend.SpendEntity;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static guru.qa.niffler.data.template.Connections.holder;
+import static guru.qa.niffler.data.jdbc.Connections.holder;
 
+@ParametersAreNonnullByDefault
 public class SpendDAOJdbc implements SpendDAO {
 
     private static final Config CFG = Config.getInstance();
@@ -22,6 +25,8 @@ public class SpendDAOJdbc implements SpendDAO {
     public SpendDAOJdbc() {
     }
 
+    @SuppressWarnings("resource")
+    @Nonnull
     @Override
     public SpendEntity create(SpendEntity spend) {
         String query = "INSERT INTO spend (username, spend_date, currency, amount, description, category_id) " +
@@ -52,6 +57,8 @@ public class SpendDAOJdbc implements SpendDAO {
         }
     }
 
+    @SuppressWarnings("resource")
+    @Nonnull
     @Override
     public SpendEntity update(SpendEntity spend) {
         String query = "UPDATE spend SET" +
@@ -72,6 +79,8 @@ public class SpendDAOJdbc implements SpendDAO {
         return spend;
     }
 
+    @SuppressWarnings("resource")
+    @Nonnull
     @Override
     public Optional<SpendEntity> findById(UUID id) {
         String query = "SELECT * FROM spend WHERE id = ?";
@@ -91,6 +100,8 @@ public class SpendDAOJdbc implements SpendDAO {
         }
     }
 
+    @SuppressWarnings("resource")
+    @Nonnull
     @Override
     public List<SpendEntity> findAllByUsername(String username) {
         String query = "SELECT * FROM spend WHERE username = ?";
@@ -110,6 +121,8 @@ public class SpendDAOJdbc implements SpendDAO {
         }
     }
 
+    @SuppressWarnings("resource")
+    @Nonnull
     @Override
     public List<SpendEntity> findAll() {
         String query = "SELECT * FROM spend";
@@ -128,6 +141,8 @@ public class SpendDAOJdbc implements SpendDAO {
         }
     }
 
+    @SuppressWarnings("resource")
+    @Nonnull
     @Override
     public Optional<SpendEntity> findByUsernameAndDescription(String username, String description) {
         String query = "SELECT * FROM spend WHERE username = ? and description = ?";
@@ -139,7 +154,7 @@ public class SpendDAOJdbc implements SpendDAO {
             preparedStatement.setString(2, description);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
-                    return Optional.of(SpendEntityRowMapper.instance.mapRow(resultSet, 0));
+                    return Optional.ofNullable(SpendEntityRowMapper.instance.mapRow(resultSet, 0));
                 } else {
                     return Optional.empty();
                 }
@@ -149,6 +164,7 @@ public class SpendDAOJdbc implements SpendDAO {
         }
     }
 
+    @SuppressWarnings("resource")
     @Override
     public void delete(SpendEntity spend) {
         String query = "DELETE FROM spend WHERE id = ?";

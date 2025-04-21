@@ -10,7 +10,7 @@ import static com.codeborne.selenide.Selenide.$x;
 public class AllPeoplePage {
     private final ElementsCollection tabs = $$x(".//div[@role='tablist']/*");
     private final SelenideElement selectedTab = tabs.find(attributeMatching(
-            "class",".*Mui-selected.*"));
+            "class", ".*Mui-selected.*"));
     private final SelenideElement allPeopleTable = $x(".//table[./tbody[@id='all']]");
 
     public AllPeoplePage checkOutcomeInTable(String outcomeName) {

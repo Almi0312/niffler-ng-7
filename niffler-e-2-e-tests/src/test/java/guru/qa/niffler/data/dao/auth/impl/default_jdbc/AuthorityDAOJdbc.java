@@ -5,18 +5,19 @@ import guru.qa.niffler.config.Config;
 import guru.qa.niffler.data.dao.auth.AuthorityDAO;
 import guru.qa.niffler.data.dao.auth.mapper.AuthorityEntityRowMapper;
 import guru.qa.niffler.data.entity.auth.AuthUserEntity;
-import guru.qa.niffler.data.entity.auth.Authority;
 import guru.qa.niffler.data.entity.auth.AuthorityEntity;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
-import static guru.qa.niffler.data.template.Connections.holder;
+import static guru.qa.niffler.data.jdbc.Connections.holder;
 
+@ParametersAreNonnullByDefault
 public class AuthorityDAOJdbc implements AuthorityDAO {
 
     private static final Config CFG = Config.getInstance();
@@ -24,6 +25,7 @@ public class AuthorityDAOJdbc implements AuthorityDAO {
     private final String authUrlJdbc = CFG.authJdbcUrl();
 
     @Override
+    @SuppressWarnings("resource")
     public void create(AuthorityEntity... authority) {
         String query = "INSERT INTO \"authority\" (user_id, authority) VALUES (?, ?)";
         try (PreparedStatement ps = holder(authUrlJdbc).connection()
@@ -42,6 +44,8 @@ public class AuthorityDAOJdbc implements AuthorityDAO {
     }
 
     @Override
+    @SuppressWarnings("resource")
+    @Nonnull
     public List<AuthorityEntity> findByAuthUserId(AuthUserEntity authUser) {
         String query = "SELECT * FROM authority WHERE user_id = ?";
         try(PreparedStatement preparedStatement = holder(authUrlJdbc).connection()
@@ -62,6 +66,7 @@ public class AuthorityDAOJdbc implements AuthorityDAO {
     }
 
     @Override
+    @SuppressWarnings("resource")
     public void delete(AuthUserEntity authUser) {
         String query = "DELETE FROM authority WHERE \"user_id\" = ?";
         try (PreparedStatement preparedStatement = holder(authUrlJdbc).connection()

@@ -6,6 +6,8 @@ import guru.qa.niffler.data.dao.userdata.mapper.FriendshipEntityRowMapper;
 import guru.qa.niffler.data.entity.userdata.FriendshipEntity;
 import guru.qa.niffler.data.entity.userdata.UserdataUserEntity;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -14,13 +16,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static guru.qa.niffler.data.template.Connections.holder;
+import static guru.qa.niffler.data.jdbc.Connections.holder;
 
+@ParametersAreNonnullByDefault
 public class FriendshipDAOJdbc implements FriendshipDAO {
 
     private final Config CFG = Config.getInstance();
     String udJdbcUrl = CFG.userdataJdbcUrl();
 
+    @SuppressWarnings("resource")
+    @Nonnull
     @Override
     public void create(List<FriendshipEntity> friends) {
         String createFriendshipQuery = "INSERT INTO friendship (requester_id, addressee_id, status, created_date) " +
@@ -42,6 +47,8 @@ public class FriendshipDAOJdbc implements FriendshipDAO {
         }
     }
 
+    @SuppressWarnings("resource")
+    @Nonnull
     @Override
     public List<FriendshipEntity> findUserFriendships(UserdataUserEntity user, boolean isRequester) {
         String query = "SELECT * FROM friendship f WHERE %s = ?"
@@ -61,6 +68,7 @@ public class FriendshipDAOJdbc implements FriendshipDAO {
         }
     }
 
+    @SuppressWarnings("resource")
     @Override
     public void delete(UserdataUserEntity userEntity) {
         String queryDeleteFriendship = "DELETE FROM friendship WHERE requester_id = ? OR addressee_id = ?";

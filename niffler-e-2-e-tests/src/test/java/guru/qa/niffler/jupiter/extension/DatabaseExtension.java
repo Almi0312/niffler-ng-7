@@ -1,7 +1,7 @@
 package guru.qa.niffler.jupiter.extension;
 
 import guru.qa.niffler.data.jpa.EntityManagers;
-import guru.qa.niffler.data.template.Connections;
+import guru.qa.niffler.data.jdbc.Connections;
 
 public class DatabaseExtension implements SuiteExtension {
     @Override

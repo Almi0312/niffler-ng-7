@@ -6,9 +6,12 @@ import guru.qa.niffler.data.repository.auth.AuthUserRepository;
 import guru.qa.niffler.data.repository.auth.impl.AuthUserSpringRepositoryJdbc;
 import guru.qa.niffler.data.template.JdbcTransactionTemplate;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Optional;
 import java.util.UUID;
 
+@ParametersAreNonnullByDefault
 public class AuthUserDBSpringRepositoryClient {
     private static final Config CFG = Config.getInstance();
 
@@ -20,13 +23,13 @@ public class AuthUserDBSpringRepositoryClient {
         txTemplate = new JdbcTransactionTemplate(CFG.userdataJdbcUrl());
     }
 
-    public Optional<AuthUserEntity> findUserById(UUID id) {
+    public @Nonnull Optional<AuthUserEntity> findUserById(UUID id) {
         return txTemplate.execute(
                 () -> authUserRepo.findById(id)
         );
     }
 
-    public Optional<AuthUserEntity> findUserByUsername(String username) {
+    public @Nonnull Optional<AuthUserEntity> findUserByUsername(String username) {
         return txTemplate.execute(
                 () -> authUserRepo.findByUsername(username)
         );

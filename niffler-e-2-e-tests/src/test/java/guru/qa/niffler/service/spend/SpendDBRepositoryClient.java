@@ -9,12 +9,14 @@ import guru.qa.niffler.data.template.JdbcTransactionTemplate;
 import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.model.SpendJson;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-
+@ParametersAreNonnullByDefault
 public class SpendDBRepositoryClient implements SpendsClient {
 
     private static final Config CFG = Config.getInstance();
@@ -28,25 +30,25 @@ public class SpendDBRepositoryClient implements SpendsClient {
     }
 
     @Override
-    public SpendJson createSpend(SpendJson spend) {
+    public @Nonnull SpendJson createSpend(SpendJson spend) {
         return txTemplate.execute(() ->
             SpendJson.fromEntity(spendRepo.createSpend(SpendEntity.fromJson(spend))));
     }
 
     @Override
-    public SpendJson updateSpend(SpendJson spend) {
+    public @Nonnull SpendJson updateSpend(SpendJson spend) {
         return txTemplate.execute(Connection.TRANSACTION_REPEATABLE_READ,
                 () -> SpendJson.fromEntity(spendRepo.updateSpend(SpendEntity.fromJson(spend))));
     }
 
     @Override
-    public Optional<SpendJson> findById(UUID id) {
+    public @Nonnull Optional<SpendJson> findById(UUID id) {
         return txTemplate.execute(() ->
                 spendRepo.findById(id).map(SpendJson::fromEntity));
     }
 
     @Override
-    public List<SpendJson> findAllByUsername(String username) {
+    public @Nonnull List<SpendJson> findAllByUsername(String username) {
         return txTemplate.execute(() ->
                 spendRepo.findAllByUsername(username).stream()
                         .map(SpendJson::fromEntity)
@@ -54,13 +56,13 @@ public class SpendDBRepositoryClient implements SpendsClient {
     }
 
     @Override
-    public Optional<SpendJson> findByUsernameAndDescription(String username, String name) {
+    public @Nonnull Optional<SpendJson> findByUsernameAndDescription(String username, String name) {
         return txTemplate.execute(() ->
                 spendRepo.findByUsernameAndDescription(username, name).map(SpendJson::fromEntity));
     }
 
     @Override
-    public List<SpendJson> findAll() {
+    public @Nonnull List<SpendJson> findAll() {
         return txTemplate.execute(() ->
                 spendRepo.findAll().stream().map(SpendJson::fromEntity).toList());
     }
@@ -72,39 +74,39 @@ public class SpendDBRepositoryClient implements SpendsClient {
     }
 
     @Override
-    public CategoryJson createCategory(CategoryJson category) {
+    public @Nonnull CategoryJson createCategory(CategoryJson category) {
         return txTemplate.execute(() ->
                 CategoryJson.fromEntity(spendRepo.createCategory(CategoryEntity.fromJson(category))));
     }
 
     @Override
-    public CategoryJson updateCategory(CategoryJson category) {
+    public @Nonnull CategoryJson updateCategory(CategoryJson category) {
         return txTemplate.execute(Connection.TRANSACTION_REPEATABLE_READ,
                 () -> CategoryJson.fromEntity(spendRepo.updateCategory(CategoryEntity.fromJson(category))));
     }
 
     @Override
-    public Optional<CategoryJson> findCategoryById(UUID id) {
+    public @Nonnull Optional<CategoryJson> findCategoryById(UUID id) {
         return txTemplate.execute(() ->
                 spendRepo.findCategoryById(id).map(CategoryJson::fromEntity));
     }
 
     @Override
-    public Optional<CategoryJson> findCategoryByUsernameAndName(String username, String categoryName) {
+    public @Nonnull Optional<CategoryJson> findCategoryByUsernameAndName(String username, String categoryName) {
         return txTemplate.execute(() ->
                 spendRepo.findCategoryByUsernameAndName(username, categoryName)
                         .map(CategoryJson::fromEntity));
     }
 
     @Override
-    public List<CategoryJson> findAllCategoryByUsername(String username) {
+    public @Nonnull List<CategoryJson> findAllCategoryByUsername(String username) {
         return txTemplate.execute(() ->
                 spendRepo.findAllCategoryByUsername(username).stream()
                         .map(CategoryJson::fromEntity).toList());
     }
 
     @Override
-    public List<CategoryJson> findAllCategory() {
+    public @Nonnull List<CategoryJson> findAllCategory() {
         return txTemplate.execute(() ->
                 spendRepo.findAllCategory().stream()
                         .map(CategoryJson::fromEntity).toList());

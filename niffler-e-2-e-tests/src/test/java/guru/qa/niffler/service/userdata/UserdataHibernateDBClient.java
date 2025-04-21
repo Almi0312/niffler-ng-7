@@ -10,7 +10,7 @@ import guru.qa.niffler.data.repository.auth.AuthUserRepository;
 import guru.qa.niffler.data.repository.auth.impl.AuthUserHibernateRepository;
 import guru.qa.niffler.data.repository.userdata.UserdataRepository;
 import guru.qa.niffler.data.repository.userdata.impl.UserdataHibernateRepository;
-import guru.qa.niffler.data.template.DataSources;
+import guru.qa.niffler.data.jdbc.DataSources;
 import guru.qa.niffler.data.template.XaTransactionTemplate;
 import guru.qa.niffler.model.CurrencyValues;
 import guru.qa.niffler.model.UserdataUserJson;

@@ -8,14 +8,17 @@ import guru.qa.niffler.data.entity.userdata.UserdataUserEntity;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
-import static guru.qa.niffler.data.template.DataSources.dataSource;
+import static guru.qa.niffler.data.jdbc.DataSources.dataSource;
 
+@ParametersAreNonnullByDefault
 public class FriendshipDAOSpringJdbc implements FriendshipDAO {
 
     private final Config CFG = Config.getInstance();
@@ -48,6 +51,7 @@ public class FriendshipDAOSpringJdbc implements FriendshipDAO {
                 });
     }
 
+    @Nonnull
     @Override
     public List<FriendshipEntity> findUserFriendships(UserdataUserEntity user, boolean isRequester) {
         String queryRequest = "SELECT * FROM friendship f WHERE %s = ?"
