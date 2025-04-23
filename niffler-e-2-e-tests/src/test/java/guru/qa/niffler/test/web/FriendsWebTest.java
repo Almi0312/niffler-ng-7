@@ -14,13 +14,12 @@ public class FriendsWebTest {
     private static final Config CFG = Config.getInstance();
 
     @User(username = "wolf",
-    friends = 1)
+            friends = 1)
     @Test
     void friendShouldBePresentInFriendsTable(UserdataUserJson user) {
         open(CFG.frontUrl(), LoginPage.class)
                 .login(user.username(), user.testData().password())
-                .clickByUserAvatar()
-                .clickByFriends()
+                .goOnFriendsPage()
                 .checkFriendInTable(user.testData().friends().getFirst().username());
     }
 
@@ -29,33 +28,56 @@ public class FriendsWebTest {
     void friendTableShouldBeEmptyForNewUser(UserdataUserJson user) {
         open(CFG.frontUrl(), LoginPage.class)
                 .login(user.username(), user.testData().password())
-                .clickByUserAvatar()
-                .clickByFriends()
+                .goOnFriendsPage()
                 .checkSelectedTabByName("Friends")
                 .checkEmptyTable();
     }
 
     @User(username = "circus",
-    incomeInvitations = 1)
+            incomeInvitations = 1)
     @Test
     void incomeInvitationBePresentInFriendsTable(UserdataUserJson user) {
         open(CFG.frontUrl(), LoginPage.class)
                 .login(user.username(), user.testData().password())
-                .clickByUserAvatar()
-                .clickByFriends()
+                .goOnFriendsPage()
                 .checkSelectedTabByName("Friends")
                 .checkIncomeInTable(user.testData().income().getFirst().username());
     }
 
     @User(username = "cat",
-    outcomeInvitations = 1)
+            outcomeInvitations = 1)
     @Test
     void outcomeInvitationBePresentInAllPeoplesTable(UserdataUserJson user) {
         open(CFG.frontUrl(), LoginPage.class)
                 .login(user.username(), user.testData().password())
-                .clickByUserAvatar()
-                .clickByAllPeople()
+                .goOnAllPeoplePage()
                 .checkOutcomeInTable(user.testData().outcome().getFirst().username());
+    }
+
+    @User(incomeInvitations = 1)
+    @Test
+    void AcceptOutcomeInvitation(UserdataUserJson user) {
+        String incomeUsername = user.testData().income().getFirst().username();
+        open(CFG.frontUrl(), LoginPage.class)
+                .login(user.username(), user.testData().password())
+                .goOnFriendsPage()
+                .checkSelectedTabByName("Friends")
+                .checkIncomeInTable(incomeUsername)
+                .acceptIncomeInvication(incomeUsername)
+                .checkFriendInTable(incomeUsername);
+    }
+
+    @User(incomeInvitations = 1)
+    @Test
+    void DeclineOutcomeInvitation(UserdataUserJson user) {
+        String incomeUsername = user.testData().income().getFirst().username();
+        open(CFG.frontUrl(), LoginPage.class)
+                .login(user.username(), user.testData().password())
+                .goOnFriendsPage()
+                .checkSelectedTabByName("Friends")
+                .checkIncomeInTable(incomeUsername)
+                .declineIncomeInvication(incomeUsername)
+                .checkFriendInTable(incomeUsername);
     }
 
 }
