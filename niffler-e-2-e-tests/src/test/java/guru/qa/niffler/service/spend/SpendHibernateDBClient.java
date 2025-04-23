@@ -8,6 +8,7 @@ import guru.qa.niffler.data.repository.spend.impl.SpendSpringRepositoryJdbc;
 import guru.qa.niffler.data.jdbc.DataSources;
 import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.model.SpendJson;
+import guru.qa.niffler.service.SpendsClient;
 import org.springframework.jdbc.support.JdbcTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -16,7 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public class SpendHibernateDBClient implements SpendsClient{
+public class SpendHibernateDBClient implements SpendsClient {
 
     private static final Config CFG = Config.getInstance();
 

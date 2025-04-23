@@ -1,7 +1,9 @@
-package guru.qa.niffler.service.userdata;
+package guru.qa.niffler.service;
 
 import guru.qa.niffler.model.CurrencyValues;
 import guru.qa.niffler.model.UserdataUserJson;
+import guru.qa.niffler.service.userdata.UserdataApiClient;
+import guru.qa.niffler.service.userdata.UserdataDBSpringRepositoryClient;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -10,6 +12,12 @@ import java.util.UUID;
 
 @ParametersAreNonnullByDefault
 public interface UsersClient {
+
+    static UsersClient getInstance() {
+        return "api".equals(System.getProperty("client.impl"))
+                ? new UserdataApiClient()
+                : new UserdataDBSpringRepositoryClient();
+    }
 
     @Nonnull
     UserdataUserJson create(String username, CurrencyValues currencyValue, String password);

@@ -5,7 +5,7 @@ import com.codeborne.selenide.SelenideElement;
 import static com.codeborne.selenide.Selenide.$x;
 import static java.lang.String.format;
 
-public abstract class BaseComponent {
+public abstract class BaseComponent<T extends BaseComponent<?>> {
     protected final SelenideElement self;
 
     public BaseComponent(SelenideElement self) {

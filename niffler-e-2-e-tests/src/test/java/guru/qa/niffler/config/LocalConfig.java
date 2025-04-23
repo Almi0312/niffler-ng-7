@@ -42,11 +42,6 @@ enum LocalConfig implements Config {
   }
 
   @Override
-  public @Nonnull String ghUrl() {
-    return "https://api.github.com/";
-  }
-
-  @Override
   public @Nonnull String userdataJdbcUrl() {
     return "jdbc:postgresql://127.0.0.1:5432/niffler-userdata";
   }

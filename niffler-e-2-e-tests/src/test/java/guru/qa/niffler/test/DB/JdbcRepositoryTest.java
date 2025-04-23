@@ -1,18 +1,15 @@
 package guru.qa.niffler.test.DB;
 
 import guru.qa.niffler.data.entity.auth.AuthUserEntity;
-import guru.qa.niffler.data.entity.spend.CategoryEntity;
 import guru.qa.niffler.data.entity.userdata.*;
-import guru.qa.niffler.data.repository.spend.SpendRepository;
-import guru.qa.niffler.data.repository.spend.impl.SpendRepositoryJdbc;
 import guru.qa.niffler.data.repository.userdata.UserdataRepository;
 import guru.qa.niffler.data.repository.userdata.impl.UserdataRepositoryJdbc;
 import guru.qa.niffler.model.*;
 import guru.qa.niffler.service.auth.AuthUserDBRepositoryClient;
 import guru.qa.niffler.service.spend.SpendDBRepositoryClient;
-import guru.qa.niffler.service.spend.SpendsClient;
+import guru.qa.niffler.service.SpendsClient;
 import guru.qa.niffler.service.userdata.UserdataDBRepositoryClient;
-import guru.qa.niffler.service.userdata.UsersClient;
+import guru.qa.niffler.service.UsersClient;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -148,10 +145,10 @@ class JdbcRepositoryTest {
                 "Отправлен запрос в друзья от {} для {}", testUserName, otherUserName);
         Assertions.assertEquals(otherUserEntity.getFriendshipAddressees().getFirst().getAddressee().getId(), otherUserEntity.getId());
         Assertions.assertEquals(otherUserEntity.getFriendshipAddressees().getFirst().getRequester().getId(), testUserJson.id());
-        Assertions.assertEquals(otherUserEntity.getFriendshipRequests().size(), 1);
-        Assertions.assertEquals(otherUserEntity.getFriendshipAddressees().size(), 1);
-        Assertions.assertEquals(testUserEntity.getFriendshipRequests().size(), 1);
-        Assertions.assertEquals(testUserEntity.getFriendshipAddressees().size(), 1);
+        Assertions.assertEquals(1, otherUserEntity.getFriendshipRequests().size());
+        Assertions.assertEquals(1, otherUserEntity.getFriendshipAddressees().size());
+        Assertions.assertEquals(1, testUserEntity.getFriendshipRequests().size());
+        Assertions.assertEquals(1, testUserEntity.getFriendshipAddressees().size());
         Assertions.assertEquals(FriendshipStatus.ACCEPTED, otherUserEntity.getFriendshipRequests().getFirst().getStatus());
         Assertions.assertEquals(FriendshipStatus.ACCEPTED, otherUserEntity.getFriendshipAddressees().getFirst().getStatus());
         Assertions.assertEquals(FriendshipStatus.ACCEPTED, testUserEntity.getFriendshipRequests().getFirst().getStatus());
@@ -254,19 +251,20 @@ class JdbcRepositoryTest {
                     dbSpend.remove(entity);
                     log.info("SPEND DELETED");
                 });
+        SpendJson spendJson = new SpendJson(
+                null,
+                new Date(),
+                new CategoryJson(null,
+                        categoryName,
+                        MAIN_USERNAME,
+                        true),
+                null, // падение транзакции
+                100.0,
+                spendDescription,
+                MAIN_USERNAME
+        );
         Assertions.assertThrows(RuntimeException.class,
-                () -> dbSpend.createSpend(new SpendJson(
-                        null,
-                        new Date(),
-                        new CategoryJson(null,
-                                categoryName,
-                                MAIN_USERNAME,
-                                true),
-                        null, // падение транзакции
-                        100.0,
-                        spendDescription,
-                        MAIN_USERNAME
-                )));
+                () -> dbSpend.createSpend(spendJson));
         log.info("CHECK NOT SPEND CREATED");
         SpendJson resultSpend = dbSpend
                 .findByUsernameAndDescription(MAIN_USERNAME, spendDescription).orElse(null);

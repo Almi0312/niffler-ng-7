@@ -9,10 +9,10 @@ import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.model.SpendJson;
 import guru.qa.niffler.model.UserdataUserJson;
 import guru.qa.niffler.service.auth.AuthUserHibernateDBClient;
-import guru.qa.niffler.service.spend.SpendsClient;
+import guru.qa.niffler.service.SpendsClient;
 import guru.qa.niffler.service.spend.SpendHibernateDBClient;
 import guru.qa.niffler.service.userdata.UserdataHibernateDBClient;
-import guru.qa.niffler.service.userdata.UsersClient;
+import guru.qa.niffler.service.UsersClient;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -43,7 +43,7 @@ class HibernateRepositoryTest {
         UserdataUserJson testUserJson = userDBRepo.findByUsername(testUserName).orElseGet(() ->
                 userDBRepo.create(testUserName, RUB, password));
 
-        UserdataUserEntity testUserEntity = userRepository.findById(testUserJson.id()).orElseThrow(() ->
+        userRepository.findById(testUserJson.id()).orElseThrow(() ->
                 new RuntimeException("объект с username = %s не был создан".formatted(testUserName)));
 
         log.info("Отправка запроса в друзья от {} для {}", otherUserName, testUserName);
@@ -84,7 +84,7 @@ class HibernateRepositoryTest {
         UserdataUserJson testUserJson = userDBRepo.findByUsername(testUserName).orElseGet(() ->
                 userDBRepo.create(testUserName, RUB, password));
 
-        UserdataUserEntity testUserEntity = userRepository.findById(testUserJson.id()).orElseThrow(() ->
+        userRepository.findById(testUserJson.id()).orElseThrow(() ->
                 new RuntimeException("объект с username = %s не был создан".formatted(testUserName)));
 
         log.info("Отправка запроса в друзья от {} для {}", testUserName, otherUserName);
@@ -238,19 +238,18 @@ class HibernateRepositoryTest {
                     dbSpend.remove(entity);
                     log.info("SPEND DELETED");
                 });
+        SpendJson spendJson = new SpendJson(null,
+                new Date(),
+                new CategoryJson(null,
+                        categoryName,
+                        MAIN_USERNAME,
+                        true),
+                null, // падение транзакции
+                100.0,
+                spendDescription,
+                MAIN_USERNAME);
         Assertions.assertThrows(RuntimeException.class,
-                () -> dbSpend.createSpend(new SpendJson(
-                        null,
-                        new Date(),
-                        new CategoryJson(null,
-                                categoryName,
-                                MAIN_USERNAME,
-                                true),
-                        null, // падение транзакции
-                        100.0,
-                        spendDescription,
-                        MAIN_USERNAME
-                )));
+                () -> dbSpend.createSpend(spendJson));
         log.info("CHECK NOT SPEND CREATED");
         SpendJson resultSpend = dbSpend
                 .findByUsernameAndDescription(MAIN_USERNAME, spendDescription).orElse(null);

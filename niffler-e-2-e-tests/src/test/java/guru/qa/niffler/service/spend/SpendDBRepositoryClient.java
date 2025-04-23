@@ -8,6 +8,7 @@ import guru.qa.niffler.data.repository.spend.impl.SpendRepositoryJdbc;
 import guru.qa.niffler.data.template.JdbcTransactionTemplate;
 import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.model.SpendJson;
+import guru.qa.niffler.service.SpendsClient;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;

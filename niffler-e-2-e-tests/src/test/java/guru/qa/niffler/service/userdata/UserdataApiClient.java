@@ -1,6 +1,9 @@
-package guru.qa.niffler.api;
+package guru.qa.niffler.service.userdata;
 
+import guru.qa.niffler.api.UserdataApi;
 import guru.qa.niffler.model.UserdataUserJson;
+import guru.qa.niffler.api.core.RestClient;
+import guru.qa.niffler.service.UsersClient;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Assertions;
 import retrofit2.Response;
@@ -14,9 +17,14 @@ import static guru.qa.niffler.api.ApiClient.USERDATA_API;
 import static java.lang.String.format;
 
 @ParametersAreNullableByDefault
-public class UserdataApiClient {
+public class UserdataApiClient extends RestClient implements UsersClient {
 
-    private final UserdataApi userdataApi = USERDATA_API.getINSTANCE().create(UserdataApi.class);
+    private final UserdataApi userdataApi;
+
+    public UserdataApiClient() {
+        super(CFG.userdataUrl());
+        userdataApi = USERDATA_API.getINSTANCE().create(UserdataApi.class);
+    }
 
     public @Nullable UserdataUserJson updateUser(UserdataUserJson user) {
         final Response<UserdataUserJson> response;
