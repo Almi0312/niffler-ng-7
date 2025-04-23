@@ -1,6 +1,7 @@
 package guru.qa.niffler.page;
 
 import com.codeborne.selenide.SelenideElement;
+import io.qameta.allure.Step;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -23,27 +24,32 @@ public class LoginPage {
     private final SelenideElement errorMessage = $x(".//*[contains(@class, 'form__error-container')]");
 
 
+    @Step("Ввести в поле 'username' {0}")
     public @Nonnull LoginPage setUsername(String username) {
         setFieldAndCheck(usernameInput, username);
         return this;
     }
 
+    @Step("Ввести в поле 'password' {0}")
     public @Nonnull LoginPage setPassword(String password) {
         setFieldAndCheck(passwordInput, password);
         return this;
     }
 
+    @Step("Нажать кнопку 'Log in'")
     public @Nonnull RegisterPage clickRegisterButton() {
         registerButton.shouldBe(visible).click();
         return getRegisterPage();
     }
 
+    @Step("Проверить что текст контроля {0} присутствует")
     public @Nonnull LoginPage checkErrorMessage(String message) {
         errorMessage.shouldHave(text(message).because(format(
                 "Вместо текста %s содержится текст %s", message, errorMessage.getText())));
         return this;
     }
 
+    @Step("Ввести учетные данные [{0}, {1}] и войти на сайт")
     public @Nonnull MainPage login(String username, String password) {
         setUsername(username)
                 .setPassword(password);
