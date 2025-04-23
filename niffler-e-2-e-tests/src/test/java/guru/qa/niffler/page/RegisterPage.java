@@ -13,7 +13,7 @@ import static java.lang.String.format;
 import static java.time.Duration.ofSeconds;
 
 @ParametersAreNonnullByDefault
-public class RegisterPage {
+public class RegisterPage extends BasePage<RegisterPage> {
     private static final ThreadLocal<RegisterPage> INSTANCE = ThreadLocal.withInitial(RegisterPage::new);
 
     private final SelenideElement usernameInput = $("input[id='username']");

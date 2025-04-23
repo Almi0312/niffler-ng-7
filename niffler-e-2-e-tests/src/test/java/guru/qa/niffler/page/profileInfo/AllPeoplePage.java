@@ -2,13 +2,14 @@ package guru.qa.niffler.page.profileInfo;
 
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
+import guru.qa.niffler.page.BasePage;
 import io.qameta.allure.Step;
 
 import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.$$x;
 import static com.codeborne.selenide.Selenide.$x;
 
-public class AllPeoplePage {
+public class AllPeoplePage extends BasePage<AllPeoplePage> {
     private final ElementsCollection tabs = $$x(".//div[@role='tablist']/*");
     private final SelenideElement selectedTab = tabs.find(attributeMatching(
             "class", ".*Mui-selected.*"));

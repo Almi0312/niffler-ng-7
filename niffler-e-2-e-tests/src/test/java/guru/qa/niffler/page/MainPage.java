@@ -15,7 +15,7 @@ import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.*;
 
 @ParametersAreNonnullByDefault
-public class MainPage {
+public class MainPage extends BasePage<MainPage> {
     private final SelenideElement headerForSpending = $x(".//div[@id='spendings']/h2");
     private final SpendingTable tableSpendings = new SpendingTable($("#spendings"));
     private final SelenideElement headerForDiagram = $x(".//div[@id='stat']/h2");
