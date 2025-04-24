@@ -1,7 +1,7 @@
 package guru.qa.niffler.page.component;
 
 import com.codeborne.selenide.SelenideElement;
-import guru.qa.niffler.model.DataFilterValues;
+import guru.qa.niffler.model.DataFilter;
 import guru.qa.niffler.page.EditSpendingPage;
 import io.qameta.allure.Step;
 
@@ -21,7 +21,7 @@ public class SpendingTable extends BaseComponent {
     }
 
     @Step("Выбрать период {0}")
-    public SpendingTable selectPeriod(DataFilterValues period) {
+    public SpendingTable selectPeriod(DataFilter period) {
         dataFilter().shouldBe(visible).click();
         $$x(".//ul[@role='listbox']/li")
                 .find(text(period.dateFilter)).shouldBe(visible).click();

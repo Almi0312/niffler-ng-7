@@ -10,8 +10,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 import java.util.Objects;
 
-import static com.codeborne.selenide.Condition.value;
-import static com.codeborne.selenide.Condition.visible;
+import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.*;
 import static guru.qa.niffler.util.RandomDataUtils.getRandomNumber;
 
@@ -33,10 +32,11 @@ public class EditSpendingPage {
     }
 
     @Step("Ввести в поле 'Category' {0}")
-    public @Nonnull EditSpendingPage setNewCategoryDescription() {
-        SelenideElement category = categories.get(getRandomNumber(0, categories.size()));
-        category.shouldBe(visible).click();
-        categoryInput.shouldBe(value(category.getText()));
+    public @Nonnull EditSpendingPage setNewCategoryDescription(String description) {
+        categoryInput.clear();
+        categoryInput.shouldBe(value(""));
+        categoryInput.setValue(description);
+        categoryInput.shouldBe(value(description));
         return this;
     }
 

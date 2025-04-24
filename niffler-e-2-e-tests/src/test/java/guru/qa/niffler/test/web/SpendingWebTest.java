@@ -42,13 +42,15 @@ public class SpendingWebTest {
     }
 
     @Test
-    void addNewSpending() {
+    @User()
+    void addNewSpending(UserdataUserJson userJson) {
         String spendName = randomSpendName();
+        String categoryName = randomCategoryName();
         Selenide.open(CFG.frontUrl(), LoginPage.class)
-                .login(MAIN_USERNAME, MAIN_PASSWORD)
+                .login(userJson.username(), userJson.testData().password())
                 .goOnAddSpendingPage()
                 .setNewAmount("100000")
-                .setNewCategoryDescription()
+                .setNewCategoryDescription(categoryName)
                 .setNewSpendingDescription(spendName)
                 .save();
         new MainPage().checkThatTableContainsSpending(spendName);
