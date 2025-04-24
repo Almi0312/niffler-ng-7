@@ -2,12 +2,9 @@ package guru.qa.niffler.api;
 
 import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.model.CurrencyValues;
-import guru.qa.niffler.model.Period;
 import guru.qa.niffler.model.SpendJson;
 import org.junit.jupiter.api.Assertions;
 import retrofit2.Response;
-import retrofit2.http.GET;
-import retrofit2.http.PATCH;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;

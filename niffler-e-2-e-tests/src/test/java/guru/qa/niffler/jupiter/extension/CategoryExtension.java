@@ -31,10 +31,10 @@ public class CategoryExtension implements BeforeEachCallback,
                 .ifPresent(userAnno -> {
                     UserdataUserJson userJson = context.getStore(UserExtension.NAMESPACE)
                             .get(context.getUniqueId(), UserdataUserJson.class);
-                    log.info("найден пользователь - {}", context.getStore(NAMESPACE). get(context.getUniqueId(), UserdataUserJson.class));
                     final String username = userJson != null
                             ? userJson.username()
                             : userAnno.username();
+                    log.info("найден пользователь - {}", username);
                     final List<CategoryJson> createdCategories = new ArrayList<>();
                     for (Category annoCategory : userAnno.categories()) {
                         CategoryJson categoryJson = new CategoryJson(

@@ -1,6 +1,7 @@
 package guru.qa.niffler.page;
 
 import com.codeborne.selenide.SelenideElement;
+import io.qameta.allure.Step;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -28,31 +29,37 @@ public class RegisterPage {
         return INSTANCE.get();
     }
 
+    @Step("Ввести в поле 'username' {0}")
     public @Nonnull RegisterPage setUsername(String username) {
         setValueField(usernameInput, username);
         return this;
     }
 
+    @Step("Ввести в поле 'password' {0}")
     public @Nonnull RegisterPage setPassword(String password) {
         setValueField(passwordInput, password);
         return this;
     }
 
+    @Step("Ввести в поле 'Submit password' {0}")
     public @Nonnull RegisterPage setPasswordSubmit(String password) {
         setValueField(retryPasswordInput, password);
         return this;
     }
 
+    @Step("Нажать на кнопку 'Submit'")
     public @Nonnull RegisterPage clickSubmitButton() {
         submitButton.shouldBe(visible).click();
         return this;
     }
 
+    @Step("Нажать на кнопку 'Sign in'")
     public @Nonnull LoginPage clickSubmitRegistration() {
         singInButton.shouldBe(visible).click();
         return new LoginPage();
     }
 
+    @Step("Проверить что для 'password' текст контроля {0} присутствует")
     public @Nonnull RegisterPage checkErrorMessagePassword(String message) {
         SelenideElement passwordFieldBlock = passwordInput.parent().$x(".//span[@class='form__error']");
         passwordFieldBlock.shouldHave(text(message).because(format(
@@ -60,6 +67,7 @@ public class RegisterPage {
         return this;
     }
 
+    @Step("Проверить что для 'username' текст контроля {0} присутствует")
     public @Nonnull RegisterPage checkErrorMessageUsername(String message) {
         SelenideElement passwordFieldBlock = usernameInput.parent().$x(".//span[@class='form__error']");
         passwordFieldBlock.shouldHave(text(message).because(format(

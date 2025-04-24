@@ -2,12 +2,10 @@ package guru.qa.niffler.api;
 
 import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.model.CurrencyValues;
-import guru.qa.niffler.model.Period;
 import guru.qa.niffler.model.SpendJson;
 import retrofit2.Call;
 import retrofit2.http.*;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 public interface SpendApi {

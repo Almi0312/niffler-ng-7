@@ -8,6 +8,7 @@ import guru.qa.niffler.jupiter.annotation.meta.WebTest;
 import guru.qa.niffler.jupiter.annotation.Category;
 import guru.qa.niffler.model.UserdataUserJson;
 import guru.qa.niffler.page.LoginPage;
+import guru.qa.niffler.util.RandomDataUtils;
 import org.junit.jupiter.api.Test;
 
 @WebTest
@@ -20,8 +21,7 @@ public class ProfileTest {
     void archivedCategoryShouldPresentInCategoriesList(UserdataUserJson user) {
         Selenide.open(CFG.frontUrl(), LoginPage.class)
                 .login(Constants.MAIN_USERNAME, Constants.MAIN_PASSWORD)
-                .clickByUserAvatar()
-                .clickByProfile()
+                .goOnProfilePage()
                 .activatedShowArchiveCategory()
                 .checkNameSpendInCategoryList(
                         user.testData().categories().getFirst().name());
@@ -33,10 +33,21 @@ public class ProfileTest {
     void activeCategoryShouldPresentInCategoriesList(UserdataUserJson user) {
         Selenide.open(CFG.frontUrl(), LoginPage.class)
                 .login(Constants.MAIN_USERNAME, Constants.MAIN_PASSWORD)
-                .clickByUserAvatar()
-                .clickByProfile()
+                .goOnProfilePage()
                 .checkNameSpendInCategoryList(
                         user.testData().categories().getFirst().name());
+    }
+
+    @Test
+    @User()
+    void changeFieldName(UserdataUserJson userJson) {
+        String name = RandomDataUtils.randomName();
+        Selenide.open(CFG.frontUrl(), LoginPage.class)
+                .login(userJson.username(), userJson.testData().password())
+                .goOnProfilePage()
+                .setValueInFieldName(name)
+                .saveChanges()
+                .checkValueInFieldName(name);
     }
 
 }
