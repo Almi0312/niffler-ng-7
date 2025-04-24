@@ -7,7 +7,7 @@ import java.util.Objects;
 
 import static com.codeborne.selenide.Condition.exist;
 
-public class SearchField extends BaseComponent {
+public class SearchField extends BaseComponent<SearchField> {
 
     public SearchField(SelenideElement self) {
         super(self);

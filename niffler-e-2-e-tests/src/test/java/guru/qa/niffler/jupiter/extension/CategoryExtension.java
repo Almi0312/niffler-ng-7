@@ -5,7 +5,7 @@ import guru.qa.niffler.jupiter.annotation.User;
 import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.model.UserdataUserJson;
 import guru.qa.niffler.service.spend.SpendDBSpringRepositoryClient;
-import guru.qa.niffler.service.spend.SpendsClient;
+import guru.qa.niffler.service.SpendsClient;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.*;
 import org.junit.platform.commons.support.AnnotationSupport;

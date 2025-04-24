@@ -1,8 +1,11 @@
-package guru.qa.niffler.api;
+package guru.qa.niffler.service.spend;
 
+import guru.qa.niffler.api.SpendApi;
 import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.model.CurrencyValues;
 import guru.qa.niffler.model.SpendJson;
+import guru.qa.niffler.api.core.RestClient;
+import guru.qa.niffler.service.SpendsClient;
 import org.junit.jupiter.api.Assertions;
 import retrofit2.Response;
 
@@ -17,9 +20,14 @@ import static java.lang.String.format;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ParametersAreNonnullByDefault
-public class SpendApiClient {
+public class SpendApiClient extends RestClient implements SpendsClient {
 
-  private final SpendApi spendApi = SPEND_API.getINSTANCE().create(SpendApi.class);
+  private final SpendApi spendApi;
+
+  public SpendApiClient() {
+    super(CFG.spendUrl());
+    spendApi = SPEND_API.getINSTANCE().create(SpendApi.class);
+  }
 
   public @Nullable SpendJson createSpend(SpendJson spend) {
     final Response<SpendJson> response;

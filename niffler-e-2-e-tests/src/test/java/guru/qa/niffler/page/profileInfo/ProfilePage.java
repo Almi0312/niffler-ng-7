@@ -4,12 +4,13 @@ import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import guru.qa.niffler.config.Config;
 import io.qameta.allure.Step;
+import guru.qa.niffler.page.BasePage;
 
 import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.$$x;
 import static com.codeborne.selenide.Selenide.$x;
 
-public class ProfilePage {
+public class ProfilePage extends BasePage<ProfilePage> {
 
     public static String url = Config.getInstance().frontUrl() + "profile";
     private final SelenideElement archiveButton = $x(".//button[@aria-label = 'Archive category']");

@@ -10,7 +10,7 @@ import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.$$x;
 import static com.codeborne.selenide.Selenide.$x;
 
-public class SpendingTable extends BaseComponent {
+public class SpendingTable extends BaseComponent<SpendingTable> {
 
     private final SearchField searchField = new SearchField($x(
             ".//input[@aria-label='search']"));

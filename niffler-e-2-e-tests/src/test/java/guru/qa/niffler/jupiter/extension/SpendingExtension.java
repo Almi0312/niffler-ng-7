@@ -6,7 +6,7 @@ import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.model.SpendJson;
 import guru.qa.niffler.model.UserdataUserJson;
 import guru.qa.niffler.service.spend.SpendDBSpringRepositoryClient;
-import guru.qa.niffler.service.spend.SpendsClient;
+import guru.qa.niffler.service.SpendsClient;
 import org.junit.jupiter.api.extension.*;
 import org.junit.platform.commons.support.AnnotationSupport;
 

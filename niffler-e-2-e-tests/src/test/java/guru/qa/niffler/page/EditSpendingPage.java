@@ -15,7 +15,7 @@ import static com.codeborne.selenide.Selenide.*;
 import static guru.qa.niffler.util.RandomDataUtils.getRandomNumber;
 
 @ParametersAreNonnullByDefault
-public class EditSpendingPage {
+public class EditSpendingPage extends BasePage<EditSpendingPage> {
     private final SelenideElement descriptionInput = $("#description");
     private final SelenideElement categoryInput = $("#category");
     private final ElementsCollection categories = $$x(".//ul//li[@role='menuitem']");

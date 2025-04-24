@@ -1,7 +1,7 @@
 package guru.qa.niffler.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import lombok.SneakyThrows;
+import guru.qa.niffler.api.core.RestClient;
 import retrofit2.Response;
 
 import javax.annotation.Nonnull;
@@ -13,10 +13,15 @@ import static guru.qa.niffler.api.ApiClient.GH_API;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ParametersAreNonnullByDefault
-public class GhApiClient {
-    private final GhApi ghApi = GH_API.getINSTANCE().create(GhApi.class);
+public class GhApiClient extends RestClient {
+    private final GhApi ghApi;
 
     private static final String GH_TOKEN_ENV = "Niffler7";
+
+    public GhApiClient() {
+        super(CFG.ghUrl());
+        this.ghApi = GH_API.getINSTANCE().create(GhApi.class);
+    }
 
     public @Nonnull String issueState(@Nonnull String issueNumber) {
         final Response<JsonNode> response;

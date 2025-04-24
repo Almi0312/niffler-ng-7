@@ -13,9 +13,8 @@ import io.qameta.allure.Step;
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.*;
-import static java.lang.String.format;
 
-public class Header extends BaseComponent {
+public class Header extends BaseComponent<Header> {
 
     public Header() {
         super($("#root header"));

@@ -1,4 +1,4 @@
-package guru.qa.niffler.service.spend;
+package guru.qa.niffler.service;
 
 import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.model.SpendJson;

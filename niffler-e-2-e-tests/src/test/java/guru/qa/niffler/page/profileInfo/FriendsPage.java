@@ -2,6 +2,7 @@ package guru.qa.niffler.page.profileInfo;
 
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
+import guru.qa.niffler.page.BasePage;
 import guru.qa.niffler.page.component.SearchField;
 import io.qameta.allure.Step;
 
@@ -14,7 +15,7 @@ import static com.codeborne.selenide.Selenide.*;
 import static java.lang.String.format;
 
 @ParametersAreNonnullByDefault
-public class FriendsPage {
+public class FriendsPage extends BasePage<FriendsPage> {
     private final ElementsCollection tabs = $$x(".//div[@role='tablist']/*");
     private final SelenideElement selectedTab = tabs.find(attributeMatching(
             "class", ".*Mui-selected.*"));
