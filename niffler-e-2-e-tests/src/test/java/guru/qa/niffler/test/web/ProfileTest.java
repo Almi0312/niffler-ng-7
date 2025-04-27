@@ -2,7 +2,6 @@ package guru.qa.niffler.test.web;
 
 import com.codeborne.selenide.Selenide;
 import guru.qa.niffler.config.Config;
-import guru.qa.niffler.config.Constants;
 import guru.qa.niffler.jupiter.annotation.User;
 import guru.qa.niffler.jupiter.annotation.meta.WebTest;
 import guru.qa.niffler.jupiter.annotation.Category;
@@ -16,11 +15,10 @@ public class ProfileTest {
     private static final Config CFG = Config.getInstance();
 
     @Test
-    @User(username = Constants.MAIN_USERNAME,
-            categories = @Category(archived = true))
+    @User(categories = @Category(archived = true))
     void archivedCategoryShouldPresentInCategoriesList(UserdataUserJson user) {
         Selenide.open(CFG.frontUrl(), LoginPage.class)
-                .login(Constants.MAIN_USERNAME, Constants.MAIN_PASSWORD)
+                .login(user.username(), user.testData().password())
                 .goOnProfilePage()
                 .activatedShowArchiveCategory()
                 .checkNameSpendInCategoryList(
@@ -28,11 +26,10 @@ public class ProfileTest {
     }
 
     @Test
-    @User(username = Constants.MAIN_USERNAME,
-            categories = @Category(archived = false))
+    @User(categories = @Category(archived = false))
     void activeCategoryShouldPresentInCategoriesList(UserdataUserJson user) {
         Selenide.open(CFG.frontUrl(), LoginPage.class)
-                .login(Constants.MAIN_USERNAME, Constants.MAIN_PASSWORD)
+                .login(user.username(), user.testData().password())
                 .goOnProfilePage()
                 .checkNameSpendInCategoryList(
                         user.testData().categories().getFirst().name());

@@ -2,12 +2,14 @@ package guru.qa.niffler.test.DB;
 
 import guru.qa.niffler.data.entity.auth.AuthUserEntity;
 import guru.qa.niffler.data.entity.userdata.*;
+import guru.qa.niffler.data.entity.userdata.FriendshipStatus;
 import guru.qa.niffler.data.repository.userdata.UserdataRepository;
 import guru.qa.niffler.data.repository.userdata.impl.UserdataRepositoryJdbc;
 import guru.qa.niffler.model.*;
 import guru.qa.niffler.service.auth.AuthUserDBRepositoryClient;
 import guru.qa.niffler.service.spend.SpendDBRepositoryClient;
 import guru.qa.niffler.service.SpendsClient;
+import guru.qa.niffler.service.userdata.UserdataApiClient;
 import guru.qa.niffler.service.userdata.UserdataDBRepositoryClient;
 import guru.qa.niffler.service.UsersClient;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +20,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.UUID;
 
 import static guru.qa.niffler.config.Constants.MAIN_USERNAME;
 import static guru.qa.niffler.model.CurrencyValues.*;
@@ -32,7 +35,6 @@ class JdbcRepositoryTest {
         UsersClient userDBRepo = new UserdataDBRepositoryClient();
         AuthUserDBRepositoryClient authUserDBClient = new AuthUserDBRepositoryClient();
         UserdataRepository userRepository = new UserdataRepositoryJdbc();
-
         log.info("Создание объекта {}", testUserName);
         UserdataUserJson testUserJson = userDBRepo.findByUsername(testUserName).orElseGet(() ->
                 userDBRepo.create(testUserName, RUB, password));

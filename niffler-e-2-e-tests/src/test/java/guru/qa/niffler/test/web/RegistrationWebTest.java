@@ -26,6 +26,7 @@ public class RegistrationWebTest {
         String username = randomUsername();
         String password = randomPassword();
 
+        System.out.println("shouldRegisterNewUser[password] - " + password);
         Selenide.open(CFG.frontUrl(), LoginPage.class)
                 .clickRegisterButton()
                 .setUsername(username)
