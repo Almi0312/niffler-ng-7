@@ -12,6 +12,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selectors.byText;
 import static com.codeborne.selenide.Selenide.*;
+import static com.codeborne.selenide.WebDriverRunner.getWebDriver;
 import static java.lang.String.format;
 
 @ParametersAreNonnullByDefault
@@ -51,8 +52,15 @@ public class FriendsPage extends BasePage<FriendsPage> {
 
     @Step("Проверить что пользователь-друг {0} присутствует в таблице")
     public @Nonnull FriendsPage checkFriendInTable(String friendName) {
-        sendUserInfoInSearchLine(friendName);
+        getWebDriver().navigate().refresh();
         friendsTable.$$x(".//tr").find(text(friendName)).shouldBe(visible);
+        return this;
+    }
+
+    @Step("Проверить что пользователь-друг {0} отсутствует в таблице")
+    public @Nonnull FriendsPage checkNotFriendInTable(String friendName) {
+        getWebDriver().navigate().refresh();
+        friendsTable.$$x(".//tr").find(text(friendName)).shouldNotBe(visible);
         return this;
     }
 

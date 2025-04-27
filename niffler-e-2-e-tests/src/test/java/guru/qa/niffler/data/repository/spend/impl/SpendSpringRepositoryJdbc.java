@@ -53,8 +53,12 @@ public class SpendSpringRepositoryJdbc implements SpendRepository {
         String query = "SELECT * FROM spend s JOIN category c " +
                 "ON (s.category_id = c.id) WHERE s.id = ?";
         try {
-            return Optional.ofNullable(jdbcTemplate.query(
-                    query, SpendEntityExtractor.instance, id));
+            SpendEntity spend = jdbcTemplate.query(
+                    query, SpendEntityExtractor.instance, id);
+            if (spend.getId() == null) {
+                return Optional.empty();
+            }
+            return Optional.of(spend);
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
@@ -72,8 +76,12 @@ public class SpendSpringRepositoryJdbc implements SpendRepository {
         String query = "SELECT * FROM spend s JOIN category c" +
                 " ON (s.category_id = c.id) WHERE s.username = ? and s.description = ?";
         try {
-            return Optional.ofNullable(jdbcTemplate.query(
-                    query, SpendEntityExtractor.instance, username, description));
+            SpendEntity spend = jdbcTemplate.query(
+                    query, SpendEntityExtractor.instance, username, description);
+            if (spend.getId() == null) {
+                return Optional.empty();
+            }
+            return Optional.of(spend);
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }

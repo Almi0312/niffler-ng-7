@@ -5,15 +5,25 @@ import okhttp3.Interceptor;
 import okhttp3.JavaNetCookieJar;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
-import org.apache.commons.lang3.ArrayUtils;
 import retrofit2.Converter;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
+import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 
+import static org.apache.commons.lang3.ArrayUtils.isNotEmpty;
+
+/**
+ * базовый абстрактный класс для работы с HTTP-запросами через Retrofit и OkHttp.
+ * Он предоставляет удобную настройку клиента для REST API и поддерживает:
+ * - Гибкую конфигурацию (редиректы, интерсепторы, конвертеры).
+ * - Работу с куками (через ThreadSafeCookieStore).
+ * - Логирование запросов/ответов.
+ * - Создание API-сервисов (на основе интерфейсов Retrofit).
+ */
 @ParametersAreNonnullByDefault
 public abstract class RestClient {
 
@@ -38,7 +48,7 @@ public abstract class RestClient {
         final OkHttpClient.Builder builder = new OkHttpClient.Builder()
                 .followRedirects(followRedirect);
 
-        if (ArrayUtils.isNotEmpty(interceptors)) {
+        if (isNotEmpty(interceptors)) {
             for (Interceptor interceptor : interceptors) {
                 builder.addNetworkInterceptor(interceptor);
             }
@@ -61,24 +71,25 @@ public abstract class RestClient {
                 .build();
     }
 
+    @Nonnull
     public <T> T create(final Class<T> service) {
         return this.retrofit.create(service);
     }
 
-    public final class EmtyRestClient extends RestClient {
-        public EmtyRestClient(String baseUrl) {
+    public static final class EmptyRestClient extends RestClient {
+        public EmptyRestClient(String baseUrl) {
             super(baseUrl);
         }
 
-        public EmtyRestClient(String baseUrl, boolean followRedirect) {
+        public EmptyRestClient(String baseUrl, boolean followRedirect) {
             super(baseUrl, followRedirect);
         }
 
-        public EmtyRestClient(String baseUrl, Converter.Factory factory) {
+        public EmptyRestClient(String baseUrl, Converter.Factory factory) {
             super(baseUrl, factory);
         }
 
-        public EmtyRestClient(String baseUrl, boolean followRedirect, Converter.Factory factory, HttpLoggingInterceptor.Level level, Interceptor... interceptors) {
+        public EmptyRestClient(String baseUrl, boolean followRedirect, Converter.Factory factory, HttpLoggingInterceptor.Level level, Interceptor... interceptors) {
             super(baseUrl, followRedirect, factory, level, interceptors);
         }
     }
