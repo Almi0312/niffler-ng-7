@@ -8,33 +8,33 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public interface UserdataApi {
-    @POST("api/users/update")
+    @POST("/internal/users/update")
     Call<UserdataUserJson> updateUser(@Body UserdataUserJson user);
 
-    @GET("api/users/current")
+    @GET("/internal/users/current")
     Call<UserdataUserJson> getCurrentUserInfo(@Query("username") String username);
 
-    @GET("api/users/all")
-    Call<List<UserdataUserJson>> getAllUsers(@Query("username") String username,
-                                       @Query("searchQuery") @Nullable String searchQuery);
+    @GET("/internal/users/all")
+    Call<List<UserdataUserJson>> getAllUsersByUsername(@Query("username") String username,
+                                                       @Query("searchQuery") @Nullable String searchQuery);
 
-    @POST("api/invitations/send")
+    @POST("/internal/invitations/send")
     Call<UserdataUserJson> sendInvitation(@Query("username") String username,
                                           @Query("targetUsername") @Nullable String targetUsername);
 
-    @POST("api/invitations/decline")
+    @POST("/internal/invitations/decline")
     Call<UserdataUserJson> declineInvitation(@Query("username") String username,
                                              @Query("targetUsername") @Nullable String targetUsername);
 
-    @POST("api/invitations/accept")
+    @POST("/internal/invitations/accept")
     Call<UserdataUserJson> acceptInvitation(@Query("username") String username,
                                             @Query("targetUsername") @Nullable String targetUsername);
 
-    @GET("api/friends/all")
-    Call<List<UserdataUserJson>> getAllFriends(@Query("username") String username,
-                                              @Query("searchQuery") @Nullable String searchQuery);
+    @GET("/internal/friends/all")
+    Call<List<UserdataUserJson>> getAllFriendsByUsername(@Query("username") String username,
+                                                         @Query("searchQuery") @Nullable String searchQuery);
 
-    @DELETE("api/friends/remove")
+    @DELETE("/internal/friends/remove")
     Call<Void> removeFriend(@Query("username") String username,
-                                        @Query("targetUsername") @Nullable String targetUsername);
+                            @Query("targetUsername") @Nullable String targetUsername);
 }
