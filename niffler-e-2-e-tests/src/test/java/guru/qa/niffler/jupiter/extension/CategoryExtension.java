@@ -4,6 +4,7 @@ import guru.qa.niffler.jupiter.annotation.Category;
 import guru.qa.niffler.jupiter.annotation.User;
 import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.model.UserdataUserJson;
+import guru.qa.niffler.service.spend.SpendApiClient;
 import guru.qa.niffler.service.spend.SpendDBSpringRepositoryClient;
 import guru.qa.niffler.service.SpendsClient;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +24,7 @@ public class CategoryExtension implements BeforeEachCallback,
     public static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace
             .create(CategoryExtension.class);
 
-    private final SpendsClient spendClient = new SpendDBSpringRepositoryClient();
+    private final SpendsClient spendClient = new SpendApiClient();
 
     @Override
     public void beforeEach(ExtensionContext context) throws Exception {
