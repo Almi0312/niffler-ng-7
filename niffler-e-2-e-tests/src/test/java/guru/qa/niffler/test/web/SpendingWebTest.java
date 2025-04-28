@@ -18,23 +18,37 @@ public class SpendingWebTest {
 
     private static final Config CFG = Config.getInstance();
 
-    @User(
-            username = MAIN_USERNAME,
-            spendings = @Spending(
-                    category = "Sugar",
-                    description = "daaeaweqew",
-                    amount = 59877)
+    @User(spendings = @Spending(
+            category = "Sugar",
+            description = "daaeaweqew",
+            amount = 59877)
     )
     @Test
     void categoryDescriptionShouldBeChangedFromTable(UserdataUserJson userJson) {
         final String newDescription = "Обучение Niffler Next Generation";
-
         Selenide.open(CFG.frontUrl(), LoginPage.class)
-                .login(MAIN_USERNAME, MAIN_PASSWORD)
+                .login(userJson.username(), userJson.testData().password())
                 .editSpending(userJson.testData().spendings().getFirst().description())
                 .setNewSpendingDescription(newDescription)
                 .save();
-        new MainPage().checkThatTableContainsSpending(newDescription);
+        new MainPage()
+                .checkAlertMessage("Spending is edited successfully")
+                .checkThatTableContainsSpending(newDescription);
+    }
+
+    @User(spendings = @Spending(
+            category = "Sugar",
+            description = "daaeaweqew",
+            amount = 59877)
+    )
+    @Test
+    void SpendShouldBeDeleteFromTableAndCheck(UserdataUserJson userJson) {
+        final String newDescription = "Обучение Niffler Next Generation";
+        Selenide.open(CFG.frontUrl(), LoginPage.class)
+                .login(userJson.username(), userJson.testData().password())
+                .deleteSpending(userJson.testData().spendings().getFirst().description())
+                .checkAlertMessage("Spendings succesfully deleted")
+                .checkThatTableNoContainsSpending(newDescription);
     }
 
     @Test
@@ -49,6 +63,19 @@ public class SpendingWebTest {
                 .setNewCategoryDescription(categoryName)
                 .setNewSpendingDescription(spendName)
                 .save();
-        new MainPage().checkThatTableContainsSpending(spendName);
+        new MainPage()
+                .checkAlertMessage("New spending is successfully created")
+                .checkThatTableContainsSpending(spendName);
+    }
+
+    @Test
+    @User(spendings = @Spending(category = "Sugar",
+            description = "spend api",
+            amount = 10000
+    ))
+    void addNewSpendingWithApi(UserdataUserJson userJson) {
+        Selenide.open(CFG.frontUrl(), LoginPage.class)
+                .login(userJson.username(), userJson.testData().password())
+                .checkThatTableContainsSpending(userJson.testData().spendings().getFirst().description());
     }
 }

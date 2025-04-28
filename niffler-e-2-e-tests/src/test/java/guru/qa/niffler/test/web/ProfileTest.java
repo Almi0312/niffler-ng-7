@@ -44,6 +44,7 @@ public class ProfileTest {
                 .goOnProfilePage()
                 .setValueInFieldName(name)
                 .saveChanges()
+                .checkAlertMessage("Profile successfully updated")
                 .checkValueInFieldName(name);
     }
 

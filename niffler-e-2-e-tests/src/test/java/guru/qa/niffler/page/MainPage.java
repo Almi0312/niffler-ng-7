@@ -29,8 +29,17 @@ public class MainPage extends BasePage<MainPage> {
         return tableSpendings.editSpending(spendingDescription);
     }
 
-    @Step("Проверить что в таблице присутствует трата(spend) {0}")
+    public @Nonnull MainPage deleteSpending(String spendingDescription) {
+        tableSpendings.deleteSpending(spendingDescription);
+        return this;
+    }
+
     public @Nonnull MainPage checkThatTableContainsSpending(String spendingDescription) {
+        tableSpendings.checkTableContains(spendingDescription);
+        return this;
+    }
+
+    public @Nonnull MainPage checkThatTableNoContainsSpending(String spendingDescription) {
         tableSpendings.checkTableContains(spendingDescription);
         return this;
     }
