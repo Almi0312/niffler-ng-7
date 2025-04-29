@@ -28,12 +28,14 @@ public class SpendingWebTest {
         final String newDescription = "Обучение Niffler Next Generation";
         Selenide.open(CFG.frontUrl(), LoginPage.class)
                 .login(userJson.username(), userJson.testData().password())
+                .getTableSpendings()
                 .editSpending(userJson.testData().spendings().getFirst().description())
                 .setNewSpendingDescription(newDescription)
                 .save();
         new MainPage()
                 .checkAlertMessage("Spending is edited successfully")
-                .checkThatTableContainsSpending(newDescription);
+                .getTableSpendings()
+                .checkTableContains(newDescription);
     }
 
     @User(spendings = @Spending(
@@ -46,9 +48,12 @@ public class SpendingWebTest {
         final String newDescription = "Обучение Niffler Next Generation";
         Selenide.open(CFG.frontUrl(), LoginPage.class)
                 .login(userJson.username(), userJson.testData().password())
-                .deleteSpending(userJson.testData().spendings().getFirst().description())
+                .getTableSpendings()
+                .deleteSpending(userJson.testData().spendings().getFirst().description());
+        new MainPage()
                 .checkAlertMessage("Spendings succesfully deleted")
-                .checkThatTableNoContainsSpending(newDescription);
+                .getTableSpendings()
+                .checkTableNoContains(newDescription);
     }
 
     @Test
@@ -58,14 +63,16 @@ public class SpendingWebTest {
         String categoryName = randomCategoryName();
         Selenide.open(CFG.frontUrl(), LoginPage.class)
                 .login(userJson.username(), userJson.testData().password())
-                .goOnAddSpendingPage()
+                .getHeader()
+                .addSpendingPage()
                 .setNewAmount("100000")
                 .setNewCategoryDescription(categoryName)
                 .setNewSpendingDescription(spendName)
                 .save();
         new MainPage()
                 .checkAlertMessage("New spending is successfully created")
-                .checkThatTableContainsSpending(spendName);
+                .getTableSpendings()
+                .checkTableContains(spendName);
     }
 
     @Test
@@ -76,6 +83,7 @@ public class SpendingWebTest {
     void addNewSpendingWithApi(UserdataUserJson userJson) {
         Selenide.open(CFG.frontUrl(), LoginPage.class)
                 .login(userJson.username(), userJson.testData().password())
-                .checkThatTableContainsSpending(userJson.testData().spendings().getFirst().description());
+                .getTableSpendings()
+                .checkTableContains(userJson.testData().spendings().getFirst().description());
     }
 }

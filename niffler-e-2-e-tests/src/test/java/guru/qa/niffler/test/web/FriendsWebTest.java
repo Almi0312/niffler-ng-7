@@ -19,7 +19,8 @@ public class FriendsWebTest {
     void friendShouldBePresentInFriendsTable(UserdataUserJson user) {
         open(CFG.frontUrl(), LoginPage.class)
                 .login(user.username(), user.testData().password())
-                .goOnFriendsPage()
+                .getHeader()
+                .toFriendsPage()
                 .checkFriendInTable(user.testData().friends().getFirst().username());
     }
 
@@ -28,7 +29,8 @@ public class FriendsWebTest {
     void friendTableShouldBeEmptyForNewUser(UserdataUserJson user) {
         open(CFG.frontUrl(), LoginPage.class)
                 .login(user.username(), user.testData().password())
-                .goOnFriendsPage()
+                .getHeader()
+                .toFriendsPage()
                 .checkSelectedTabByName("Friends")
                 .checkEmptyTable();
     }
@@ -39,7 +41,8 @@ public class FriendsWebTest {
     void incomeInvitationBePresentInFriendsTable(UserdataUserJson user) {
         open(CFG.frontUrl(), LoginPage.class)
                 .login(user.username(), user.testData().password())
-                .goOnFriendsPage()
+                .getHeader()
+                .toFriendsPage()
                 .checkSelectedTabByName("Friends")
                 .checkIncomeInTable(user.testData().income().getFirst().username());
     }
@@ -50,7 +53,8 @@ public class FriendsWebTest {
     void outcomeInvitationBePresentInAllPeoplesTable(UserdataUserJson user) {
         open(CFG.frontUrl(), LoginPage.class)
                 .login(user.username(), user.testData().password())
-                .goOnAllPeoplePage()
+                .getHeader()
+                .toAllPeoplePage()
                 .checkOutcomeInTable(user.testData().outcome().getFirst().username());
     }
 
@@ -60,7 +64,8 @@ public class FriendsWebTest {
         String incomeUsername = user.testData().income().getFirst().username();
         open(CFG.frontUrl(), LoginPage.class)
                 .login(user.username(), user.testData().password())
-                .goOnFriendsPage()
+                .getHeader()
+                .toFriendsPage()
                 .checkSelectedTabByName("Friends")
                 .checkIncomeInTable(incomeUsername)
                 .acceptIncomeInvication(incomeUsername)
@@ -73,7 +78,8 @@ public class FriendsWebTest {
         String incomeUsername = user.testData().income().getFirst().username();
         open(CFG.frontUrl(), LoginPage.class)
                 .login(user.username(), user.testData().password())
-                .goOnFriendsPage()
+                .getHeader()
+                .toFriendsPage()
                 .checkSelectedTabByName("Friends")
                 .checkIncomeInTable(incomeUsername)
                 .declineIncomeInvication(incomeUsername)

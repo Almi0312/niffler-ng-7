@@ -19,7 +19,8 @@ public class ProfileTest {
     void archivedCategoryShouldPresentInCategoriesList(UserdataUserJson user) {
         Selenide.open(CFG.frontUrl(), LoginPage.class)
                 .login(user.username(), user.testData().password())
-                .goOnProfilePage()
+                .getHeader()
+                .toProfilePage()
                 .activatedShowArchiveCategory()
                 .checkNameSpendInCategoryList(
                         user.testData().categories().getFirst().name());
@@ -30,7 +31,8 @@ public class ProfileTest {
     void activeCategoryShouldPresentInCategoriesList(UserdataUserJson user) {
         Selenide.open(CFG.frontUrl(), LoginPage.class)
                 .login(user.username(), user.testData().password())
-                .goOnProfilePage()
+                .getHeader()
+                .toProfilePage()
                 .checkNameSpendInCategoryList(
                         user.testData().categories().getFirst().name());
     }
@@ -41,7 +43,8 @@ public class ProfileTest {
         String name = RandomDataUtils.randomName();
         Selenide.open(CFG.frontUrl(), LoginPage.class)
                 .login(userJson.username(), userJson.testData().password())
-                .goOnProfilePage()
+                .getHeader()
+                .toProfilePage()
                 .setValueInFieldName(name)
                 .saveChanges()
                 .checkAlertMessage("Profile successfully updated")
