@@ -1,3 +1,6 @@
 guru.qa.niffler.jupiter.extension.CookiesExtension
 guru.qa.niffler.jupiter.extension.DatabaseExtension
 guru.qa.niffler.jupiter.extension.TestMethodContextExtension
+
+# Let the last to be performed
+guru.qa.niffler.jupiter.extension.AllureBackendLogExtension
