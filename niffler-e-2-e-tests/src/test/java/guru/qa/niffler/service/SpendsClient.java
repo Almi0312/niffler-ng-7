@@ -2,6 +2,8 @@ package guru.qa.niffler.service;
 
 import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.model.SpendJson;
+import guru.qa.niffler.service.spend.SpendApiClient;
+import guru.qa.niffler.service.spend.SpendDBSpringRepositoryClient;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -11,6 +13,12 @@ import java.util.UUID;
 
 @ParametersAreNonnullByDefault
 public interface SpendsClient {
+
+    static SpendsClient getInstance() {
+        return "api".equals(System.getProperty("client.impl"))
+                ? new SpendApiClient()
+                : new SpendDBSpringRepositoryClient();
+    }
 
     @Nonnull
     SpendJson createSpend(SpendJson spend);

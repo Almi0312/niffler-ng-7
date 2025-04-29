@@ -9,7 +9,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import java.io.IOException;
 import java.util.Objects;
 
-import static guru.qa.niffler.api.ApiClient.GH_API;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ParametersAreNonnullByDefault
@@ -20,7 +19,7 @@ public class GhApiClient extends RestClient {
 
     public GhApiClient() {
         super(CFG.ghUrl());
-        this.ghApi = GH_API.getINSTANCE().create(GhApi.class);
+        ghApi = create(GhApi.class);
     }
 
     public @Nonnull String issueState(@Nonnull String issueNumber) {

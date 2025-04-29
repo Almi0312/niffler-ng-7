@@ -53,7 +53,7 @@ public class UserdataHibernateDBClient implements UsersClient {
     public UserdataUserJson update(UserdataUserJson user) {
         return xaTxTemplate.execute(() ->
                 UserdataUserJson.fromEntity(
-                        udUserRepository.update(UserdataUserEntity.fromJson(user)), user.friendState())
+                        udUserRepository.update(UserdataUserEntity.fromJson(user)), user.friendshipStatus())
         );
     }
 

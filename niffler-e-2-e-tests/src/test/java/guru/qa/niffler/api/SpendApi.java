@@ -26,10 +26,11 @@ public interface SpendApi {
                                       @Query("to") String to);
 
     @DELETE("internal/spends/remove")
-    Call<Void> removeSpend(@Query("ids") List<String> ids);
+    Call<Void> removeSpend(@Query("username") String username,
+                           @Query("ids") List<String> ids);
 
     @POST("internal/categories/add")
-    Call<CategoryJson> addCategories(@Body CategoryJson spend);
+    Call<CategoryJson> addCategory(@Body CategoryJson spend);
 
     @PATCH("internal/categories/update")
     Call<CategoryJson> updateCategories(@Body CategoryJson spend);

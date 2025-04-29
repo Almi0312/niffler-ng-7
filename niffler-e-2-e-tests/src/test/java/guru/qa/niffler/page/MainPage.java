@@ -7,6 +7,7 @@ import guru.qa.niffler.page.profileInfo.FriendsPage;
 import guru.qa.niffler.page.profileInfo.ProfilePage;
 import guru.qa.niffler.page.profileInfo.AllPeoplePage;
 import io.qameta.allure.Step;
+import lombok.Getter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -17,23 +18,15 @@ import static com.codeborne.selenide.Selenide.*;
 @ParametersAreNonnullByDefault
 public class MainPage extends BasePage<MainPage> {
     private final SelenideElement headerForSpending = $x(".//div[@id='spendings']/h2");
+    @Getter
     private final SpendingTable tableSpendings = new SpendingTable($("#spendings"));
     private final SelenideElement headerForDiagram = $x(".//div[@id='stat']/h2");
     private final SelenideElement diagram = $x(".//div[@id='stat']//canvas[@role='img']");
     private final SelenideElement searchInput = $x(".//input[@aria-label='search']");
 
     private final SelenideElement userAvatar = $x(".//button[@aria-label='Menu']");
+    @Getter
     private final Header header = new Header();
-
-    public @Nonnull EditSpendingPage editSpending(String spendingDescription) {
-        return tableSpendings.editSpending(spendingDescription);
-    }
-
-    @Step("Проверить что в таблице присутствует трата(spend) {0}")
-    public @Nonnull MainPage checkThatTableContainsSpending(String spendingDescription) {
-        tableSpendings.checkTableContains(spendingDescription);
-        return this;
-    }
 
     @Step("Проверить что диаграмма присутствует")
     public @Nonnull MainPage checkDiagramStatistics() {
@@ -47,19 +40,4 @@ public class MainPage extends BasePage<MainPage> {
         return this;
     }
 
-    public @Nonnull ProfilePage goOnProfilePage() {
-        return header.toProfilePage();
-    }
-
-    public @Nonnull FriendsPage goOnFriendsPage() {
-        return header.toFriendsPage();
-    }
-
-    public @Nonnull AllPeoplePage goOnAllPeoplePage() {
-        return header.toAllPeoplePage();
-    }
-
-    public @Nonnull EditSpendingPage goOnAddSpendingPage() {
-        return header.addSpendingPage();
-    }
 }

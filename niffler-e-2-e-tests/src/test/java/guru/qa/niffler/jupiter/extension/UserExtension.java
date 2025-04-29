@@ -5,6 +5,7 @@ import guru.qa.niffler.jupiter.annotation.User;
 import guru.qa.niffler.model.CurrencyValues;
 import guru.qa.niffler.model.TestData;
 import guru.qa.niffler.model.UserdataUserJson;
+import guru.qa.niffler.service.userdata.UserdataApiClient;
 import guru.qa.niffler.service.userdata.UserdataDBSpringRepositoryClient;
 import guru.qa.niffler.service.UsersClient;
 import guru.qa.niffler.util.RandomDataUtils;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static guru.qa.niffler.config.Constants.DEFAULT_PASSWORD;
 import static guru.qa.niffler.util.RandomDataUtils.getArrayWithRandomUsername;
 
 @Slf4j
@@ -23,9 +25,8 @@ public class UserExtension implements BeforeEachCallback,
         ParameterResolver {
 
     public static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(UserExtension.class);
-    private static final String defaultPassword = "pass";
 
-    private final UsersClient usersClient = new UserdataDBSpringRepositoryClient();
+    private final UsersClient usersClient = new UserdataApiClient();
 
     @Override
     public void beforeEach(ExtensionContext context) throws Exception {
@@ -34,7 +35,7 @@ public class UserExtension implements BeforeEachCallback,
                     String username = "".equals(userAnno.username()) ?
                             RandomDataUtils.randomUsername()
                             : userAnno.username();
-                    UserdataUserJson userJson = usersClient.create(username, CurrencyValues.RUB, defaultPassword);
+                    UserdataUserJson userJson = usersClient.create(username, CurrencyValues.RUB, DEFAULT_PASSWORD);
                     String[] incomes = getArrayWithRandomUsername(userAnno.incomeInvitations());
                     String[] outcomes = getArrayWithRandomUsername(userAnno.outcomeInvitations());
                     String[] friends = getArrayWithRandomUsername(userAnno.friends());
@@ -45,7 +46,7 @@ public class UserExtension implements BeforeEachCallback,
                             context.getUniqueId(),
                             userJson.addTestData(
                                     new TestData(
-                                            defaultPassword,
+                                            DEFAULT_PASSWORD,
                                             new ArrayList<>(),
                                             new ArrayList<>(),
                                             findUsersByUsername(incomes),

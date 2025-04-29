@@ -50,7 +50,7 @@ public class UserdataDBRepositoryClient implements UsersClient {
     public @Nonnull UserdataUserJson update(UserdataUserJson user) {
         return xaTxTemplate.execute(() ->
                 UserdataUserJson.fromEntity(udUserRepository
-                        .update(UserdataUserEntity.fromJson(user)), user.friendState()));
+                        .update(UserdataUserEntity.fromJson(user)), user.friendshipStatus()));
     }
 
     public @Nonnull Optional<UserdataUserJson> findByUsername(String username) {

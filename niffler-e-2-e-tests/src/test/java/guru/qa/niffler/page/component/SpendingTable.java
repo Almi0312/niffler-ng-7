@@ -59,6 +59,15 @@ public class SpendingTable extends BaseComponent<SpendingTable> {
         return this;
     }
 
+    @Step("Проверить что в таблице отсутствуют траты {0}")
+    public SpendingTable checkTableNoContains(String... expectedSpends) {
+        for (String spend : expectedSpends) {
+            searchSpendingByDescription(spend);
+            self.$$x(rows).find(text(spend)).shouldNotBe(visible);
+        }
+        return this;
+    }
+
     @Step("Проверить что в таблице кол-во строк равно {0}")
     public SpendingTable checkTableSize(int expectedSize) {
         self.$$x(rows).shouldBe(size(expectedSize));

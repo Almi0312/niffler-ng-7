@@ -23,7 +23,8 @@ public class RandomDataUtils {
     }
 
     public static @Nonnull String randomPassword() {
-        return faker.internet().password();
+        return new StringBuilder(faker.internet().password())
+                .append(System.currentTimeMillis()).substring(0, 12);
     }
 
     public static @Nonnull String randomCategoryName() {
