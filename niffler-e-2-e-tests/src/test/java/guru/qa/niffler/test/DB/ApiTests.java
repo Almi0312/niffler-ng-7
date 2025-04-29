@@ -1,21 +1,13 @@
 package guru.qa.niffler.test.DB;
 
-import guru.qa.niffler.api.SpendApi;
-import guru.qa.niffler.data.entity.userdata.FriendshipStatus;
-import guru.qa.niffler.data.entity.userdata.UserdataUserEntity;
-import guru.qa.niffler.data.repository.auth.impl.AuthUserSpringRepositoryJdbc;
-import guru.qa.niffler.data.repository.userdata.UserdataRepository;
-import guru.qa.niffler.data.repository.userdata.impl.UserdataHibernateRepository;
 import guru.qa.niffler.jupiter.annotation.Category;
 import guru.qa.niffler.jupiter.annotation.Spending;
 import guru.qa.niffler.jupiter.annotation.User;
-import guru.qa.niffler.model.CategoryJson;
-import guru.qa.niffler.model.SpendJson;
-import guru.qa.niffler.model.UserdataUserJson;
+import guru.qa.niffler.model.rest.SpendJson;
+import guru.qa.niffler.model.rest.UserdataUserJson;
 import guru.qa.niffler.service.SpendsClient;
 import guru.qa.niffler.service.UsersClient;
 import guru.qa.niffler.service.spend.SpendApiClient;
-import guru.qa.niffler.service.spend.SpendDBRepositoryClient;
 import guru.qa.niffler.service.spend.SpendDBSpringRepositoryClient;
 import guru.qa.niffler.service.userdata.UserdataApiClient;
 import guru.qa.niffler.service.userdata.UserdataDBSpringRepositoryClient;
@@ -24,17 +16,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.opentest4j.AssertionFailedError;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Date;
-
-import static guru.qa.niffler.config.Constants.DEFAULT_PASSWORD;
-import static guru.qa.niffler.config.Constants.MAIN_USERNAME;
 import static guru.qa.niffler.model.CurrencyValues.RUB;
-import static guru.qa.niffler.model.FriendState.FRIEND;
-import static guru.qa.niffler.util.RandomDataUtils.randomUsername;
 
 @Slf4j
 class ApiTests {

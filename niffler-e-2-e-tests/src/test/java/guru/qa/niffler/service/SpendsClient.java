@@ -1,7 +1,7 @@
 package guru.qa.niffler.service;
 
-import guru.qa.niffler.model.CategoryJson;
-import guru.qa.niffler.model.SpendJson;
+import guru.qa.niffler.model.rest.CategoryJson;
+import guru.qa.niffler.model.rest.SpendJson;
 import guru.qa.niffler.service.spend.SpendApiClient;
 import guru.qa.niffler.service.spend.SpendDBSpringRepositoryClient;
 

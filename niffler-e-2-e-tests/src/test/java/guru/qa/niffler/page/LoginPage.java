@@ -17,6 +17,8 @@ import static java.lang.String.format;
 @ParametersAreNonnullByDefault
 public class LoginPage extends BasePage<LoginPage> {
 
+    public static final String URL = CFG.authUrl() + "login";
+
     private final SelenideElement usernameInput = $("input[name='username']");
     private final SelenideElement passwordInput = $("input[name='password']");
     private final SelenideElement submitButton = $("button[type='submit']");
@@ -55,6 +57,15 @@ public class LoginPage extends BasePage<LoginPage> {
                 .setPassword(password);
         submitButton.shouldBe(visible).click();
         return new MainPage();
+    }
+
+    @Override
+    @Step("Check that page is loaded")
+    @Nonnull
+    public LoginPage checkThatPageLoaded() {
+        usernameInput.should(visible);
+        passwordInput.should(visible);
+        return this;
     }
 
     public LoginPage() {

@@ -13,6 +13,9 @@ import static com.codeborne.selenide.Selenide.*;
 
 @ParametersAreNonnullByDefault
 public class EditSpendingPage extends BasePage<EditSpendingPage> {
+
+    public static final String URL = CFG.frontUrl() + "spending";
+
     private final SelenideElement descriptionInput = $("#description");
     private final SelenideElement categoryInput = $("#category");
     private final ElementsCollection categories = $$x(".//ul//li[@role='menuitem']");
@@ -47,6 +50,13 @@ public class EditSpendingPage extends BasePage<EditSpendingPage> {
     @Step("Нажать кнопку 'Add'")
     public void save() {
         saveBtn.click();
+    }
+
+    @Override
+    @Nonnull
+    public EditSpendingPage checkThatPageLoaded() {
+        amountInput.should(visible);
+        return this;
     }
 
 }

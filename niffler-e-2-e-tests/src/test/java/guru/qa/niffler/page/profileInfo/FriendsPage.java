@@ -1,5 +1,6 @@
 package guru.qa.niffler.page.profileInfo;
 
+import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
@@ -17,6 +18,9 @@ import static java.lang.String.format;
 
 @ParametersAreNonnullByDefault
 public class FriendsPage extends BasePage<FriendsPage> {
+
+    public static final String URL = CFG.frontUrl() + "people/friends";
+
     private final ElementsCollection tabs = $$x(".//div[@role='tablist']/*");
     private final SelenideElement selectedTab = tabs.find(attributeMatching(
             "class", ".*Mui-selected.*"));
@@ -25,6 +29,13 @@ public class FriendsPage extends BasePage<FriendsPage> {
     private final SelenideElement emptyMessageInsteadTable = $x(".//p[contains(@class, 'MuiTypography-root')]");
     private final SearchField searchInput = new SearchField($x(".//input[@aria-label='search']"));
     private final SelenideElement declineButton = $x(".//button[normalize-space(text()) = 'Decline']");
+
+    private final SelenideElement allTab = $("a[href='/people/all']");
+
+    private final SelenideElement popup = $("div[role='dialog']");
+    private final SelenideElement requestsTable = $("#requests");
+    private final SelenideElement pagePrevBtn = $("#page-prev");
+    private final SelenideElement pageNextBtn = $("#page-next");
 
     @Step("Проверить что вкладка {0} присутствует")
     public @Nonnull FriendsPage checkTabsByName(String tabName) {
@@ -98,6 +109,15 @@ public class FriendsPage extends BasePage<FriendsPage> {
                 text(emptyMessageStr).because(format(
                         "Сообщение с текстом [%s] не отображается. Актуальный - [%s]",
                         emptyMessageStr, emptyMessageInsteadTable.getText()))));
+        return this;
+    }
+
+    @Step("Check that the page is loaded")
+    @Override
+    @Nonnull
+    public FriendsPage checkThatPageLoaded() {
+        selectedTab.shouldBe(Condition.visible);
+        allTab.shouldBe(Condition.visible);
         return this;
     }
 }

@@ -20,6 +20,8 @@ public abstract class BasePage<T extends BasePage<?>> {
     private final SelenideElement alert = $(".MuiSnackbar-root");
     private final ElementsCollection formErrors = $$("p.Mui-error, .input__helper-text");
 
+    public abstract T checkThatPageLoaded();
+
     @SuppressWarnings("unchecked")
     @Nonnull
     public T checkAlertMessage(String expectedText) {

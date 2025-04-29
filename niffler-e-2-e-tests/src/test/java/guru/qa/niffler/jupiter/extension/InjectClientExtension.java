@@ -1,22 +1,22 @@
 package guru.qa.niffler.jupiter.extension;
 
+import guru.qa.niffler.service.SpendsClient;
 import guru.qa.niffler.service.UsersClient;
-import guru.qa.niffler.service.userdata.UserdataApiClient;
-import guru.qa.niffler.service.userdata.UserdataDBSpringRepositoryClient;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.TestInstancePostProcessor;
 
 import java.lang.reflect.Field;
 
-public class UsersClientExtension implements TestInstancePostProcessor {
+public class InjectClientExtension implements TestInstancePostProcessor {
     @Override
     public void postProcessTestInstance(Object testInstance, ExtensionContext context) throws Exception {
         for (Field field : testInstance.getClass().getDeclaredFields()) {
             if (field.getType().isAssignableFrom(UsersClient.class)) {
                 field.setAccessible(true);
-                field.set(testInstance, "api".equals(System.getProperty("client.impl"))
-                        ? new UserdataApiClient()
-                        : new UserdataDBSpringRepositoryClient());
+                field.set(testInstance, UsersClient.getInstance());
+            } else if (field.getType().isAssignableFrom(SpendsClient.class)) {
+                field.setAccessible(true);
+                field.set(testInstance, SpendsClient.getInstance());
             }
         }
     }
