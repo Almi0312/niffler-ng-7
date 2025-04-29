@@ -2,9 +2,9 @@ package guru.qa.niffler.jupiter.extension;
 
 import guru.qa.niffler.jupiter.annotation.Spending;
 import guru.qa.niffler.jupiter.annotation.User;
-import guru.qa.niffler.model.CategoryJson;
-import guru.qa.niffler.model.SpendJson;
-import guru.qa.niffler.model.UserdataUserJson;
+import guru.qa.niffler.model.rest.CategoryJson;
+import guru.qa.niffler.model.rest.SpendJson;
+import guru.qa.niffler.model.rest.UserdataUserJson;
 import guru.qa.niffler.service.spend.SpendApiClient;
 import guru.qa.niffler.service.SpendsClient;
 import org.junit.jupiter.api.extension.*;
@@ -22,7 +22,7 @@ public class SpendingExtension implements BeforeEachCallback,
     public static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace
             .create(SpendingExtension.class);
 
-    private final SpendsClient spendClient = new SpendApiClient();
+    private final SpendsClient spendClient = SpendsClient.getInstance();
 
     @Override
     public void beforeEach(ExtensionContext context) throws Exception {

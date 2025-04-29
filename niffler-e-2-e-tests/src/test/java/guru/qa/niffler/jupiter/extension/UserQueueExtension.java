@@ -14,6 +14,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
+@Deprecated
 @Slf4j
 public class UserQueueExtension implements
         BeforeEachCallback, AfterEachCallback, ParameterResolver {

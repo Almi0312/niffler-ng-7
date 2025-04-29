@@ -1,6 +1,9 @@
 package guru.qa.niffler.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import guru.qa.niffler.model.rest.CategoryJson;
+import guru.qa.niffler.model.rest.SpendJson;
+import guru.qa.niffler.model.rest.UserdataUserJson;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;

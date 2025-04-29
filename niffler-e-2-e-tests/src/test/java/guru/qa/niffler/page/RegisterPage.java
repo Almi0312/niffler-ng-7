@@ -14,6 +14,9 @@ import static java.time.Duration.ofSeconds;
 
 @ParametersAreNonnullByDefault
 public class RegisterPage extends BasePage<RegisterPage> {
+
+    public static final String URL = CFG.authUrl() + "register";
+
     private static final ThreadLocal<RegisterPage> INSTANCE = ThreadLocal.withInitial(RegisterPage::new);
 
     private final SelenideElement usernameInput = $("input[id='username']");
@@ -74,4 +77,15 @@ public class RegisterPage extends BasePage<RegisterPage> {
                 "Вместо текста %s содержится текст %s", message, passwordFieldBlock.getText())));
         return this;
     }
+
+    @Step("Check that page is loaded")
+    @Override
+    @Nonnull
+    public RegisterPage checkThatPageLoaded() {
+        usernameInput.should(visible);
+        passwordInput.should(visible);
+        retryPasswordInput.should(visible);
+        return this;
+    }
+
 }

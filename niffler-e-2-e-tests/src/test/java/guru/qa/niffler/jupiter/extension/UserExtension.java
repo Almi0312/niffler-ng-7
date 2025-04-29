@@ -4,9 +4,8 @@ package guru.qa.niffler.jupiter.extension;
 import guru.qa.niffler.jupiter.annotation.User;
 import guru.qa.niffler.model.CurrencyValues;
 import guru.qa.niffler.model.TestData;
-import guru.qa.niffler.model.UserdataUserJson;
+import guru.qa.niffler.model.rest.UserdataUserJson;
 import guru.qa.niffler.service.userdata.UserdataApiClient;
-import guru.qa.niffler.service.userdata.UserdataDBSpringRepositoryClient;
 import guru.qa.niffler.service.UsersClient;
 import guru.qa.niffler.util.RandomDataUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +25,7 @@ public class UserExtension implements BeforeEachCallback,
 
     public static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(UserExtension.class);
 
-    private final UsersClient usersClient = new UserdataApiClient();
+    private final UsersClient usersClient = UsersClient.getInstance();
 
     @Override
     public void beforeEach(ExtensionContext context) throws Exception {

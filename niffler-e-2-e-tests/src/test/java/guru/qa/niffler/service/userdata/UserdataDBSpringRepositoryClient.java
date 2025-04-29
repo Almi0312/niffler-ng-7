@@ -13,7 +13,7 @@ import guru.qa.niffler.data.repository.userdata.impl.UserdataSpringRepositoryJdb
 import guru.qa.niffler.data.jdbc.DataSources;
 import guru.qa.niffler.data.template.XaTransactionTemplate;
 import guru.qa.niffler.model.CurrencyValues;
-import guru.qa.niffler.model.UserdataUserJson;
+import guru.qa.niffler.model.rest.UserdataUserJson;
 import guru.qa.niffler.service.UsersClient;
 import org.springframework.jdbc.support.JdbcTransactionManager;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;

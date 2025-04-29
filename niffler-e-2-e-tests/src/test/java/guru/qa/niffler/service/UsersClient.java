@@ -1,7 +1,7 @@
 package guru.qa.niffler.service;
 
 import guru.qa.niffler.model.CurrencyValues;
-import guru.qa.niffler.model.UserdataUserJson;
+import guru.qa.niffler.model.rest.UserdataUserJson;
 import guru.qa.niffler.service.userdata.UserdataApiClient;
 import guru.qa.niffler.service.userdata.UserdataDBSpringRepositoryClient;
 
