@@ -40,7 +40,7 @@ public class SpendingTable extends BaseComponent<SpendingTable> {
         searchSpendingByDescription(description)
                 .clickByCell(description, 0)
                 .getButtonByText("Delete").click();
-        getModalWindow().find("Delete").shouldBe(enabled).click();
+        getModalWindow().$x(".//button[normalize-space(text()) = 'Delete']").shouldBe(enabled).click();
         return this;
     }
 
