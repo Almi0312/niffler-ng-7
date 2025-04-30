@@ -5,15 +5,15 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.function.Supplier;
 
-import static com.codeborne.selenide.WebDriverRunner.getWebDriver;
+import static com.codeborne.selenide.WebDriverRunner.driver;
 import static java.time.Duration.ofMillis;
 import static java.time.Duration.ofSeconds;
 
 public class SupportUtils {
 
-    public static boolean wait(int waitSec, int polling, Supplier<Boolean> supplier) {
+    public static boolean waitResult(int waitSec, int polling, Supplier<Boolean> supplier) {
         try {
-            new WebDriverWait(getWebDriver(), ofSeconds(waitSec))
+            new WebDriverWait(driver().getWebDriver(), ofSeconds(waitSec))
                     .pollingEvery(ofMillis(polling))
                     .until(x -> {
                         boolean result = supplier.get();
