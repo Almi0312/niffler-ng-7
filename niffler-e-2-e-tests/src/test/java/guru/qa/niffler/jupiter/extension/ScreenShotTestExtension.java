@@ -13,6 +13,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Base64;
+import java.util.Optional;
 
 /**
  * Нужен для скриншотных тестов
@@ -32,7 +33,12 @@ public class ScreenShotTestExtension implements ParameterResolver, TestExecution
     @Override
     public BufferedImage resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
         try {
-            return ImageIO.read(new ClassPathResource("img/expected-stat.png").getInputStream());
+            Optional<ScreenShotTest> anno = AnnotationSupport.findAnnotation(
+                    extensionContext.getRequiredTestMethod(), ScreenShotTest.class);
+            if (anno.isPresent()) {
+                return ImageIO.read(new ClassPathResource(anno.get().pathToExpFile()).getInputStream());
+            }
+            else throw new IllegalArgumentException();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

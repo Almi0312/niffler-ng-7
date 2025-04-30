@@ -35,7 +35,8 @@ public class SpendDBSpringRepositoryClient implements SpendsClient {
     public SpendJson createSpend(SpendJson spend) {
         txTemplate.setIsolationLevel(Connection.TRANSACTION_READ_COMMITTED);
         return txTemplate.execute(con ->
-                SpendJson.fromEntity(spendRepo.createSpend(SpendEntity.fromJson(spend))));
+                SpendJson.fromEntity(spendRepo.findByUsernameAndDescription(spend.username(), spend.description())
+                        .orElse(spendRepo.createSpend(SpendEntity.fromJson(spend)))));
     }
 
     @Override
