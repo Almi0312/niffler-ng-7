@@ -11,8 +11,6 @@ import guru.qa.niffler.model.rest.UserdataUserJson;
 import guru.qa.niffler.page.LoginPage;
 import guru.qa.niffler.page.MainPage;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
 
@@ -24,7 +22,6 @@ import static java.lang.String.format;
 public class SpendingWebTest {
 
     private static final Config CFG = Config.getInstance();
-    private static final Logger log = LoggerFactory.getLogger(SpendingWebTest.class);
 
     @Test
     @User(spendings = @Spending(
@@ -48,21 +45,22 @@ public class SpendingWebTest {
     void spendDescriptionShouldBeChangedFromTable(UserdataUserJson userJson, BufferedImage expected) {
         final String newDescription = "Обучение Niffler Next Generation";
         String amount = "80000";
-        Selenide.open(CFG.frontUrl(), LoginPage.class)
-                .login(userJson.username(), userJson.testData().password())
+        MainPage mainPage = Selenide.open(CFG.frontUrl(), LoginPage.class)
+                .login(userJson.username(), userJson.testData().password());
+        mainPage
                 .getStatComponent()
                 .checkDiagramNoCorrespondsScreenshot(expected);
-        new MainPage()
+        mainPage
                 .getTableSpendings()
                 .editSpending(userJson.testData().spendings().getFirst().description())
                 .setNewSpendingDescription(newDescription)
                 .setNewAmount(amount)
                 .save();
-        new MainPage()
+        mainPage
                 .checkAlertMessage("Spending is edited successfully")
                 .getTableSpendings()
                 .checkTableContains(newDescription);
-        new MainPage()
+        mainPage
                 .getStatComponent()
                 .checkTextInBubbles(format("%s %s ₽",
                         userJson.testData().spendings().getFirst().category().name(),
@@ -81,18 +79,19 @@ public class SpendingWebTest {
     @ScreenShotTest(pathToExpFile = "img/spends/remove-spend-expected-stat.png")
     void SpendShouldBeDeleteFromTableAndCheck(UserdataUserJson userJson, BufferedImage expected) {
         String lastSpend = userJson.testData().spendings().getLast().description();
-        Selenide.open(CFG.frontUrl(), LoginPage.class)
-                .login(userJson.username(), userJson.testData().password())
+        MainPage mainPage = Selenide.open(CFG.frontUrl(), LoginPage.class)
+                .login(userJson.username(), userJson.testData().password());
+        mainPage
                 .getStatComponent()
                 .checkDiagramNoCorrespondsScreenshot(expected);
-        new MainPage()
+        mainPage
                 .getTableSpendings()
                 .deleteSpending(lastSpend);
-        new MainPage()
+        mainPage
                 .checkAlertMessage("Spendings succesfully deleted")
                 .getTableSpendings()
                 .checkTableNoContains(lastSpend);
-        new MainPage()
+        mainPage
                 .getStatComponent()
                 .checkTextInBubbles(format("%s %s ₽",
                         userJson.testData().spendings().getFirst().category().name(), userJson.testData().spendings().getFirst().amount()))
@@ -108,22 +107,23 @@ public class SpendingWebTest {
         String spendName = randomSpendName();
         String categoryName = randomCategoryName();
         String amount = "100000";
-        Selenide.open(CFG.frontUrl(), LoginPage.class)
-                .login(userJson.username(), userJson.testData().password())
+        MainPage mainPage = Selenide.open(CFG.frontUrl(), LoginPage.class)
+                .login(userJson.username(), userJson.testData().password());
+        mainPage
                 .getStatComponent()
                 .checkDiagramNoCorrespondsScreenshot(expected);
-        new MainPage()
+        mainPage
                 .getHeader()
                 .addSpendingPage()
                 .setNewAmount(amount)
                 .setNewCategoryDescription(categoryName)
                 .setNewSpendingDescription(spendName)
                 .save();
-        new MainPage()
+        mainPage
                 .checkAlertMessage("New spending is successfully created")
                 .getTableSpendings()
                 .checkTableContains(spendName);
-        new MainPage()
+        mainPage
                 .getStatComponent()
                 .checkTextInBubbles(format("%s %s ₽",
                                 userJson.testData().spendings().getFirst().category().name(), userJson.testData().spendings().getFirst().amount()),
@@ -147,12 +147,12 @@ public class SpendingWebTest {
     )
     @ScreenShotTest(pathToExpFile = "img/spends/default-expected-stat.png")
     void checkStatComponentTest(UserdataUserJson userJson, BufferedImage expected) {
-        Selenide.open(CFG.frontUrl(), LoginPage.class)
+        MainPage mainPage = Selenide.open(CFG.frontUrl(), LoginPage.class)
                 .login(userJson.username(), userJson.testData().password());
-        new MainPage()
+        mainPage
                 .getTableSpendings()
                 .checkTableContains(userJson.testData().spendings().getFirst().description());
-        new MainPage()
+        mainPage
                 .getStatComponent()
                 .checkDiagramCorrespondsScreenshot(expected);
     }

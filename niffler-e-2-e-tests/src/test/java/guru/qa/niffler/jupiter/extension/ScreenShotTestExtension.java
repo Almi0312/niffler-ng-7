@@ -36,7 +36,7 @@ public class ScreenShotTestExtension implements ParameterResolver, TestExecution
         try {
             ScreenShotTest anno = AnnotationSupport.findAnnotation(
                             extensionContext.getRequiredTestMethod(), ScreenShotTest.class)
-                    .orElseThrow();
+                    .get();
             extensionContext.getStore(NAMESPACE).put(ScreenShotTest.class, anno);
             return ImageIO.read(new ClassPathResource(anno.pathToExpFile()).getInputStream());
         } catch (IOException e) {
