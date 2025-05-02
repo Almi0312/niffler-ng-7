@@ -1,6 +1,7 @@
 package guru.qa.niffler.test.web;
 
 import com.codeborne.selenide.Selenide;
+import guru.qa.niffler.condition.Color;
 import guru.qa.niffler.config.Config;
 import guru.qa.niffler.jupiter.annotation.Category;
 import guru.qa.niffler.jupiter.annotation.ScreenShotTest;
@@ -10,6 +11,7 @@ import guru.qa.niffler.jupiter.annotation.Spending;
 import guru.qa.niffler.model.rest.UserdataUserJson;
 import guru.qa.niffler.page.LoginPage;
 import guru.qa.niffler.page.MainPage;
+import guru.qa.niffler.page.component.StatComponent;
 import org.junit.jupiter.api.Test;
 
 import java.awt.image.BufferedImage;
@@ -94,7 +96,9 @@ public class SpendingWebTest {
         mainPage
                 .getStatComponent()
                 .checkTextInBubbles(format("%s %s ₽",
-                        userJson.testData().spendings().getFirst().category().name(), userJson.testData().spendings().getFirst().amount()))
+                        userJson.testData().spendings().getFirst().category().name(),
+                        userJson.testData().spendings().getFirst().amount())
+                )
                 .checkDiagramCorrespondsScreenshot(expected);
     }
 
@@ -125,10 +129,12 @@ public class SpendingWebTest {
                 .checkTableContains(spendName);
         mainPage
                 .getStatComponent()
-                .checkTextInBubbles(format("%s %s ₽",
-                                userJson.testData().spendings().getFirst().category().name(), userJson.testData().spendings().getFirst().amount()),
-                        format("%s %s ₽",
+                .checkBubbles(
+                        new StatComponent.Bubble(Color.green, format("%s %s ₽",
+                                userJson.testData().spendings().getFirst().category().name(), userJson.testData().spendings().getFirst().amount().intValue())),
+                        new StatComponent.Bubble(Color.yellow, format("%s %s ₽",
                                 categoryName, amount))
+                )
                 .checkDiagramCorrespondsScreenshot(expected);
     }
 

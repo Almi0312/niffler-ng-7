@@ -4,15 +4,19 @@ import com.codeborne.selenide.CheckResult;
 import com.codeborne.selenide.Driver;
 import com.codeborne.selenide.WebElementCondition;
 import com.codeborne.selenide.WebElementsCondition;
+import guru.qa.niffler.page.component.StatComponent;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 import org.openqa.selenium.WebElement;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@ParametersAreNonnullByDefault
 public class StatConditions {
+
     public static WebElementCondition color(String cssAttr, Color expectedColor) {
         return new WebElementCondition("color") {
             @NotNull
@@ -32,9 +36,7 @@ public class StatConditions {
             @NotNull
             @Override
             public CheckResult check(Driver driver, List<WebElement> elements) {
-                if (ArrayUtils.isEmpty(expectedColors)) {
-                    throw new IllegalArgumentException("No expected colors given");
-                }
+                checkIsNotEmpty(expectedColors);
                 if (expectedColors.length != elements.size()) {
                     String message = String.format("List size mismatch (expected: %s, actual: %s",
                             expectedColors.length, elements.size());
@@ -44,9 +46,8 @@ public class StatConditions {
                 boolean passed = true;
                 List<String> actualColors = new ArrayList<>();
                 for (int i = 0; i < elements.size(); i++) {
-                    final WebElement elementToCheck = elements.get(i);
+                    final String rgba = elements.get(i).getCssValue(cssAttr);
                     final Color colorToCheck = expectedColors[i];
-                    final String rgba = elementToCheck.getCssValue(cssAttr);
                     actualColors.add(rgba);
                     if(passed) {
                         passed = colorToCheck.rgb.equals(rgba);
@@ -66,5 +67,53 @@ public class StatConditions {
                 return expectedRgba;
             }
         };
+    }
+
+    public static WebElementsCondition statBubbles(String cssAttr, StatComponent.Bubble... bubbles) {
+        String bubblesStr = Arrays.stream(bubbles).toList().toString();
+        return new WebElementsCondition() {
+            @NotNull
+            @Override
+            public CheckResult check(Driver driver, List<WebElement> elements) {
+                checkIsNotEmpty(bubbles);
+                if (bubbles.length != elements.size()) {
+                    String message = String.format("List size mismatch (expected: %s, actual: %s",
+                            bubbles.length, elements.size());
+                    return CheckResult.rejected(message, elements);
+                }
+                boolean passed = true;
+                List<StatComponent.Bubble> actualBubbles = getBubblesFromElement(cssAttr, elements);
+                for (int i = 0; i < elements.size(); i++) {
+                    if (passed) {
+                        passed = bubbles[i].equals(actualBubbles.get(i));
+                    } else break;
+                }
+                if (!passed) {
+                    final String message = String.format("List bubble mismatch (expected: %s, actual: %s",
+                            Arrays.toString(bubbles), actualBubbles);
+                    return CheckResult.rejected(message, actualBubbles);
+                }
+                return CheckResult.accepted();
+            }
+
+            @Override
+            public String toString() {
+                return bubblesStr;
+            }
+        };
+    }
+
+    private static <T> void checkIsNotEmpty(T[] array) {
+        if (ArrayUtils.isEmpty(array)) {
+            throw new IllegalArgumentException("No expected array given");
+        }
+    }
+
+    private static List<StatComponent.Bubble> getBubblesFromElement(String cssAttr, List<WebElement> elements) {
+        return elements.stream()
+                .map(x -> new StatComponent.Bubble(
+                        Color.fromCss(x.getCssValue(cssAttr)),
+                        x.getText()))
+                .toList();
     }
 }

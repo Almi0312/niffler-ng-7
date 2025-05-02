@@ -8,4 +8,13 @@ public enum Color {
     green("rgba(53, 173, 123, 1)");
 
     public final String rgb;
+
+    public static Color fromCss(String rgba) {
+        for (Color color : Color.values()) {
+            if (color.rgb.equals(rgba)) {
+                return color;
+            }
+        }
+        throw new IllegalArgumentException("Цвет с rgba %s отсутствует в Color".formatted(rgba));
+    }
 }
