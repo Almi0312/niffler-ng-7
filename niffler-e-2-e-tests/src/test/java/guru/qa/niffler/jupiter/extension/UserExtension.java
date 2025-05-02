@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.*;
 import org.junit.platform.commons.support.AnnotationSupport;
 
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,6 +22,7 @@ import static guru.qa.niffler.config.Constants.DEFAULT_PASSWORD;
 import static guru.qa.niffler.util.RandomDataUtils.getArrayWithRandomUsername;
 
 @Slf4j
+@ParametersAreNonnullByDefault
 public class UserExtension implements BeforeEachCallback,
         ParameterResolver {
 
@@ -63,9 +66,15 @@ public class UserExtension implements BeforeEachCallback,
 
     @Override
     public UserdataUserJson resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+        return createdUser(extensionContext);
+    }
+
+    @Nullable
+    public static UserdataUserJson createdUser(ExtensionContext extensionContext) {
         return extensionContext.getStore(NAMESPACE).get(
                 extensionContext.getUniqueId(),
-                UserdataUserJson.class);
+                UserdataUserJson.class
+        );
     }
 
     private List<UserdataUserJson> findUsersByUsername(String[] usernames) {

@@ -4,9 +4,12 @@ import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
 /**
  * Глобальный контекст
  */
+@ParametersAreNonnullByDefault
 public class TestMethodContextExtension implements BeforeEachCallback, AfterEachCallback {
 
     @Override
