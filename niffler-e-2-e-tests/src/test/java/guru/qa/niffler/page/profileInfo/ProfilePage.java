@@ -3,11 +3,15 @@ package guru.qa.niffler.page.profileInfo;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import guru.qa.niffler.config.Config;
+import guru.qa.niffler.util.ScreenDiffResult;
+import guru.qa.niffler.util.SupportUtils;
 import io.qameta.allure.Step;
 import guru.qa.niffler.page.BasePage;
 import org.springframework.core.io.ClassPathResource;
 
 import javax.annotation.Nonnull;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -15,6 +19,7 @@ import java.util.Base64;
 
 import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ProfilePage extends BasePage<ProfilePage> {
 
@@ -69,6 +74,21 @@ public class ProfilePage extends BasePage<ProfilePage> {
     @Step("Проверить что в поле 'Name' введено {0}")
     public ProfilePage checkValueInFieldName(String name) {
         nameInput.shouldBe(value(name));
+        return this;
+    }
+
+    @Step("Проверить что отображение аватара не изменилось")
+    public ProfilePage checkAvatarCorrespondsScreenshot(BufferedImage expectedImage) {
+        assertTrue(SupportUtils.waitResult(5, 500,
+                () -> {
+                    BufferedImage actual;
+                    try {
+                        actual = ImageIO.read(avatar.shouldBe(visible).screenshot());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return !(new ScreenDiffResult(expectedImage, actual).getAsBoolean());
+                }));
         return this;
     }
 

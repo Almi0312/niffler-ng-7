@@ -12,7 +12,13 @@ import java.util.UUID;
 public class AllureBackendLogExtension implements SuiteExtension {
 
     private static final String caseName = "Niffler backend logs";
-
+    private static final String[] services = {
+            "Niffler-auth",
+            "Niffler-currency",
+            "Niffler-gateway",
+            "Niffler-spend",
+            "Niffler-userdata"
+    };
 
     @Override
     public void afterSuite() {
@@ -21,17 +27,23 @@ public class AllureBackendLogExtension implements SuiteExtension {
         allureLifecycle.scheduleTestCase(new TestResult().setUuid(caseId).setName(caseName));
         allureLifecycle.startTestCase(caseId);
         try {
-            allureLifecycle.addAttachment(
-                    "Niffler-auth log",
-                    "text/html",
-                    ".log",
-                    Files.newInputStream(
-                            Path.of("./logs/niffler-auth/app.log"))
-            );
+            for(String service : services) {
+                addAtachServiceLog(allureLifecycle, service);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         allureLifecycle.stopTestCase(caseId);
         allureLifecycle.writeTestCase(caseId);
+    }
+
+    private void addAtachServiceLog(AllureLifecycle lifecycle, String serviceName) throws IOException{
+        lifecycle.addAttachment(
+                "%s log".formatted(serviceName),
+                "text/html",
+                ".log",
+                Files.newInputStream(
+                        Path.of("./logs/%s/app.log".formatted(serviceName)))
+        );
     }
 }

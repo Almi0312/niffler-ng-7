@@ -25,7 +25,6 @@ public class MainPage extends BasePage<MainPage> {
     @Getter
     private final SpendingTable tableSpendings = new SpendingTable($("#spendings"));
     private final SelenideElement headerForDiagram = $x(".//div[@id='stat']/h2");
-    private final SelenideElement diagram = $x(".//div[@id='stat']//canvas[@role='img']");
     private final SelenideElement searchInput = $x(".//input[@aria-label='search']");
 
     private final SelenideElement userAvatar = $x(".//button[@aria-label='Menu']");
@@ -36,7 +35,7 @@ public class MainPage extends BasePage<MainPage> {
 
     @Step("Проверить что диаграмма присутствует")
     public @Nonnull MainPage checkDiagramStatistics() {
-        diagram.shouldBe(visible);
+        statComponent.getElement().shouldBe(visible);
         return this;
     }
 

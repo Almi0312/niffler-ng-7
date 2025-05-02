@@ -12,6 +12,8 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Base64;
 
 /**
@@ -32,7 +34,11 @@ public class ScreenShotTestExtension implements ParameterResolver, TestExecution
     @Override
     public BufferedImage resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
         try {
-            return ImageIO.read(new ClassPathResource("img/expected-stat.png").getInputStream());
+            ScreenShotTest anno = AnnotationSupport.findAnnotation(
+                            extensionContext.getRequiredTestMethod(), ScreenShotTest.class)
+                    .get();
+            extensionContext.getStore(NAMESPACE).put(ScreenShotTest.class, anno);
+            return ImageIO.read(new ClassPathResource(anno.pathToExpFile()).getInputStream());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -40,15 +46,23 @@ public class ScreenShotTestExtension implements ParameterResolver, TestExecution
 
     @Override
     public void handleTestExecutionException(ExtensionContext context, Throwable throwable) throws Throwable {
-        ScreenDif screenDif = new ScreenDif(
-                "data:image/png;base64," + encoder.encodeToString(imageToBytes(getExpected())),
-                "data:image/png;base64," + encoder.encodeToString(imageToBytes(getActual())),
-                "data:image/png;base64," + encoder.encodeToString(imageToBytes(getDif()))
-        );
-        Allure.addAttachment(
-                "Screenshot diff",
-                "application/vnd.allure.image.diff",
-                objectMapper.writeValueAsString(screenDif));
+        if (getDif() != null) {
+            ScreenShotTest anno = (ScreenShotTest) context.getStore(NAMESPACE).get(ScreenShotTest.class);
+            if (anno.rewriteExpected()) {
+                Path path = Path.of("src/test/resources/" + anno.pathToExpFile());
+                Files.createDirectories(path.getParent());
+                ImageIO.write(getActual(), "png", path.toFile());
+            }
+            ScreenDif screenDif = new ScreenDif(
+                    "data:image/png;base64," + encoder.encodeToString(imageToBytes(getExpected())),
+                    "data:image/png;base64," + encoder.encodeToString(imageToBytes(getActual())),
+                    "data:image/png;base64," + encoder.encodeToString(imageToBytes(getDif()))
+            );
+            Allure.addAttachment(
+                    "Screenshot diff",
+                    "application/vnd.allure.image.diff",
+                    objectMapper.writeValueAsString(screenDif));
+        }
         throw throwable;
     }
 

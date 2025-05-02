@@ -22,7 +22,7 @@ public class EditSpendingPage extends BasePage<EditSpendingPage> {
     private final SelenideElement amountInput = $("#amount");
     private final SelenideElement saveBtn = $("#save");
 
-    private final Calendar calendar = new Calendar($(".SpendingCalendar"));
+//    private final Calendar calendar = new Calendar($(".SpendingCalendar"));
 
     @Step("Ввести в поле 'Description' {0}")
     public @Nonnull EditSpendingPage setNewSpendingDescription(String description) {
