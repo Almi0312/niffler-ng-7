@@ -18,7 +18,6 @@ import static com.codeborne.selenide.CollectionCondition.texts;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$x;
 import static guru.qa.niffler.condition.StatConditions.statBubblesContains;
-import static guru.qa.niffler.condition.StatConditions.statBubblesInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ParametersAreNonnullByDefault

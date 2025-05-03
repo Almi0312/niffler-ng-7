@@ -163,4 +163,31 @@ public class SpendingWebTest {
                 .getStatComponent()
                 .checkDiagramCorrespondsScreenshot(expected);
     }
+
+    @User(categories = @Category(
+            name = "Электроника",
+            archived = true),
+            spendings = {
+                    @Spending(
+                            category = "Электроника",
+                            description = "Розетка",
+                            amount = 200),
+                    @Spending(
+                            category = "Электроника",
+                            description = "Удлинитель",
+                            amount = 555),
+                    @Spending(
+                            category = "Электроника",
+                            description = "Батарейка",
+                            amount = 300)}
+    )
+    @Test
+    void checkAllSpendByCategoryTest(UserdataUserJson userJson) {
+        MainPage mainPage = Selenide.open(CFG.frontUrl(), LoginPage.class)
+                .login(userJson.username(), userJson.testData().password());
+        mainPage
+                .getTableSpendings()
+                .searchSpendingByDescription("Электроника")
+                .checkAllSpends(userJson.testData().spendings());
+    }
 }

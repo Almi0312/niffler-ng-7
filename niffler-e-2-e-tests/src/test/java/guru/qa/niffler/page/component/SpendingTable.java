@@ -2,13 +2,17 @@ package guru.qa.niffler.page.component;
 
 import com.codeborne.selenide.SelenideElement;
 import guru.qa.niffler.model.DataFilter;
+import guru.qa.niffler.model.rest.SpendJson;
 import guru.qa.niffler.page.EditSpendingPage;
 import io.qameta.allure.Step;
+
+import java.util.List;
 
 import static com.codeborne.selenide.CollectionCondition.size;
 import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.$$x;
 import static com.codeborne.selenide.Selenide.$x;
+import static guru.qa.niffler.condition.SpendsConditions.spends;
 
 public class SpendingTable extends BaseComponent<SpendingTable> {
 
@@ -56,6 +60,12 @@ public class SpendingTable extends BaseComponent<SpendingTable> {
             searchSpendingByDescription(spend);
             self.$$x(rows).find(text(spend)).shouldBe(visible);
         }
+        return this;
+    }
+
+    @Step("Проверить что в таблице присутствуют траты {0}")
+    public SpendingTable checkAllSpends(List<SpendJson> expectedSpends) {
+        self.$$x(rows).shouldBe(spends(expectedSpends.toArray(SpendJson[]::new)));
         return this;
     }
 

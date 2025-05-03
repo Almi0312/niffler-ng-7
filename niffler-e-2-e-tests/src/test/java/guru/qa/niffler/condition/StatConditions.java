@@ -5,7 +5,7 @@ import com.codeborne.selenide.Driver;
 import com.codeborne.selenide.WebElementCondition;
 import com.codeborne.selenide.WebElementsCondition;
 import guru.qa.niffler.page.component.StatComponent;
-import org.apache.commons.lang3.ArrayUtils;
+import guru.qa.niffler.util.SupportUtils;
 import org.jetbrains.annotations.NotNull;
 import org.openqa.selenium.WebElement;
 
@@ -36,7 +36,7 @@ public class StatConditions {
             @NotNull
             @Override
             public CheckResult check(Driver driver, List<WebElement> elements) {
-                checkIsNotEmpty(expectedColors);
+                SupportUtils.checkIsNotEmpty(expectedColors);
                 if (expectedColors.length != elements.size()) {
                     String message = String.format("List size mismatch (expected: %s, actual: %s",
                             expectedColors.length, elements.size());
@@ -75,7 +75,7 @@ public class StatConditions {
             @NotNull
             @Override
             public CheckResult check(Driver driver, List<WebElement> elements) {
-                checkIsNotEmpty(bubbles);
+                SupportUtils.checkIsNotEmpty(bubbles);
                 if (bubbles.length != elements.size()) {
                     String message = String.format("List size mismatch (expected: %s, actual: %s",
                             bubbles.length, elements.size());
@@ -109,7 +109,7 @@ public class StatConditions {
             @NotNull
             @Override
             public CheckResult check(Driver driver, List<WebElement> elements) {
-                checkIsNotEmpty(bubbles);
+                SupportUtils.checkIsNotEmpty(bubbles);
                 if (bubbles.length != elements.size()) {
                     String message = String.format("List size mismatch (expected: %s, actual: %s",
                             bubbles.length, elements.size());
@@ -131,7 +131,7 @@ public class StatConditions {
             @NotNull
             @Override
             public CheckResult check(Driver driver, List<WebElement> elements) {
-                checkIsNotEmpty(bubbles);
+                SupportUtils.checkIsNotEmpty(bubbles);
                 if (bubbles.length > elements.size()) {
                     String message = String.format("List size mismatch (expected: %s, actual: %s",
                             bubbles.length, elements.size());
@@ -145,15 +145,6 @@ public class StatConditions {
                 return bubblesStr;
             }
         };
-    }
-
-    /**
-     * Проверяет, что переданный массив Bubbles не пуст
-     **/
-    private static <T> void checkIsNotEmpty(T[] array) {
-        if (ArrayUtils.isEmpty(array)) {
-            throw new IllegalArgumentException("No expected array given");
-        }
     }
 
     /**
