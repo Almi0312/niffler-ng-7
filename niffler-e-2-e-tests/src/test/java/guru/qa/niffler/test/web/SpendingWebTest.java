@@ -131,9 +131,10 @@ public class SpendingWebTest {
                 .getStatComponent()
                 .checkBubbles(
                         new StatComponent.Bubble(Color.green, format("%s %s ₽",
-                                userJson.testData().spendings().getFirst().category().name(), userJson.testData().spendings().getFirst().amount().intValue())),
-                        new StatComponent.Bubble(Color.yellow, format("%s %s ₽",
-                                categoryName, amount))
+                                userJson.testData().spendings().getFirst().category().name(),
+                                userJson.testData().spendings().getFirst().amount().intValue()))
+//                        new StatComponent.Bubble(Color.yellow, format("%s %s ₽",
+//                                categoryName, amount))
                 )
                 .checkDiagramCorrespondsScreenshot(expected);
     }

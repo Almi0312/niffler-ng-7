@@ -125,6 +125,28 @@ public class StatConditions {
         };
     }
 
+    public static WebElementsCondition statBubblesContains(String cssAttr, StatComponent.Bubble... bubbles) {
+        String bubblesStr = Arrays.asList(bubbles).toString();
+        return new WebElementsCondition() {
+            @NotNull
+            @Override
+            public CheckResult check(Driver driver, List<WebElement> elements) {
+                checkIsNotEmpty(bubbles);
+                if (bubbles.length > elements.size()) {
+                    String message = String.format("List size mismatch (expected: %s, actual: %s",
+                            bubbles.length, elements.size());
+                    return CheckResult.rejected(message, elements);
+                }
+                return checkContainsBubble(cssAttr, elements, bubbles);
+            }
+
+            @Override
+            public String toString() {
+                return bubblesStr;
+            }
+        };
+    }
+
     /**
      * Проверяет, что переданный массив Bubbles не пуст
      **/

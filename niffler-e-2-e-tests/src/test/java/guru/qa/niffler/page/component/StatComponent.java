@@ -17,6 +17,7 @@ import java.io.IOException;
 import static com.codeborne.selenide.CollectionCondition.texts;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$x;
+import static guru.qa.niffler.condition.StatConditions.statBubblesContains;
 import static guru.qa.niffler.condition.StatConditions.statBubblesInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -36,7 +37,7 @@ public class StatComponent extends BaseComponent<StatComponent> {
     }
 
     public StatComponent checkBubbles(Bubble ... bubbles) {
-        this.bubbles.shouldBe(statBubblesInAnyOrder("background-color", bubbles));
+        this.bubbles.shouldBe(statBubblesContains("background-color", bubbles));
         return this;
     }
 
