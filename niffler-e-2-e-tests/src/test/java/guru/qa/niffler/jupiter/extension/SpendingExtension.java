@@ -10,10 +10,11 @@ import guru.qa.niffler.service.SpendsClient;
 import org.junit.jupiter.api.extension.*;
 import org.junit.platform.commons.support.AnnotationSupport;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.*;
 
+@ParametersAreNonnullByDefault
 public class SpendingExtension implements BeforeEachCallback,
         ParameterResolver
 //        AfterEachCallback
@@ -28,24 +29,29 @@ public class SpendingExtension implements BeforeEachCallback,
     public void beforeEach(ExtensionContext context) throws Exception {
         AnnotationSupport.findAnnotation(context.getRequiredTestMethod(), User.class)
                 .ifPresent(userAnno -> {
-                    UserdataUserJson userJson = context.getStore(UserExtension.NAMESPACE)
-                            .get(context.getUniqueId(), UserdataUserJson.class);
+                    UserdataUserJson userJson = UserExtension.createdUser(context);
                     final String username = userJson != null
                             ? userJson.username()
                             : userAnno.username();
+
+                    final List<CategoryJson> existingCategories = userJson != null
+                            ? userJson.testData().categories()
+                            : CategoryExtension.createdCategories(context);
                     final List<SpendJson> createdSpends = new ArrayList<>();
                     for (Spending annoSpend : userAnno.spendings()) {
+                        final Optional<CategoryJson> matchedCategory = existingCategories.stream()
+                                .filter(category -> category.name().equals(annoSpend.category()))
+                                .findFirst();
+
                         SpendJson spend = new SpendJson(
                                 null,
                                 new Date(),
-                                spendClient.findCategoryByUsernameAndName(
-                                                username, annoSpend.category())
-                                        .orElse(
-                                                new CategoryJson(
-                                                        null,
-                                                        annoSpend.category(),
-                                                        username,
-                                                        false)),
+                                matchedCategory.orElseGet(() -> new CategoryJson(
+                                        null,
+                                        annoSpend.category(),
+                                        username,
+                                        false
+                                )),
                                 annoSpend.currency(),
                                 annoSpend.amount(),
                                 annoSpend.description(),
@@ -82,10 +88,14 @@ public class SpendingExtension implements BeforeEachCallback,
     @SuppressWarnings("unchecked")
     public SpendJson[] resolveParameter(ParameterContext parameterContext,
                                         ExtensionContext extensionContext) throws ParameterResolutionException {
-        return (SpendJson[]) extensionContext.getStore(SpendingExtension.NAMESPACE)
-                .get(extensionContext.getUniqueId(), List.class)
-                .stream()
-                .toArray(SpendJson[]::new);
+        return createdSpends(extensionContext).toArray(SpendJson[]::new);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Nonnull
+    public static List<SpendJson> createdSpends(ExtensionContext extensionContext) {
+        return Optional.ofNullable(extensionContext.getStore(NAMESPACE).get(extensionContext.getUniqueId(), List.class))
+                .orElse(Collections.emptyList());
     }
 
 }

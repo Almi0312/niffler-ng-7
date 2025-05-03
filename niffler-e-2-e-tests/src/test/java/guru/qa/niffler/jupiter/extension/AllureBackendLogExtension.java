@@ -4,20 +4,22 @@ import io.qameta.allure.Allure;
 import io.qameta.allure.AllureLifecycle;
 import io.qameta.allure.model.TestResult;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 
+@ParametersAreNonnullByDefault
 public class AllureBackendLogExtension implements SuiteExtension {
 
     private static final String caseName = "Niffler backend logs";
     private static final String[] services = {
-            "Niffler-auth",
-            "Niffler-currency",
-            "Niffler-gateway",
-            "Niffler-spend",
-            "Niffler-userdata"
+            "niffler-auth",
+            "niffler-currency",
+            "niffler-gateway",
+            "niffler-spend",
+            "niffler-userdata"
     };
 
     @Override

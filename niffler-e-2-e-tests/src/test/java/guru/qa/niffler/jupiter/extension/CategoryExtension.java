@@ -10,12 +10,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.*;
 import org.junit.platform.commons.support.AnnotationSupport;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
+import static guru.qa.niffler.model.CurrencyValues.RUB;
 import static guru.qa.niffler.util.RandomDataUtils.*;
 
 @Slf4j
+@ParametersAreNonnullByDefault
 public class CategoryExtension implements BeforeEachCallback,
         ParameterResolver
 //        AfterTestExecutionCallback
@@ -29,8 +35,7 @@ public class CategoryExtension implements BeforeEachCallback,
     public void beforeEach(ExtensionContext context) throws Exception {
         AnnotationSupport.findAnnotation(context.getRequiredTestMethod(), User.class)
                 .ifPresent(userAnno -> {
-                    UserdataUserJson userJson = context.getStore(UserExtension.NAMESPACE)
-                            .get(context.getUniqueId(), UserdataUserJson.class);
+                    UserdataUserJson userJson = UserExtension.createdUser(context);
                     final String username = userJson != null
                             ? userJson.username()
                             : userAnno.username();
@@ -65,10 +70,14 @@ public class CategoryExtension implements BeforeEachCallback,
     @SuppressWarnings("unchecked")
     public CategoryJson[] resolveParameter(ParameterContext parameterContext,
                                            ExtensionContext extensionContext) throws ParameterResolutionException {
-        return (CategoryJson[]) extensionContext.getStore(CategoryExtension.NAMESPACE)
-                .get(extensionContext.getUniqueId(), List.class)
-                .stream()
-                .toArray(CategoryJson[]::new);
+        return createdCategories(extensionContext).toArray(CategoryJson[]::new);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Nonnull
+    public static List<CategoryJson> createdCategories(ExtensionContext extensionContext) {
+        return Optional.ofNullable(extensionContext.getStore(NAMESPACE).get(extensionContext.getUniqueId(), List.class))
+                .orElse(Collections.emptyList());
     }
 
 //    @Override

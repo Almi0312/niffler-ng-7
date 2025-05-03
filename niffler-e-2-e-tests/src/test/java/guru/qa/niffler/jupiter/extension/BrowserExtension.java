@@ -9,8 +9,10 @@ import org.junit.jupiter.api.extension.*;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.io.ByteArrayInputStream;
 
+@ParametersAreNonnullByDefault
 public class BrowserExtension implements BeforeEachCallback, AfterEachCallback,
         TestExecutionExceptionHandler, LifecycleMethodExecutionExceptionHandler {
     @Override

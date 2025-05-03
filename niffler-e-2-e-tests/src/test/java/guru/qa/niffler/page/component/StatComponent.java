@@ -3,6 +3,7 @@ package guru.qa.niffler.page.component;
 
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
+import guru.qa.niffler.condition.Color;
 import guru.qa.niffler.page.MainPage;
 import guru.qa.niffler.util.ScreenDiffResult;
 import guru.qa.niffler.util.SupportUtils;
@@ -17,6 +18,7 @@ import java.io.IOException;
 import static com.codeborne.selenide.CollectionCondition.texts;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$x;
+import static guru.qa.niffler.condition.StatConditions.colors;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ParametersAreNonnullByDefault
@@ -29,9 +31,13 @@ public class StatComponent extends BaseComponent<StatComponent> {
     private final SelenideElement diagram = $x(".//canvas[@role='img']");
     private final ElementsCollection bubbles = self.$x(".//div[@id='legend-container']").$$x(".//li");
 
-
     public StatComponent checkTextInBubbles(String ... texts) {
         bubbles.shouldBe(texts(texts));
+        return this;
+    }
+
+    public StatComponent checkBubbles(Color ... expectedColors) {
+        bubbles.shouldBe(colors("background-color", expectedColors));
         return this;
     }
 
