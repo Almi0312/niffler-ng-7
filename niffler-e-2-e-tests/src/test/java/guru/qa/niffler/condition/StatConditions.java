@@ -103,17 +103,59 @@ public class StatConditions {
         };
     }
 
+    public static WebElementsCondition statBubblesInAnyOrder(String cssAttr, StatComponent.Bubble... bubbles) {
+        String bubblesStr = Arrays.asList(bubbles).toString();
+        return new WebElementsCondition() {
+            @NotNull
+            @Override
+            public CheckResult check(Driver driver, List<WebElement> elements) {
+                checkIsNotEmpty(bubbles);
+                if (bubbles.length != elements.size()) {
+                    String message = String.format("List size mismatch (expected: %s, actual: %s",
+                            bubbles.length, elements.size());
+                    return CheckResult.rejected(message, elements);
+                }
+                return checkContainsBubble(cssAttr, elements, bubbles);
+            }
+
+            @Override
+            public String toString() {
+                return bubblesStr;
+            }
+        };
+    }
+
+    /**
+     * Проверяет, что переданный массив Bubbles не пуст
+     **/
     private static <T> void checkIsNotEmpty(T[] array) {
         if (ArrayUtils.isEmpty(array)) {
             throw new IllegalArgumentException("No expected array given");
         }
     }
 
+    /**
+     * Возвращает коллекцию актуальных элементов Bubble со страницы
+     **/
     private static List<StatComponent.Bubble> getBubblesFromElement(String cssAttr, List<WebElement> elements) {
         return elements.stream()
                 .map(x -> new StatComponent.Bubble(
                         Color.fromCss(x.getCssValue(cssAttr)),
                         x.getText()))
                 .toList();
+    }
+
+    /**
+     * Проверяет с помощью Selenide то, что актуальные элементы Bubble содержат ожидаемые
+     */
+    private static CheckResult checkContainsBubble(String cssAttr, List<WebElement> elements, StatComponent.Bubble[] bubbles) {
+        List<StatComponent.Bubble> actualBubbles = getBubblesFromElement(cssAttr, elements);
+        if (!actualBubbles.containsAll(Arrays.asList(bubbles))) {
+            return CheckResult.rejected(
+                    String.format("List bubble mismatch (expected: %s, actual: %s",
+                            Arrays.asList(bubbles), actualBubbles),
+                    actualBubbles.toString());
+        }
+        return CheckResult.accepted();
     }
 }
