@@ -4,7 +4,6 @@ package guru.qa.niffler.page.component;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import guru.qa.niffler.condition.Color;
-import guru.qa.niffler.page.MainPage;
 import guru.qa.niffler.util.ScreenDiffResult;
 import guru.qa.niffler.util.SupportUtils;
 import io.qameta.allure.Step;
@@ -18,7 +17,7 @@ import java.io.IOException;
 import static com.codeborne.selenide.CollectionCondition.texts;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$x;
-import static guru.qa.niffler.condition.StatConditions.colors;
+import static guru.qa.niffler.condition.StatConditions.statBubblesContains;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ParametersAreNonnullByDefault
@@ -36,8 +35,8 @@ public class StatComponent extends BaseComponent<StatComponent> {
         return this;
     }
 
-    public StatComponent checkBubbles(Color ... expectedColors) {
-        bubbles.shouldBe(colors("background-color", expectedColors));
+    public StatComponent checkBubbles(Bubble ... bubbles) {
+        this.bubbles.shouldBe(statBubblesContains("background-color", bubbles));
         return this;
     }
 
@@ -69,5 +68,24 @@ public class StatComponent extends BaseComponent<StatComponent> {
                     return new ScreenDiffResult(expectedImage, actual).getAsBoolean();
                 }));
         return this;
+    }
+
+    public record Bubble(Color color, String text) {
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Bubble bubble)) return false;
+            return color.equals(bubble.color) && text.equals(bubble.text);
+        }
+
+        @Override
+        public int hashCode() {
+            return 31 * color.hashCode() + text.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return "\nBubble - %s with color - %s".formatted(text, color);
+        }
     }
 }

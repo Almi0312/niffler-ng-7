@@ -1,18 +1,24 @@
 package guru.qa.niffler.test.web;
 
 import com.codeborne.selenide.Selenide;
+import guru.qa.niffler.condition.Color;
 import guru.qa.niffler.config.Config;
 import guru.qa.niffler.jupiter.annotation.Category;
 import guru.qa.niffler.jupiter.annotation.ScreenShotTest;
 import guru.qa.niffler.jupiter.annotation.User;
 import guru.qa.niffler.jupiter.annotation.meta.WebTest;
 import guru.qa.niffler.jupiter.annotation.Spending;
+import guru.qa.niffler.model.CurrencyValues;
+import guru.qa.niffler.model.rest.SpendJson;
 import guru.qa.niffler.model.rest.UserdataUserJson;
 import guru.qa.niffler.page.LoginPage;
 import guru.qa.niffler.page.MainPage;
+import guru.qa.niffler.page.component.StatComponent;
 import org.junit.jupiter.api.Test;
+import java.util.*;
 
 import java.awt.image.BufferedImage;
+import java.util.Date;
 
 import static guru.qa.niffler.util.RandomDataUtils.randomCategoryName;
 import static guru.qa.niffler.util.RandomDataUtils.randomSpendName;
@@ -94,7 +100,9 @@ public class SpendingWebTest {
         mainPage
                 .getStatComponent()
                 .checkTextInBubbles(format("%s %s ₽",
-                        userJson.testData().spendings().getFirst().category().name(), userJson.testData().spendings().getFirst().amount()))
+                        userJson.testData().spendings().getFirst().category().name(),
+                        userJson.testData().spendings().getFirst().amount())
+                )
                 .checkDiagramCorrespondsScreenshot(expected);
     }
 
@@ -125,10 +133,13 @@ public class SpendingWebTest {
                 .checkTableContains(spendName);
         mainPage
                 .getStatComponent()
-                .checkTextInBubbles(format("%s %s ₽",
-                                userJson.testData().spendings().getFirst().category().name(), userJson.testData().spendings().getFirst().amount()),
-                        format("%s %s ₽",
+                .checkBubbles(
+                        new StatComponent.Bubble(Color.green, format("%s %s ₽",
+                                userJson.testData().spendings().getFirst().category().name(),
+                                userJson.testData().spendings().getFirst().amount().intValue())),
+                        new StatComponent.Bubble(Color.yellow, format("%s %s ₽",
                                 categoryName, amount))
+                )
                 .checkDiagramCorrespondsScreenshot(expected);
     }
 
@@ -155,5 +166,32 @@ public class SpendingWebTest {
         mainPage
                 .getStatComponent()
                 .checkDiagramCorrespondsScreenshot(expected);
+    }
+
+    @User(categories = @Category(
+            name = "Электроника",
+            archived = true),
+            spendings = {
+                    @Spending(
+                            category = "Электроника",
+                            description = "Розетка",
+                            amount = 200),
+                    @Spending(
+                            category = "Электроника",
+                            description = "Удлинитель",
+                            amount = 555),
+                    @Spending(
+                            category = "Электроника",
+                            description = "Батарейка",
+                            amount = 300)}
+    )
+    @Test
+    void checkAllSpendByCategoryTest(UserdataUserJson userJson) {
+        MainPage mainPage = Selenide.open(CFG.frontUrl(), LoginPage.class)
+                .login(userJson.username(), userJson.testData().password());
+        mainPage
+                .getTableSpendings()
+                .searchSpendingByDescription("Электроника")
+                .checkAllSpends(userJson.testData().spendings());
     }
 }

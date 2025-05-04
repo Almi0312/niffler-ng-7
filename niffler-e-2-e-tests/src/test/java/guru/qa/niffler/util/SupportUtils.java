@@ -1,5 +1,6 @@
 package guru.qa.niffler.util;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -22,6 +23,16 @@ public class SupportUtils {
             return true;
         } catch (TimeoutException e) {
             return false;
+        }
+    }
+
+    /**
+     * Проверяет, что переданный массив не пуст
+     **/
+    public static <T> void checkIsNotEmpty(T[] array) {
+        if (ArrayUtils.isEmpty(array)) {
+            throw new IllegalArgumentException("No expected array %s given".formatted(
+                    array.getClass().getSimpleName()));
         }
     }
 }

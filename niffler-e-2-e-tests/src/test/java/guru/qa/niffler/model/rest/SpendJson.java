@@ -46,4 +46,16 @@ public record SpendJson(
                 username
         );
     }
+
+    @Override
+    public String toString() {
+        return "SpendJson[" +
+                "id=" + id +
+                ", spendDate=" + spendDate +
+                ", category=" + category.name() +
+                ", currency=" + currency +
+                ", amount=" + amount +
+                ", description='" + description + '\'' +
+                ", username='" + username + '\'' + ']';
+    }
 }
