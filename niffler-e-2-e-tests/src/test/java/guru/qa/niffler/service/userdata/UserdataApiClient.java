@@ -1,13 +1,13 @@
 package guru.qa.niffler.service.userdata;
 
-import guru.qa.niffler.api.AuthApi;
 import guru.qa.niffler.api.UserdataApi;
-import guru.qa.niffler.api.core.ThreadSafeCookieStore;
 import guru.qa.niffler.config.Config;
 import guru.qa.niffler.model.CurrencyValues;
 import guru.qa.niffler.model.TestData;
 import guru.qa.niffler.model.rest.UserdataUserJson;
+import guru.qa.niffler.service.AuthClient;
 import guru.qa.niffler.service.UsersClient;
+import guru.qa.niffler.service.auth.AuthApiClient;
 import io.qameta.allure.Step;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Assertions;
@@ -28,16 +28,14 @@ public class UserdataApiClient implements UsersClient {
     private static final Config CFG = Config.getInstance();
 
     private final UserdataApi userdataApi = new EmptyRestClient(CFG.userdataUrl()).create(UserdataApi.class);
-    private final AuthApi authApi = new EmptyRestClient(CFG.authUrl()).create(AuthApi.class);
+    private final AuthClient authApi = new AuthApiClient();
 
     @Override
     @Step("Создать пользователя {0} с помощью REST api")
     public @Nonnull UserdataUserJson create(String username, @Nullable CurrencyValues currencyValue, String password) {
         UserdataUserJson userJson;
+        authApi.create(username, DEFAULT_PASSWORD, DEFAULT_PASSWORD);
         try {
-            authApi.registerForm().execute();
-            authApi.create(username, DEFAULT_PASSWORD, DEFAULT_PASSWORD,
-                    ThreadSafeCookieStore.INSTANCE.cookieValue("XSRF-TOKEN")).execute();
             final long start = System.currentTimeMillis();
             final long await = 3000;
             do {
