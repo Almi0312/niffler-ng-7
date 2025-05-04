@@ -8,13 +8,17 @@ import guru.qa.niffler.jupiter.annotation.ScreenShotTest;
 import guru.qa.niffler.jupiter.annotation.User;
 import guru.qa.niffler.jupiter.annotation.meta.WebTest;
 import guru.qa.niffler.jupiter.annotation.Spending;
+import guru.qa.niffler.model.CurrencyValues;
+import guru.qa.niffler.model.rest.SpendJson;
 import guru.qa.niffler.model.rest.UserdataUserJson;
 import guru.qa.niffler.page.LoginPage;
 import guru.qa.niffler.page.MainPage;
 import guru.qa.niffler.page.component.StatComponent;
 import org.junit.jupiter.api.Test;
+import java.util.*;
 
 import java.awt.image.BufferedImage;
+import java.util.Date;
 
 import static guru.qa.niffler.util.RandomDataUtils.randomCategoryName;
 import static guru.qa.niffler.util.RandomDataUtils.randomSpendName;
@@ -132,9 +136,9 @@ public class SpendingWebTest {
                 .checkBubbles(
                         new StatComponent.Bubble(Color.green, format("%s %s ₽",
                                 userJson.testData().spendings().getFirst().category().name(),
-                                userJson.testData().spendings().getFirst().amount().intValue()))
-//                        new StatComponent.Bubble(Color.yellow, format("%s %s ₽",
-//                                categoryName, amount))
+                                userJson.testData().spendings().getFirst().amount().intValue())),
+                        new StatComponent.Bubble(Color.yellow, format("%s %s ₽",
+                                categoryName, amount))
                 )
                 .checkDiagramCorrespondsScreenshot(expected);
     }

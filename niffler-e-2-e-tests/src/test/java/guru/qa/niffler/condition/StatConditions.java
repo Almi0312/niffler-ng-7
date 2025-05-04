@@ -32,15 +32,21 @@ public class StatConditions {
 
     public static WebElementsCondition colors(String cssAttr, Color... expectedColors) {
         return new WebElementsCondition() {
+            String message = "List colors mismatch";
+            @Override
+            public String errorMessage() {
+                return message;
+            }
+
             private final String expectedRgba = Arrays.stream(expectedColors).map(x -> x.rgb).toList().toString();
             @NotNull
             @Override
             public CheckResult check(Driver driver, List<WebElement> elements) {
                 SupportUtils.checkIsNotEmpty(expectedColors);
                 if (expectedColors.length != elements.size()) {
-                    String message = String.format("List size mismatch (expected: %s, actual: %s",
+                    message = String.format("List size mismatch (expected: %s, actual: %s",
                             expectedColors.length, elements.size());
-                    return CheckResult.rejected(message, elements);
+                    return CheckResult.rejected(message, elements.size());
                 }
 
                 boolean passed = true;
@@ -55,8 +61,6 @@ public class StatConditions {
                 }
                 if(!passed) {
                     final String actualRgba = actualColors.toString();
-                    final String message = String.format("List colors mismatch (expected: %s, actual: %s",
-                            expectedRgba, actualRgba);
                     return CheckResult.rejected(message, actualRgba);
                 }
                 return CheckResult.accepted();
@@ -70,14 +74,20 @@ public class StatConditions {
     }
 
     public static WebElementsCondition statBubbles(String cssAttr, StatComponent.Bubble... bubbles) {
-        String bubblesStr = Arrays.stream(bubbles).toList().toString();
         return new WebElementsCondition() {
+            String message = "List bubble mismatch";
+
+            @Override
+            public String errorMessage() {
+                return message;
+            }
+
             @NotNull
             @Override
             public CheckResult check(Driver driver, List<WebElement> elements) {
                 SupportUtils.checkIsNotEmpty(bubbles);
                 if (bubbles.length != elements.size()) {
-                    String message = String.format("List size mismatch (expected: %s, actual: %s",
+                    message = String.format("List size mismatch (expected: %s, actual: %s",
                             bubbles.length, elements.size());
                     return CheckResult.rejected(message, elements);
                 }
@@ -89,8 +99,6 @@ public class StatConditions {
                     } else break;
                 }
                 if (!passed) {
-                    final String message = String.format("List bubble mismatch (expected: %s, actual: %s",
-                            Arrays.toString(bubbles), actualBubbles);
                     return CheckResult.rejected(message, actualBubbles);
                 }
                 return CheckResult.accepted();
@@ -98,51 +106,71 @@ public class StatConditions {
 
             @Override
             public String toString() {
-                return bubblesStr;
+                return Arrays.asList(bubbles).toString();
             }
         };
     }
 
     public static WebElementsCondition statBubblesInAnyOrder(String cssAttr, StatComponent.Bubble... bubbles) {
-        String bubblesStr = Arrays.asList(bubbles).toString();
         return new WebElementsCondition() {
+            String message = "List bubble mismatch";
+
+            @Override
+            public String errorMessage() {
+                return message;
+            }
+
             @NotNull
             @Override
             public CheckResult check(Driver driver, List<WebElement> elements) {
                 SupportUtils.checkIsNotEmpty(bubbles);
                 if (bubbles.length != elements.size()) {
-                    String message = String.format("List size mismatch (expected: %s, actual: %s",
+                    message = String.format("List size mismatch (expected: %s, actual: %s",
                             bubbles.length, elements.size());
                     return CheckResult.rejected(message, elements);
                 }
-                return checkContainsBubble(cssAttr, elements, bubbles);
+                List<StatComponent.Bubble> actualBubbles = getBubblesFromElement(cssAttr, elements);
+                if (!actualBubbles.containsAll(Arrays.asList(bubbles))) {
+                    return CheckResult.rejected(message, actualBubbles);
+                }
+                return CheckResult.accepted();
             }
 
             @Override
             public String toString() {
-                return bubblesStr;
+                return Arrays.asList(bubbles).toString();
             }
         };
     }
 
     public static WebElementsCondition statBubblesContains(String cssAttr, StatComponent.Bubble... bubbles) {
-        String bubblesStr = Arrays.asList(bubbles).toString();
         return new WebElementsCondition() {
+            String message = "List bubble mismatch";
+
+            @Override
+            public String errorMessage() {
+                return message;
+            }
+
             @NotNull
             @Override
             public CheckResult check(Driver driver, List<WebElement> elements) {
                 SupportUtils.checkIsNotEmpty(bubbles);
                 if (bubbles.length > elements.size()) {
-                    String message = String.format("List size mismatch (expected: %s, actual: %s",
+                    message = String.format("List size mismatch (expected: %s, actual: %s",
                             bubbles.length, elements.size());
                     return CheckResult.rejected(message, elements);
                 }
-                return checkContainsBubble(cssAttr, elements, bubbles);
+                List<StatComponent.Bubble> actualBubbles = getBubblesFromElement(cssAttr, elements);
+                if (!actualBubbles.containsAll(Arrays.asList(bubbles))) {
+                    return CheckResult.rejected(message, actualBubbles);
+                }
+                return CheckResult.accepted();
             }
 
             @Override
             public String toString() {
-                return bubblesStr;
+                return Arrays.asList(bubbles).toString();
             }
         };
     }
@@ -156,19 +184,5 @@ public class StatConditions {
                         Color.fromCss(x.getCssValue(cssAttr)),
                         x.getText()))
                 .toList();
-    }
-
-    /**
-     * Проверяет с помощью Selenide то, что актуальные элементы Bubble содержат ожидаемые
-     */
-    private static CheckResult checkContainsBubble(String cssAttr, List<WebElement> elements, StatComponent.Bubble[] bubbles) {
-        List<StatComponent.Bubble> actualBubbles = getBubblesFromElement(cssAttr, elements);
-        if (!actualBubbles.containsAll(Arrays.asList(bubbles))) {
-            return CheckResult.rejected(
-                    String.format("List bubble mismatch (expected: %s, actual: %s",
-                            Arrays.asList(bubbles), actualBubbles),
-                    actualBubbles.toString());
-        }
-        return CheckResult.accepted();
     }
 }

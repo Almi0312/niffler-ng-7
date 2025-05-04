@@ -10,6 +10,7 @@ import org.openqa.selenium.WebElement;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.lang.String.format;
@@ -22,15 +23,20 @@ public class SpendsConditions {
 
     public static WebElementsCondition spends(SpendJson... spends) {
         return new WebElementsCondition() {
+            String message = "Spends mismatch with actual";
+            @Override
+            public String errorMessage() {
+                return message;
+            }
+
             @NotNull
             @Override
             public CheckResult check(Driver driver, List<WebElement> elements) {
                 SupportUtils.checkIsNotEmpty(spends);
                 if (spends.length != elements.size()) {
-                    return CheckResult.rejected(
-                            String.format("List size mismatch (expected: %s, actual: %s",
-                                    spends.length, elements.size()),
-                            elements);
+                    message = String.format("List size mismatch (expected: %s, actual: %s",
+                            spends.length, elements.size());
+                    return CheckResult.rejected(message, elements);
                 }
                 final List<String> cellError = new ArrayList<>();
                 for (int i = 0; i < spends.length; i++) {
@@ -56,7 +62,8 @@ public class SpendsConditions {
                             cellsText.get(dateColumnNumber),
                             cellError);
                     if(!cellError.isEmpty()) {
-                        return CheckResult.rejected(cellError.toString(), "\n%s row %s".formatted(i + 1, cellsText));
+                        return CheckResult.rejected(message,
+                                "\nRow %s with mismatch %s".formatted(i + 1, String.join(",", cellError)));
                     }
                 }
                 return CheckResult.accepted();
@@ -64,19 +71,17 @@ public class SpendsConditions {
 
             @Override
             public String toString() {
-                return IntStream.range(0, spends.length)
-                        .mapToObj(x -> "\n%s row %s".formatted(x+1, spends[x]))
-                        .toList()
-                        .toString();
+                return Arrays.stream(spends).map(x -> "\n" + x).collect(Collectors.joining());
             }
         };
     }
 
     private static String getNormalizeSpendAmount(Double amount, CurrencyValues currency) {
         if (amount > amount.intValue()) {
-            return "%f %s".formatted(amount, currency.value);
+            String amountReplace = format("%.2f", amount).replace(",", ".");
+            return "%s %s".formatted(amountReplace, currency.value);
         }
-        return "%s %s".formatted(amount.toString().replaceAll("\\..+$", ""), currency.value);
+        return "%.0f %s".formatted(amount, currency.value);
     }
 
     private static String getDateByPattern(Date date) {
