@@ -1,11 +1,9 @@
 package guru.qa.niffler.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 public interface AuthClient {
-    void preRequestOAuthFlow();
+    void preRequestOAuthFlow(String codeVerified);
 
-    String getToken(String code);
+    String getToken(String code, String codeVerified);
 
     String login(String username, String password);
 

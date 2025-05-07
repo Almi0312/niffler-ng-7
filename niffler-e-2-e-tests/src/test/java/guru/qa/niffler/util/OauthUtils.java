@@ -43,17 +43,3 @@ public class OauthUtils {
                 .encodeToString(digest);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -22,7 +22,6 @@ public class AuthApiClient extends RestClient implements AuthClient {
     private static final String defaultAuthCodeChallengeMethod = "S256";
 
     private final AuthApi authApi;
-    private String codeVerified;
 
     public AuthApiClient() {
         super(CFG.authUrl(), true);
@@ -30,10 +29,9 @@ public class AuthApiClient extends RestClient implements AuthClient {
     }
 
     @Override
-    public void preRequestOAuthFlow() {
+    public void preRequestOAuthFlow(String codeVerified) {
         final Response<Void> response;
         try {
-            codeVerified = OauthUtils.generateCodeVerifier();
             response = authApi.authorize(
                             defaultAuthResponseType,
                             defaultAuthClientID,
@@ -49,7 +47,7 @@ public class AuthApiClient extends RestClient implements AuthClient {
     }
 
     @Override
-    public String getToken(String code) {
+    public String getToken(String code, String codeVerified) {
         final Response<JsonNode> response;
         try {
             response = authApi.token(
@@ -63,7 +61,7 @@ public class AuthApiClient extends RestClient implements AuthClient {
             throw new AssertionError(e.getMessage());
         }
         assertEquals(200, response.code(), response.message());
-        if(response.body() == null) {
+        if (response.body() == null) {
             throw new NullPointerException("Токен не был возвращен");
         }
         return response.body().get("id_token").asText();
@@ -71,7 +69,8 @@ public class AuthApiClient extends RestClient implements AuthClient {
 
     @Override
     public String login(String username, String password) {
-        preRequestOAuthFlow();
+        String codeVerified = OauthUtils.generateCodeVerifier();
+        preRequestOAuthFlow(codeVerified);
         Response<Void> response;
         try {
             response = authApi.login().execute();
@@ -85,7 +84,9 @@ public class AuthApiClient extends RestClient implements AuthClient {
             throw new RuntimeException(e.getMessage());
         }
         assertEquals(200, response.code(), response.message());
-        return getToken(response.raw().request().url().queryParameter("code"));
+        return getToken(
+                response.raw().request().url().queryParameter("code"),
+                codeVerified);
     }
 
     @Override
