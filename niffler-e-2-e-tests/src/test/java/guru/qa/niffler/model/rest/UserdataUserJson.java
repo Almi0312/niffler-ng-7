@@ -8,6 +8,7 @@ import guru.qa.niffler.model.FriendshipStatus;
 import guru.qa.niffler.model.TestData;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
@@ -34,6 +35,14 @@ public record UserdataUserJson(
         FriendshipStatus friendshipStatus,
         @JsonIgnore
         TestData testData) {
+
+    public UserdataUserJson(@Nonnull String username) {
+        this(username, null);
+    }
+
+    public UserdataUserJson(@Nonnull String username, @Nullable TestData testData) {
+        this(null, username, null, null, null, null, null, null, null, testData);
+    }
 
     public static @Nonnull UserdataUserJson fromEntity(@Nonnull UserdataUserEntity entity, @Nonnull FriendshipStatus friendshipStatus) {
         return new UserdataUserJson(

@@ -5,7 +5,6 @@ import guru.qa.niffler.jupiter.annotation.User;
 import guru.qa.niffler.model.rest.CategoryJson;
 import guru.qa.niffler.model.rest.SpendJson;
 import guru.qa.niffler.model.rest.UserdataUserJson;
-import guru.qa.niffler.service.spend.SpendApiClient;
 import guru.qa.niffler.service.SpendsClient;
 import org.junit.jupiter.api.extension.*;
 import org.junit.platform.commons.support.AnnotationSupport;
@@ -29,7 +28,7 @@ public class SpendingExtension implements BeforeEachCallback,
     public void beforeEach(ExtensionContext context) throws Exception {
         AnnotationSupport.findAnnotation(context.getRequiredTestMethod(), User.class)
                 .ifPresent(userAnno -> {
-                    UserdataUserJson userJson = UserExtension.createdUser(context);
+                    UserdataUserJson userJson = UserExtension.createdUser();
                     final String username = userJson != null
                             ? userJson.username()
                             : userAnno.username();
@@ -69,14 +68,6 @@ public class SpendingExtension implements BeforeEachCallback,
                     }
                 });
     }
-
-//    @Override
-//    public void afterEach(ExtensionContext context) throws Exception {
-//        SpendJson spendJson = context.getStore(NAMESPACE).get(context.getUniqueId(), SpendJson.class);
-//        if (spendJson != null) {
-//            spendClient.remove(spendJson);
-//        }
-//    }
 
     @Override
     public boolean supportsParameter(ParameterContext parameterContext,

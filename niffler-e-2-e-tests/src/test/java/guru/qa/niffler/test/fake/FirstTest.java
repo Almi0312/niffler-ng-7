@@ -2,7 +2,7 @@ package guru.qa.niffler.test.fake;
 
 import org.junit.jupiter.api.Test;
 
-public class FirstTest {
+class FirstTest {
 
     @Test
     void firstTestClassMethod0() throws InterruptedException {

@@ -35,7 +35,7 @@ public class CategoryExtension implements BeforeEachCallback,
     public void beforeEach(ExtensionContext context) throws Exception {
         AnnotationSupport.findAnnotation(context.getRequiredTestMethod(), User.class)
                 .ifPresent(userAnno -> {
-                    UserdataUserJson userJson = UserExtension.createdUser(context);
+                    UserdataUserJson userJson = UserExtension.createdUser();
                     final String username = userJson != null
                             ? userJson.username()
                             : userAnno.username();
@@ -79,12 +79,4 @@ public class CategoryExtension implements BeforeEachCallback,
         return Optional.ofNullable(extensionContext.getStore(NAMESPACE).get(extensionContext.getUniqueId(), List.class))
                 .orElse(Collections.emptyList());
     }
-
-//    @Override
-//    public void afterTestExecution(ExtensionContext context) throws Exception {
-//        CategoryJson category = context.getStore(NAMESPACE).get(context.getUniqueId(), CategoryJson.class);
-//        if (category != null) {
-//            categoryDBClient.delete(category);
-//        }
-//    }
 }

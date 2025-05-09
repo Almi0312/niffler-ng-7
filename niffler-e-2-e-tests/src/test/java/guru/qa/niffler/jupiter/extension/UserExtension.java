@@ -5,14 +5,12 @@ import guru.qa.niffler.jupiter.annotation.User;
 import guru.qa.niffler.model.CurrencyValues;
 import guru.qa.niffler.model.TestData;
 import guru.qa.niffler.model.rest.UserdataUserJson;
-import guru.qa.niffler.service.userdata.UserdataApiClient;
 import guru.qa.niffler.service.UsersClient;
 import guru.qa.niffler.util.RandomDataUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.*;
 import org.junit.platform.commons.support.AnnotationSupport;
 
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,17 +42,16 @@ public class UserExtension implements BeforeEachCallback,
                     usersClient.createIncomeInvitations(userJson, incomes);
                     usersClient.createOutcomeInvitations(userJson, outcomes);
                     usersClient.createFriends(userJson, friends);
-                    context.getStore(NAMESPACE).put(
-                            context.getUniqueId(),
-                            userJson.addTestData(
-                                    new TestData(
-                                            DEFAULT_PASSWORD,
-                                            new ArrayList<>(),
-                                            new ArrayList<>(),
-                                            findUsersByUsername(incomes),
-                                            findUsersByUsername(outcomes),
-                                            findUsersByUsername(friends)
-                                            )));
+                    userJson.addTestData(
+                            new TestData(
+                                    DEFAULT_PASSWORD,
+                                    new ArrayList<>(),
+                                    new ArrayList<>(),
+                                    findUsersByUsername(incomes),
+                                    findUsersByUsername(outcomes),
+                                    findUsersByUsername(friends)
+                            ));
+                    setUser(userJson);
                 });
         log.info("создан пользователь - {}", context.getStore(NAMESPACE). get(context.getUniqueId(), UserdataUserJson.class));
     }
@@ -66,14 +63,22 @@ public class UserExtension implements BeforeEachCallback,
 
     @Override
     public UserdataUserJson resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return createdUser(extensionContext);
+        return createdUser();
     }
 
-    @Nullable
-    public static UserdataUserJson createdUser(ExtensionContext extensionContext) {
-        return extensionContext.getStore(NAMESPACE).get(
-                extensionContext.getUniqueId(),
+    public static UserdataUserJson createdUser() {
+        final ExtensionContext context = TestMethodContextExtension.context();
+        return context.getStore(NAMESPACE).get(
+                context.getUniqueId(),
                 UserdataUserJson.class
+        );
+    }
+
+    public static void setUser(UserdataUserJson testUser) {
+        final ExtensionContext context = TestMethodContextExtension.context();
+        context.getStore(NAMESPACE).put(
+                context.getUniqueId(),
+                testUser
         );
     }
 
