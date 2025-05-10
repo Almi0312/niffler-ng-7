@@ -42,7 +42,7 @@ public class UserExtension implements BeforeEachCallback,
                     usersClient.createIncomeInvitations(userJson, incomes);
                     usersClient.createOutcomeInvitations(userJson, outcomes);
                     usersClient.createFriends(userJson, friends);
-                    userJson.addTestData(
+                    setUser(userJson.addTestData(
                             new TestData(
                                     DEFAULT_PASSWORD,
                                     new ArrayList<>(),
@@ -50,8 +50,8 @@ public class UserExtension implements BeforeEachCallback,
                                     findUsersByUsername(incomes),
                                     findUsersByUsername(outcomes),
                                     findUsersByUsername(friends)
-                            ));
-                    setUser(userJson);
+                            ))
+                    );
                 });
         log.info("создан пользователь - {}", context.getStore(NAMESPACE). get(context.getUniqueId(), UserdataUserJson.class));
     }

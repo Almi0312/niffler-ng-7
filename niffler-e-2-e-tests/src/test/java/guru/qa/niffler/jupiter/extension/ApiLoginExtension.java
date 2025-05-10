@@ -6,13 +6,19 @@ import guru.qa.niffler.api.core.ThreadSafeCookieStore;
 import guru.qa.niffler.config.Config;
 import guru.qa.niffler.jupiter.annotation.ApiLogin;
 import guru.qa.niffler.jupiter.annotation.Token;
+import guru.qa.niffler.model.FriendshipStatus;
 import guru.qa.niffler.model.TestData;
 import guru.qa.niffler.model.rest.UserdataUserJson;
 import guru.qa.niffler.page.MainPage;
+import guru.qa.niffler.service.AuthClient;
+import guru.qa.niffler.service.SpendsClient;
+import guru.qa.niffler.service.UsersClient;
 import guru.qa.niffler.service.auth.AuthApiClient;
 import org.junit.jupiter.api.extension.*;
 import org.junit.platform.commons.support.AnnotationSupport;
 import org.openqa.selenium.Cookie;
+
+import java.util.List;
 
 public class ApiLoginExtension implements BeforeEachCallback, ParameterResolver {
 
@@ -20,7 +26,9 @@ public class ApiLoginExtension implements BeforeEachCallback, ParameterResolver 
     private static final Config CFG = Config.getInstance();
     private static final String sessionName = "JSESSIONID";
 
-    private final AuthApiClient authApiClient = new AuthApiClient();
+    private final AuthClient authApiClient = new AuthApiClient();
+    private final SpendsClient spendsClient = SpendsClient.getInstance();
+    private final UsersClient usersClient = UsersClient.getInstance();
     private final boolean setupBrowser;
 
     private ApiLoginExtension(boolean setupBrowser) {
@@ -47,15 +55,22 @@ public class ApiLoginExtension implements BeforeEachCallback, ParameterResolver 
                         }
                         userToLogin = userFromUserExtension;
                     } else {
-                        UserdataUserJson fakeUser = new UserdataUserJson(
-                                apiLogin.username(),
-                                new TestData(
-                                        apiLogin.password()
-                                )
-                        );
                         if (userFromUserExtension != null) {
                             throw new IllegalStateException("@User must not be present in case that @ApiLogin contains username or password!");
                         }
+                        List<UserdataUserJson> friendshipUsers = usersClient
+                                .findAllFriendshipByUsername(apiLogin.username(), "");
+                        UserdataUserJson fakeUser = new UserdataUserJson(
+                                apiLogin.username(),
+                                new TestData(
+                                        apiLogin.password(),
+                                        spendsClient.findAllCategoryByUsername(apiLogin.username()),
+                                        spendsClient.findAllByUsername(apiLogin.username()),
+                                        getFriendshipByStatus(friendshipUsers, FriendshipStatus.INVITE_RECEIVED),
+                                        getFriendshipByStatus(friendshipUsers, FriendshipStatus.INVITE_SENT),
+                                        getFriendshipByStatus(friendshipUsers, FriendshipStatus.FRIEND)
+                                )
+                        );
                         UserExtension.setUser(fakeUser);
                         userToLogin = fakeUser;
                     }
@@ -105,5 +120,9 @@ public class ApiLoginExtension implements BeforeEachCallback, ParameterResolver 
     public static Cookie getJsessionIdCookie() {
         return new Cookie(sessionName,
                 ThreadSafeCookieStore.INSTANCE.cookieValue(sessionName));
+    }
+
+    private List<UserdataUserJson> getFriendshipByStatus(List<UserdataUserJson> users, FriendshipStatus status) {
+        return users.stream().filter(user -> user.friendshipStatus().equals(status)).toList();
     }
 }

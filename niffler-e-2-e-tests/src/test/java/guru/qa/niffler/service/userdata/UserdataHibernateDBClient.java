@@ -15,6 +15,7 @@ import guru.qa.niffler.data.template.XaTransactionTemplate;
 import guru.qa.niffler.model.CurrencyValues;
 import guru.qa.niffler.model.rest.UserdataUserJson;
 import guru.qa.niffler.service.UsersClient;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.jdbc.support.JdbcTransactionManager;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,6 +24,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.Connection;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -158,5 +160,11 @@ public class UserdataHibernateDBClient implements UsersClient {
                                 }
                         ).toList());
         return authUser;
+    }
+
+    @NotNull
+    @Override
+    public List<UserdataUserJson> findAllFriendshipByUsername(String username, String searchQuery) {
+        return List.of();
     }
 }

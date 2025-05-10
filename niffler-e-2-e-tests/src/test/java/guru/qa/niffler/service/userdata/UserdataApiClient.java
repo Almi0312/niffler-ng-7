@@ -154,6 +154,21 @@ public class UserdataApiClient implements UsersClient {
         });
     }
 
+    @Nonnull
+    @Override
+    @Step("Найти всех пользователей со статусом {2} для пользователя с username {0}")
+    public List<UserdataUserJson> findAllFriendshipByUsername(String username, String searchQuery) {
+        final Response<List<UserdataUserJson>> response;
+        try {
+            response = userdataApi.getAllFriendsByUsername(username, null).execute();
+        } catch (IOException e) {
+            throw new AssertionError(e.getMessage());
+        }
+        Assertions.assertEquals(200, response.code(), response.message());
+        return response.body() == null ? Collections.emptyList()
+                : response.body().stream().toList();
+    }
+
     @Override
     public Optional<UserdataUserJson> findById(UUID id) {
         throw new InternalError("Метод findById не реализован в api проекта");

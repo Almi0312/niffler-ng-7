@@ -100,4 +100,6 @@ public class UserdataSpringRepositoryJdbc implements UserdataRepository {
             friendshipDAO.create(income.getFriendshipRequests());
         });
     }
+
+
 }

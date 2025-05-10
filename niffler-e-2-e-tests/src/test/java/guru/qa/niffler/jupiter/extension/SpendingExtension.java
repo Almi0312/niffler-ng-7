@@ -59,7 +59,7 @@ public class SpendingExtension implements BeforeEachCallback,
                         createdSpends.add(spendClient.createSpend(spend));
                     }
                     if (userJson != null) {
-                        userJson.testData().spendings().addAll(createdSpends);
+                        UserExtension.createdUser().testData().spendings().addAll(createdSpends);
                     } else {
                         context.getStore(NAMESPACE).put(
                                 context.getUniqueId(),
