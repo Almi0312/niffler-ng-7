@@ -7,6 +7,7 @@ import guru.qa.niffler.service.userdata.UserdataDBSpringRepositoryClient;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -40,4 +41,7 @@ public interface UsersClient {
     void createOutcomeInvitations(UserdataUserJson outcome, String... incomesUsername);
 
     void createFriends(UserdataUserJson currentUser, String... friendsUsername);
+
+    @Nonnull
+    List<UserdataUserJson> findAllFriendshipByUsername(String username, String searchQuery);
 }

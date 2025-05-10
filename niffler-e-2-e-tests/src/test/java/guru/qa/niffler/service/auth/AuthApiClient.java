@@ -2,8 +2,10 @@ package guru.qa.niffler.service.auth;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import guru.qa.niffler.api.AuthApi;
+import guru.qa.niffler.api.core.CodeInterceptor;
 import guru.qa.niffler.api.core.RestClient;
 import guru.qa.niffler.api.core.ThreadSafeCookieStore;
+import guru.qa.niffler.jupiter.extension.ApiLoginExtension;
 import guru.qa.niffler.service.AuthClient;
 import guru.qa.niffler.util.OauthUtils;
 import retrofit2.Response;
@@ -24,13 +26,15 @@ public class AuthApiClient extends RestClient implements AuthClient {
     private final AuthApi authApi;
 
     public AuthApiClient() {
-        super(CFG.authUrl(), true);
+        super(CFG.authUrl(), true, new CodeInterceptor());
         this.authApi = create(AuthApi.class);
     }
 
     @Override
-    public void preRequestOAuthFlow(String codeVerified) {
-        final Response<Void> response;
+    public String login(String username, String password) {
+        final String codeVerified = OauthUtils.generateCodeVerifier();
+        final Response<JsonNode> responseToken;
+        Response<Void> response;
         try {
             response = authApi.authorize(
                             defaultAuthResponseType,
@@ -40,39 +44,8 @@ public class AuthApiClient extends RestClient implements AuthClient {
                             OauthUtils.generateCodeChallenge(codeVerified),
                             defaultAuthCodeChallengeMethod)
                     .execute();
-        } catch (IOException e) {
-            throw new AssertionError(e.getMessage());
-        }
-        assertEquals(200, response.code(), response.message());
-    }
+            assertEquals(200, response.code(), response.message());
 
-    @Override
-    public String getToken(String code, String codeVerified) {
-        final Response<JsonNode> response;
-        try {
-            response = authApi.token(
-                    defaultAuthClientID,
-                    defaultAuthRedirectUri,
-                    defaultAuthGrantType,
-                    code,
-                    codeVerified
-            ).execute();
-        } catch (IOException e) {
-            throw new AssertionError(e.getMessage());
-        }
-        assertEquals(200, response.code(), response.message());
-        if (response.body() == null) {
-            throw new NullPointerException("Токен не был возвращен");
-        }
-        return response.body().get("id_token").asText();
-    }
-
-    @Override
-    public String login(String username, String password) {
-        String codeVerified = OauthUtils.generateCodeVerifier();
-        preRequestOAuthFlow(codeVerified);
-        Response<Void> response;
-        try {
             response = authApi.login().execute();
             if (response.isSuccessful()) {
                 response = authApi.login(
@@ -80,13 +53,23 @@ public class AuthApiClient extends RestClient implements AuthClient {
                         password,
                         ThreadSafeCookieStore.INSTANCE.cookieValue("XSRF-TOKEN")).execute();
             }
+            assertEquals(200, response.code(), response.message());
+
+            responseToken = authApi.token(
+                    defaultAuthClientID,
+                    defaultAuthRedirectUri,
+                    defaultAuthGrantType,
+                    ApiLoginExtension.getCode(),
+                    codeVerified
+            ).execute();
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage());
         }
-        assertEquals(200, response.code(), response.message());
-        return getToken(
-                response.raw().request().url().queryParameter("code"),
-                codeVerified);
+        assertEquals(200, responseToken.code(), responseToken.message());
+        if (responseToken.body() == null) {
+            throw new NullPointerException("Токен не был возвращен");
+        }
+        return responseToken.body().get("id_token").asText();
     }
 
     @Override
@@ -95,7 +78,7 @@ public class AuthApiClient extends RestClient implements AuthClient {
         try {
             response = authApi.registerForm().execute();
             if (response.isSuccessful()) {
-                response = authApi.create(
+                authApi.create(
                         username,
                         password,
                         passwordSubmit,
@@ -104,6 +87,5 @@ public class AuthApiClient extends RestClient implements AuthClient {
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage());
         }
-        assertEquals(201, response.code(), response.message());
     }
 }
