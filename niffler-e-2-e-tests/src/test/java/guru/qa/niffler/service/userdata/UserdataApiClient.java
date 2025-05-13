@@ -17,11 +17,13 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static guru.qa.niffler.config.Constants.DEFAULT_PASSWORD;
 import static guru.qa.niffler.model.CurrencyValues.RUB;
 import static guru.qa.niffler.api.core.RestClient.EmptyRestClient;
 import static guru.qa.niffler.model.FriendshipStatus.INVITE_SENT;
+import static java.util.stream.Collectors.toList;
 
 @ParametersAreNonnullByDefault
 public class UserdataApiClient implements UsersClient {
@@ -167,14 +169,16 @@ public class UserdataApiClient implements UsersClient {
             send = responseSend.body() == null ?
                     Collections.emptyList()
                     : responseSend.body().stream()
-                    .filter(user -> user.friendshipStatus().equals(INVITE_SENT)).toList();
+                    .filter(user -> INVITE_SENT == user.friendshipStatus()).collect(toList());
             response = userdataApi.getAllFriendsByUsername(username, null).execute();
         } catch (IOException e) {
             throw new AssertionError(e.getMessage());
         }
         Assertions.assertEquals(200, response.code(), response.message());
-            send.addAll(response.body() == null ? Collections.emptyList()
-                    : response.body().stream().toList());
+        if(response.body() == null || response.body().isEmpty()) {
+            return send;
+        }
+        send.addAll(response.body());
         return send;
     }
 
