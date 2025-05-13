@@ -21,6 +21,7 @@ import java.util.*;
 import static guru.qa.niffler.config.Constants.DEFAULT_PASSWORD;
 import static guru.qa.niffler.model.CurrencyValues.RUB;
 import static guru.qa.niffler.api.core.RestClient.EmptyRestClient;
+import static guru.qa.niffler.model.FriendshipStatus.INVITE_SENT;
 
 @ParametersAreNonnullByDefault
 public class UserdataApiClient implements UsersClient {
@@ -152,6 +153,29 @@ public class UserdataApiClient implements UsersClient {
             Assertions.assertEquals(200, response.code(), response.message());
             currentUser.testData().friends().add(friend);
         });
+    }
+
+    @Nonnull
+    @Override
+    @Step("Найти всех пользователей с дружескими связями для пользователя с username {0}")
+    public List<UserdataUserJson> findAllFriendshipByUsername(String username, String searchQuery) {
+        final Response<List<UserdataUserJson>> response;
+        final Response<List<UserdataUserJson>> responseSend;
+        List<UserdataUserJson> send;
+        try {
+            responseSend = userdataApi.getAllUsersByUsername(username, null).execute();
+            send = responseSend.body() == null ?
+                    Collections.emptyList()
+                    : responseSend.body().stream()
+                    .filter(user -> user.friendshipStatus().equals(INVITE_SENT)).toList();
+            response = userdataApi.getAllFriendsByUsername(username, null).execute();
+        } catch (IOException e) {
+            throw new AssertionError(e.getMessage());
+        }
+        Assertions.assertEquals(200, response.code(), response.message());
+            send.addAll(response.body() == null ? Collections.emptyList()
+                    : response.body().stream().toList());
+        return send;
     }
 
     @Override

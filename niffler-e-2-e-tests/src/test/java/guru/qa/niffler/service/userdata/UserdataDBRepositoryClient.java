@@ -15,6 +15,7 @@ import guru.qa.niffler.data.template.XaTransactionTemplate;
 import guru.qa.niffler.model.CurrencyValues;
 import guru.qa.niffler.model.rest.UserdataUserJson;
 import guru.qa.niffler.service.UsersClient;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -156,5 +157,11 @@ public class UserdataDBRepositoryClient implements UsersClient {
                                 }
                         ).toList());
         return authUser;
+    }
+
+    @NotNull
+    @Override
+    public List<UserdataUserJson> findAllFriendshipByUsername(String username, String searchQuery) {
+        return List.of();
     }
 }

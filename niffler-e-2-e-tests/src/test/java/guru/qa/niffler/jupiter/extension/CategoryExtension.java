@@ -51,7 +51,7 @@ public class CategoryExtension implements BeforeEachCallback,
                         createdCategories.add(spendClient.createCategory(categoryJson));
                     }
                     if (userJson != null) {
-                        userJson.testData().categories().addAll(createdCategories);
+                        UserExtension.createdUser().testData().categories().addAll(createdCategories);
                     } else {
                         context.getStore(NAMESPACE).put(
                                 context.getUniqueId(),

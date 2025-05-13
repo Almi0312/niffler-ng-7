@@ -3,22 +3,15 @@ package guru.qa.niffler.test.web;
 import com.codeborne.selenide.Selenide;
 import guru.qa.niffler.condition.Color;
 import guru.qa.niffler.config.Config;
-import guru.qa.niffler.jupiter.annotation.Category;
-import guru.qa.niffler.jupiter.annotation.ScreenShotTest;
-import guru.qa.niffler.jupiter.annotation.User;
+import guru.qa.niffler.jupiter.annotation.*;
 import guru.qa.niffler.jupiter.annotation.meta.WebTest;
-import guru.qa.niffler.jupiter.annotation.Spending;
-import guru.qa.niffler.model.CurrencyValues;
-import guru.qa.niffler.model.rest.SpendJson;
 import guru.qa.niffler.model.rest.UserdataUserJson;
 import guru.qa.niffler.page.LoginPage;
 import guru.qa.niffler.page.MainPage;
 import guru.qa.niffler.page.component.StatComponent;
 import org.junit.jupiter.api.Test;
-import java.util.*;
 
 import java.awt.image.BufferedImage;
-import java.util.Date;
 
 import static guru.qa.niffler.util.RandomDataUtils.randomCategoryName;
 import static guru.qa.niffler.util.RandomDataUtils.randomSpendName;
@@ -30,29 +23,29 @@ public class SpendingWebTest {
     private static final Config CFG = Config.getInstance();
 
     @Test
+    @ApiLogin
     @User(spendings = @Spending(
             category = "Java",
             description = "spend api",
             amount = 10000
     ))
     void addNewSpendingWithApi(UserdataUserJson userJson) {
-        Selenide.open(CFG.frontUrl(), LoginPage.class)
-                .login(userJson.username(), userJson.testData().password())
+        new MainPage()
                 .getTableSpendings()
                 .checkTableContains(userJson.testData().spendings().getFirst().description());
     }
 
+    @ScreenShotTest(pathToExpFile = "img/spends/edit-spend-expected-stat.png")
+    @ApiLogin
     @User(spendings = @Spending(
             category = "Java Advanced",
             description = "advanced java study",
             amount = 90000)
     )
-    @ScreenShotTest(pathToExpFile = "img/spends/edit-spend-expected-stat.png")
     void spendDescriptionShouldBeChangedFromTable(UserdataUserJson userJson, BufferedImage expected) {
         final String newDescription = "Обучение Niffler Next Generation";
         String amount = "80000";
-        MainPage mainPage = Selenide.open(CFG.frontUrl(), LoginPage.class)
-                .login(userJson.username(), userJson.testData().password());
+        MainPage mainPage = new MainPage();
         mainPage
                 .getStatComponent()
                 .checkDiagramNoCorrespondsScreenshot(expected);
@@ -74,6 +67,8 @@ public class SpendingWebTest {
                 .checkDiagramCorrespondsScreenshot(expected);
     }
 
+    @ScreenShotTest(pathToExpFile = "img/spends/remove-spend-expected-stat.png")
+    @ApiLogin
     @User(spendings = {
             @Spending(category = "SQL beginner",
                     description = "Begin oracle study",
@@ -82,11 +77,9 @@ public class SpendingWebTest {
                     description = "Begin oracle1 study",
                     amount = 89989)
     })
-    @ScreenShotTest(pathToExpFile = "img/spends/remove-spend-expected-stat.png")
     void SpendShouldBeDeleteFromTableAndCheck(UserdataUserJson userJson, BufferedImage expected) {
         String lastSpend = userJson.testData().spendings().getLast().description();
-        MainPage mainPage = Selenide.open(CFG.frontUrl(), LoginPage.class)
-                .login(userJson.username(), userJson.testData().password());
+        MainPage mainPage = new MainPage();
         mainPage
                 .getStatComponent()
                 .checkDiagramNoCorrespondsScreenshot(expected);
@@ -106,17 +99,17 @@ public class SpendingWebTest {
                 .checkDiagramCorrespondsScreenshot(expected);
     }
 
+    @ScreenShotTest(pathToExpFile = "img/spends/add-spend-expected-stat.png")
+    @ApiLogin
     @User(spendings = @Spending(
             category = "Java Begin",
             description = "Java for u beginner",
             amount = 43555))
-    @ScreenShotTest(pathToExpFile = "img/spends/add-spend-expected-stat.png")
     void addNewSpending(UserdataUserJson userJson, BufferedImage expected) {
         String spendName = randomSpendName();
         String categoryName = randomCategoryName();
         String amount = "100000";
-        MainPage mainPage = Selenide.open(CFG.frontUrl(), LoginPage.class)
-                .login(userJson.username(), userJson.testData().password());
+        MainPage mainPage = new MainPage();
         mainPage
                 .getStatComponent()
                 .checkDiagramNoCorrespondsScreenshot(expected);
@@ -143,6 +136,8 @@ public class SpendingWebTest {
                 .checkDiagramCorrespondsScreenshot(expected);
     }
 
+    @ScreenShotTest(pathToExpFile = "img/spends/default-expected-stat.png")
+    @ApiLogin
     @User(categories = @Category(
             name = "Kafka Advanced",
             archived = true),
@@ -156,10 +151,8 @@ public class SpendingWebTest {
                             description = "Story about Kafka",
                             amount = 100)}
     )
-    @ScreenShotTest(pathToExpFile = "img/spends/default-expected-stat.png")
     void checkStatComponentTest(UserdataUserJson userJson, BufferedImage expected) {
-        MainPage mainPage = Selenide.open(CFG.frontUrl(), LoginPage.class)
-                .login(userJson.username(), userJson.testData().password());
+        MainPage mainPage = new MainPage();
         mainPage
                 .getTableSpendings()
                 .checkTableContains(userJson.testData().spendings().getFirst().description());
@@ -168,6 +161,8 @@ public class SpendingWebTest {
                 .checkDiagramCorrespondsScreenshot(expected);
     }
 
+    @Test
+    @ApiLogin
     @User(categories = @Category(
             name = "Электроника",
             archived = true),
@@ -185,11 +180,8 @@ public class SpendingWebTest {
                             description = "Батарейка",
                             amount = 300)}
     )
-    @Test
     void checkAllSpendByCategoryTest(UserdataUserJson userJson) {
-        MainPage mainPage = Selenide.open(CFG.frontUrl(), LoginPage.class)
-                .login(userJson.username(), userJson.testData().password());
-        mainPage
+        new MainPage()
                 .getTableSpendings()
                 .searchSpendingByDescription("Электроника")
                 .checkAllSpends(userJson.testData().spendings());
